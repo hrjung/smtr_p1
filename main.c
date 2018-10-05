@@ -2590,16 +2590,6 @@ void UTIL_clearInitRelay(void)
 	//HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_LED_R);
 }
 
-void UTIL_setShaftBrake(void)
-{
-	HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
-}
-
-void UTIL_releaseShaftBrake(void)
-{
-	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
-}
-
 void UTIL_setScaleFactor(void)
 {
 	// scale factor for pu -> krpm

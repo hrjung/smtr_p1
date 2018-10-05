@@ -31,6 +31,26 @@ extern HAL_Handle halHandle;
 //
 //*****************************************************************************
 
+void UTIL_setShaftBrake(void)
+{
+	HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
+}
+
+void UTIL_releaseShaftBrake(void)
+{
+	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
+}
+
+void UTIL_setFanOn(void)
+{
+	HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
+}
+
+void UTIL_setFanOff(void)
+{
+	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
+}
+
 int UTIL_controlLed(int type, int on_off)
 {
 	int result = 0;

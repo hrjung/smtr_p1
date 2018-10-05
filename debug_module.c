@@ -1092,12 +1092,12 @@ STATIC int dbg_setFanControl(int argc, char *argv[])
 
 	if(on_off == 0) // fan off
 	{
-		UTIL_releaseShaftBrake();
+		UTIL_setFanOff();
 		UARTprintf("fan off\n");
     }
     else
     {
-		UTIL_setShaftBrake();
+    	UTIL_setFanOn();
 		UARTprintf("fan on\n");
     }
 

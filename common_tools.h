@@ -40,6 +40,11 @@ extern "C"
 // Prototypes for the APIs.
 //
 //*****************************************************************************
+extern void UTIL_setShaftBrake(void);
+extern void UTIL_releaseShaftBrake(void);
+
+extern void UTIL_setFanOn(void);
+extern void UTIL_setFanOff(void);
 
 extern int UTIL_controlLed(int type, int on_off);
 extern void UTIL_testbit(int on_off);
