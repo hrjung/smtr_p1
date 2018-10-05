@@ -11,11 +11,11 @@
 #include "stdint.h"
 
 
-#define HW_VER_MAJ	0
-#define HW_VER_MIN	8
+#define HW_VER_MAJ	1
+#define HW_VER_MIN	0
 
-#define DSP_FW_VER_MAJ	0
-#define DSP_FW_VER_MIN	7
+#define DSP_FW_VER_MAJ	1
+#define DSP_FW_VER_MIN	0
 
 #define NOT_INITIALIZED		(0.0)
 
