@@ -79,6 +79,7 @@ typedef enum {
 	DBG_CMD_END_MOTOR,
 	DBG_CMD_SET_DIRECTION,
 	DBG_CMD_SHOW_STATUS,
+	DBG_CMD_READ_PARAMETER,
 
 	DBG_CMD_BRAKE_CONTROL,
 	DBG_CMD_SET_DCI_BRAKE,
@@ -202,6 +203,7 @@ STATIC int dbg_stopMotor(int argc, char *argv[]);
 STATIC int dbg_endMotor(int argc, char *argv[]);
 STATIC int dbg_setDirection(int argc, char *argv[]);
 STATIC int dbg_showMotorState(int argc, char *argv[]);
+STATIC int dbg_readParameter(int argc, char *argv[]);
 
 STATIC int dbg_setBrakeControl(int argc, char *argv[]);
 STATIC int dbg_setDcInjBrake(int argc, char *argv[]);
@@ -268,6 +270,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"end", dbg_endMotor, " end : end PWM"},
 	{"dir", dbg_setDirection, " dir 0(forward) or 1(reverse) : set motor direction"},
 	{"state", dbg_showMotorState, " state : display running status"},
+	{"rprm", dbg_readParameter, " rprm : read parameter"},
 
 	{"brk", dbg_setBrakeControl, " Brake control setting" \
 			"   brk mth method(0-2) : select stop method\n" \
@@ -335,6 +338,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"end", dbg_endMotor, " end"},
 	{"dir", dbg_setDirection, " dir 0/1"},
 	{"state", dbg_showMotorState, " state"},
+	{"rprm", dbg_readParameter, " read parameter"},
 
 	{"brk", dbg_setBrakeControl, " brk Setting"},
 	{"dcbrk", dbg_setDcInjBrake, " DCI Brake setting"},
@@ -794,6 +798,41 @@ STATIC int dbg_showMotorState(int argc, char *argv[])
 
 sta_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SHOW_STATUS].pcHelp);
+    return 1;
+}
+
+STATIC int dbg_readParameter(int argc, char *argv[])
+{
+	uint16_t index, type;
+	union32_st val;
+	uint16_t buf[4];
+
+    if(argc != 2) goto param_err;
+
+    index = (uint16_t)atoi(argv[1]);
+	if(index >= INV_PARAM_INDEX_MAX)
+	{
+		UARTprintf(" Error index bigger than %d\n", INV_PARAM_INDEX_MAX);
+		goto param_err;
+	}
+
+	type = PARAM_getValue(index, &buf[0]);
+
+	val.arr[0] = buf[0];
+	val.arr[1] = buf[1];
+	if(type == PARAMETER_TYPE_LONG)
+	{
+		UARTprintf(" param[%d] is long, value = %d\n", index, val.l);
+	}
+	else
+	{
+		UARTprintf(" param[%d] is float, value = %f\n", index, val.f);
+	}
+
+    return 0;
+
+param_err:
+	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_READ_PARAMETER].pcHelp);
     return 1;
 }
 

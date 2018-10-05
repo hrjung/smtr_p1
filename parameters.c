@@ -180,7 +180,7 @@ uint16_t PARAM_getValue(uint16_t index, uint16_t *buf)
 	buf[0] = iparam[index].value.arr[0];
 	buf[1] = iparam[index].value.arr[1];
 
-	return 2; // size
+	return iparam[index].type; // type
 }
 
 void PARAM_initErrInfo(void)
