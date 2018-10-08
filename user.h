@@ -532,11 +532,7 @@ extern "C" {
 
 //! \brief      Sets the user parameter values
 //! \param[in]  pUserParams  The pointer to the user param structure
-#ifdef SUPPORT_USER_VARIABLE
-extern void USER_setParams(USER_Params *pUserParams, motor_param_st *pmtr);
-#else
 extern void USER_setParams(USER_Params *pUserParams);
-#endif
 
 
 //! \brief      Checks for errors in the user parameter values

@@ -10,6 +10,7 @@
 #include "uartstdio.h"
 
 #include "parameters.h"
+#include "motor_param.h"
 //#include "inv_param.h"
 #include "drive.h"
 #include "timer_handler.h"
@@ -143,7 +144,8 @@ int OVL_setWarningLevel(uint16_t level)
 
 	iparam[OVL_WARN_LIMIT_INDEX].value.l = level;
 
-	dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
+	//dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
+	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
 
 	return 0;
 }
@@ -153,7 +155,8 @@ int OVL_setTripLevel(uint16_t level)
 	if(level < TRIP_LEVEL_MIN || level > TRIP_LEVEL_TRIP) return 1;
 
 	iparam[OVL_TR_LIMIT_INDEX].value.l = level;
-	dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
+	//dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
+	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
 
 	return 0;
 }

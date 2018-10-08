@@ -1,81 +1,50 @@
 /*
- * nv_param.h
+ * motor_param.h
  *
  *  Created on: 2017. 8. 22.
  *      Author: hrjung
  */
 
-#ifndef NV_PARAM_H
-#define NV_PARAM_H
+#ifndef MOTOR_PARAM_H
+#define MOTOR_PARAM_H
 
 #include "stdint.h"
 
-
-#ifdef UNIT_TEST_ENABLED
-#define STATIC
-#else
-#define STATIC static
-#endif
 
 /*******************************************************************************
  * CONSTANTS
  */
 
-#ifdef TEST_MOTOR // test Motor
-#define TEST_MOTOR_NUM_POLE_PAIRS	2
-#define TEST_MOTOR_EFFECTIVENESS	90
-#define TEST_MOTOR_VOLTAGE_IN		220
-#define TEST_MOTOR_RATED_FREQ		60
-#define TEST_MOTOR_CAPACITY			(0.25)
-#define TEST_MOTOR_SLIP_RATE		(5.0)
-#define TEST_MOTOR_NOLOAD_CURRENT	(1.15)
-#define TEST_MOTOR_MAX_CURRENT		(3.0)
-#define TEST_MOTOR_Rr				(5.574939)
-#define TEST_MOTOR_Rs				(10.1598806)
-#define TEST_MOTOR_Ls				(0.00392938871)
-#endif
-
-// 1.5KW Samyang Motor
-#ifdef SAMYANG_1_5K_MOTOR
-#define TEST_MOTOR_NUM_POLE_PAIRS	2
-#define TEST_MOTOR_EFFECTIVENESS	90
-#define TEST_MOTOR_RATED_FREQ		60
-#define TEST_MOTOR_CAPACITY			(1.5)
-#define TEST_MOTOR_SLIP_RATE		(5.0)
-	#if 0
-	#define TEST_MOTOR_VOLTAGE_IN		220
-	#define TEST_MOTOR_NOLOAD_CURRENT	(3.4)
-	#define TEST_MOTOR_MAX_CURRENT		(15.0) //(6.0)
-	#else
-	#define TEST_MOTOR_VOLTAGE_IN		380
-	#define TEST_MOTOR_NOLOAD_CURRENT	(2.0)
-	#define TEST_MOTOR_MAX_CURRENT		(3.4) //(3.5)
-	#endif
-#define TEST_MOTOR_Rr				(2.14568)
-#define TEST_MOTOR_Rs				(2.5)
-//#define TEST_MOTOR_Ls				(0.02791) // line to line
-#define TEST_MOTOR_Ls				(0.013955)
-#endif
-
-#ifdef SAMYANG_2_2K_MOTOR
-#define TEST_MOTOR_NUM_POLE_PAIRS	2
-#define TEST_MOTOR_EFFECTIVENESS	90
-#define TEST_MOTOR_RATED_FREQ		60
-#define TEST_MOTOR_CAPACITY			(2.2)
-#define TEST_MOTOR_SLIP_RATE		(5.0)
-	#if 0
-	#define TEST_MOTOR_VOLTAGE_IN		220
-	#define TEST_MOTOR_NOLOAD_CURRENT	(5.588)
-	#define TEST_MOTOR_MAX_CURRENT		(9.8)
-	#else
-	#define TEST_MOTOR_VOLTAGE_IN		380
-	#define TEST_MOTOR_NOLOAD_CURRENT	(3.235)
-	#define TEST_MOTOR_MAX_CURRENT		(5.3)
-	#endif
-#define TEST_MOTOR_Rr				(1.14793)
-#define TEST_MOTOR_Rs				(2.86)
-#define TEST_MOTOR_Ls				(0.01092)
-#endif
+// motor type
+#define	MOTOR_TEST_0_25k_TYPE		0
+#define MOTOR_SY_1_5K_TYPE        	1
+#define MOTOR_SY_1_5K_IE3_TYPE     	2
+#define MOTOR_SY_2_2K_TYPE        	3
 
 
-#endif /* NV_PARAM_H */
+typedef struct
+{
+	uint16_t	pole_pairs;
+	uint16_t 	rated_freq;
+	uint16_t 	voltage_in;
+
+	float_t		noload_current;
+	float_t		max_current;
+	float_t 	Rs;
+	float_t		Rr;
+	float_t		Ls;
+
+	float_t 	magnetize_current;
+	float_t		rated_flux;
+} motor_param_st ;
+
+
+
+extern void MPARAM_setDciPwmRate(float_t rate);
+extern void MPARAM_setOvlTripLevel(uint32_t level);
+extern void MPARAM_setOvlWarnLevel(uint32_t level);
+
+extern float_t FREQ_convertToSpeed(float_t freq);
+
+
+#endif /* MOTOR_PARAM_H */

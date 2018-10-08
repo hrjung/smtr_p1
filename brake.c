@@ -9,6 +9,7 @@
 #include "uartstdio.h"
 
 #include "parameters.h"
+#include "motor_param.h"
 //#include "inv_param.h"
 #include "drive.h"
 #include "state_func.h"
@@ -152,7 +153,8 @@ int DCIB_setBrakeRate(float_t rate)
 
 	//itime = (uint16_t)rate;
 	iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f = rate;
-	dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs;
+	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs;
+	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 
 	UARTprintf(" DCB brake rate %f \n", iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 

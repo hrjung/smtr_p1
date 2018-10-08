@@ -94,11 +94,7 @@ extern USER_Params gUserParams;
 // **************************************************************************
 // the functions
 
-#ifdef SUPPORT_USER_VARIABLE
-void USER_setParams(USER_Params *pUserParams, motor_param_st *pmtr)
-#else
 void USER_setParams(USER_Params *pUserParams)
-#endif
 {
   pUserParams->iqFullScaleCurrent_A = USER_IQ_FULL_SCALE_CURRENT_A;
   pUserParams->iqFullScaleVoltage_V = USER_IQ_FULL_SCALE_VOLTAGE_V;

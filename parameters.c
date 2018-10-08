@@ -1,6 +1,6 @@
 //###########################################################################
 //
-// FILE:   common_tools.c
+// FILE:   parameters.c
 //
 // TITLE:
 //
@@ -13,6 +13,7 @@
 
 #include "main.h"
 #include "inv_param.h"
+#include "motor_param.h"
 #include "parameters.h"
 #include "common_tools.h"
 #include "uartstdio.h"
@@ -29,6 +30,8 @@ inv_parameter_st iparam[INV_PARAM_INDEX_MAX];
 inv_parameter_st err_info[ERR_CODE_MAX];
 inv_parameter_st inv_status[INV_STATUS_MAX];
 
+
+extern motor_param_st mtr_param;
 //*****************************************************************************
 //
 // Function implementation
@@ -133,29 +136,32 @@ void PARAM_init(void)
 	iparam[REGEN_BAND_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[REGEN_BAND_INDEX].value.l = 0;
 
+	iparam[FAN_COMMAND_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[FAN_COMMAND_INDEX].value.l = 0;
+
 	iparam[STATOR_RESISTANCE_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[STATOR_RESISTANCE_INDEX].value.f = 2.5;
+	iparam[STATOR_RESISTANCE_INDEX].value.f = mtr_param.Rs;
 
 	iparam[ROTATOR_RESISTANCE_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[ROTATOR_RESISTANCE_INDEX].value.f = 2.14568;
+	iparam[ROTATOR_RESISTANCE_INDEX].value.f = mtr_param.Rr;
 
 	iparam[INDUCTANCE_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[INDUCTANCE_INDEX].value.f = 0.013955;
+	iparam[INDUCTANCE_INDEX].value.f = mtr_param.Ls;
 
 	iparam[NOLOAD_CURRENT_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[NOLOAD_CURRENT_INDEX].value.f = 2.0;
+	iparam[NOLOAD_CURRENT_INDEX].value.f = mtr_param.noload_current;
 
 	iparam[RATED_CURRENT_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[RATED_CURRENT_INDEX].value.f = 3.4;
+	iparam[RATED_CURRENT_INDEX].value.f = mtr_param.max_current;
 
 	iparam[POLES_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[POLES_INDEX].value.l = 2;
+	iparam[POLES_INDEX].value.l = mtr_param.pole_pairs;
 
 	iparam[INPUT_VOLTAGE_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[INPUT_VOLTAGE_INDEX].value.l = 380;
+	iparam[INPUT_VOLTAGE_INDEX].value.l = mtr_param.voltage_in;
 
 	iparam[RATED_FREQ_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[RATED_FREQ_INDEX].value.l = 60;
+	iparam[RATED_FREQ_INDEX].value.l = mtr_param.rated_freq;
 
 	// error parameter
 	PARAM_initErrInfo();
@@ -174,7 +180,7 @@ void PARAM_update(uint16_t index, uint16_t *buf)
 
 uint16_t PARAM_getValue(uint16_t index, uint16_t *buf)
 {
-#if 1 // test only
+#if 0 // test only
 	iparam[index].value.f = 3.14;
 #endif
 	buf[0] = iparam[index].value.arr[0];

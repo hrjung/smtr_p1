@@ -217,10 +217,5 @@ float_t FREQ_getVarifiedFreq(float_t current, float_t target)
 }
 
 
-float_t FREQ_convertToSpeed(float_t freq)
-{
-    float_t spd_rpm = (freq*60.0 / mtr.poles);
 
-    return spd_rpm;
-}
 

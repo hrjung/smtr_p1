@@ -139,6 +139,7 @@ uint16_t invbuf[15], errbuf[10], rparam[5];
  * EXTERNS
  */
 extern CTRL_Handle ctrlHandle;
+extern motor_param_st mtr_param;
 
 extern tBoolean g_bNewCmd;
 //extern monitor_param_st mnt;
@@ -413,11 +414,11 @@ STATIC void dbg_showDciBrakeParam(void)
 STATIC void dbg_showMotorParam(void)
 {
 	UARTprintf(" Motor Parameter Settings\n");
-	UARTprintf("\t capacity: %d, poles: %d\n", mtr.capacity, mtr.poles);
-	UARTprintf("\t input_volt: %d, rated_freq: %d\n", mtr.input_voltage, mtr.rated_freq);
-	UARTprintf("\t slip freq: %f, effectiveness: %f\n", mtr.slip_rate, mtr.effectiveness);
-	UARTprintf("\t no load current: %f, max_current: %f\n", mtr.noload_current, mtr.max_current);
-	UARTprintf("\t Rs: %f, Rr: %f, Ls: %f\n", mtr.Rs, mtr.Rr, mtr.Ls);
+	//UARTprintf("\t capacity: %d, poles: %d\n", mtr.capacity, mtr_param.pole_pairs);
+	UARTprintf("\t input_volt: %d, poles %d, rated_freq: %d\n", mtr_param.voltage_in, mtr_param.pole_pairs, mtr_param.rated_freq);
+	//UARTprintf("\t slip freq: %f, effectiveness: %f\n", mtr.slip_rate, mtr.effectiveness);
+	UARTprintf("\t no load current: %f, max_current: %f\n", mtr_param.noload_current, mtr_param.max_current);
+	UARTprintf("\t Rs: %f, Rr: %f, Ls: %f\n", mtr_param.Rs, mtr_param.Rr, mtr_param.Ls);
 }
 
 STATIC void dbg_showTripData(void)
@@ -1745,7 +1746,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 //    	UARTprintf("sizeof(long)=%d sizeof(int)=%d, sizeof(char)=%d\n", (int)sizeof(long), (int)sizeof(int), (int)sizeof(char));
 //    	uint16_t period_cycles = (uint16_t)(90.0*1000.0); // overflow
 //    	UARTprintf("period = %d\n", period_cycles);
-    	UARTprintf("input_voltage = %d, trip=%d\n", mtr.input_voltage, internal_status.trip_happened);
+    	UARTprintf("input_voltage = %d, trip=%d\n", mtr_param.voltage_in, internal_status.trip_happened);
     }
     else if(index == 6)
     {
@@ -1942,7 +1943,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	cur_rate = atoi(argv[2]);
     	if(cur_rate >= 0 && cur_rate <= 200) // input duty as 0 ~ 200%
     	{
-    		pwm_f = (float_t)(cur_rate)/100.0 * mtr.max_current*mtr.Rs*2.0;// 2*Rs for Y connection
+    		pwm_f = (float_t)(cur_rate)/100.0 * mtr_param.max_current*mtr_param.Rs*2.0;// 2*Rs for Y connection
     		V_duty = pwm_f*100.0 / MAIN_getVdcBus();
     		gPwmData_Value = _IQ(V_duty/100.0);
     		UARTprintf(" DCI Pwm data %d -> V=%f, V_percent=%f\n", cur_rate, (pwm_f/100.0), V_duty);

@@ -65,7 +65,8 @@
 #include "uartstdio.h"
 
 #include "parameters.h"
-//#include "inv_param.h"
+#include "motor_param.h"
+#include "inv_param.h"
 #include "drive.h"
 #include "state_func.h"
 #include "freq.h"
@@ -224,9 +225,11 @@ _iq gTorque_Flux_Iq_pu_to_Nm_sf;
 
 
 dev_const_st	dev_const;
-motor_param_st mtr;
+//motor_param_st mtr;
 //inverter_param_st param;
 internal_status_st internal_status;
+
+extern motor_param_st mtr_param;
 
 //monitor_param_st mnt;
 inv_state_st state_param = {STATE_STOP, 0, STOP};
@@ -402,7 +405,7 @@ float_t MAIN_convert2Freq(float_t spd_krpm)
 	}
 #endif
 
-	return (speed_rpm*mtr.poles/60.0);
+	return (speed_rpm*mtr_param.pole_pairs/60.0);
 }
 
 int MAIN_isDirectionReversed(void)
@@ -773,12 +776,15 @@ void MAIN_setDeviceConstant(void)
 //	dev_const.spd_rpm_min = (mtr.rpm_min/dev_param.gear_ratio);
 //	dev_const.spd_rpm_max = (mtr.rpm_max/dev_param.gear_ratio);
 //	dev_const.regen_limit = DC_VOLTAGE_END_REGEN_LEVEL;
-	dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
-	dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
-	dev_const.ovc_level = mtr.max_current*3.0;
+	//dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
+	//dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
+	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
+	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
+	dev_const.ovc_level = mtr_param.max_current*3.0;
 
 	dev_const.regen_max_V = 0.9*sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
-	dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection
+	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection
+	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 
 	//set additional flag
 
@@ -1043,6 +1049,7 @@ void init_global(void)
 	gMotorVars.IqRef_pu = _IQ(0.0);
 }
 
+#if 0
 void init_test_param(void)
 {
 	//motor params
@@ -1060,6 +1067,7 @@ void init_test_param(void)
 	mtr.noload_current = TEST_MOTOR_NOLOAD_CURRENT;
 	mtr.max_current = TEST_MOTOR_MAX_CURRENT;
 }
+#endif
 
 void main(void)
 {
@@ -1101,15 +1109,11 @@ void main(void)
   init_global();
 
   //hrjung read initial parameter from NVM
-  init_test_param(); // NV data initialize, will be removed after NV enabled
+  //init_test_param(); // NV data initialize, will be removed after NV enabled
 
 
   // initialize the user parameters
-#ifdef SUPPORT_USER_VARIABLE
-  USER_setParams(&gUserParams, &mtr);
-#else
   USER_setParams(&gUserParams);
-#endif
 
   // check for errors in user parameters
   USER_checkForErrors(&gUserParams);
@@ -1138,13 +1142,14 @@ void main(void)
 //  spi_init(halHandle->spiBHandle);
 #endif
 
-  init_test_param(); // NV data initialize, will be removed after NV enabled
+  //init_test_param(); // NV data initialize, will be removed after NV enabled
   //initParam();
+  MPARAM_init(MOTOR_SY_1_5K_TYPE);
   PARAM_init();
 
   MAIN_setDeviceConstant();
   UTIL_setRegenPwmDuty(0);
-  PROT_init(mtr.input_voltage);
+  PROT_init(mtr_param.voltage_in);
   //DRV_setPwmFrequency(PWM_4KHz); //test
 
 #ifdef SUPPORT_USER_VARIABLE
@@ -2593,8 +2598,8 @@ void UTIL_clearInitRelay(void)
 void UTIL_setScaleFactor(void)
 {
 	// scale factor for pu -> krpm
-	sf4pu_krpm = (60.0*USER_IQ_FULL_SCALE_FREQ_Hz) / (mtr.poles*1000.0); // 15
-	sf4krpm_pu = (mtr.poles*1000.0) / (60.0*USER_IQ_FULL_SCALE_FREQ_Hz);
+	sf4pu_krpm = (60.0*USER_IQ_FULL_SCALE_FREQ_Hz) / (mtr_param.pole_pairs*1000.0); // 15
+	sf4krpm_pu = (mtr_param.pole_pairs*1000.0) / (60.0*USER_IQ_FULL_SCALE_FREQ_Hz);
 }
 
 uint16_t UTIL_setRegenPwmDuty(int duty)

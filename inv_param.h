@@ -225,7 +225,7 @@ typedef struct
 
 } dev_const_st;
 
-
+#if 0
 typedef struct
 {
 	uint16_t 	poles;		//USER_MOTOR_NUM_POLE_PAIRS
@@ -244,7 +244,7 @@ typedef struct
 	//float_t 	rated_flux; //USER_MOTOR_RATED_FLUX
 
 } motor_param_st;
-
+#endif
 
 #if 0
 typedef struct
@@ -323,7 +323,7 @@ typedef struct
 
 
 extern dev_const_st	dev_const;
-extern motor_param_st mtr;
+//extern motor_param_st mtr;
 //extern inverter_param_st param;
 extern inv_state_st state_param;
 extern internal_status_st internal_status;
