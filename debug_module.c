@@ -29,7 +29,7 @@
 #include "err_trip.h"
 #include "timer_handler.h"
 #include "common_tools.h"
-
+#include "cmd_queue.h"
 
 /*******************************************************************************
  * MACROS
@@ -111,6 +111,7 @@ typedef enum {
 #ifdef SAMPLE_ADC_VALUE
 	DBG_CMD_GET_ADC_I_SAMPLE,
 #endif
+	DBG_CMD_QUE_TEST,
 	DBG_CMD_TEST,
 
 	DBG_CMD_ENUM_MAX
@@ -234,6 +235,7 @@ STATIC int dbg_showVersion(int argc, char *argv[]);
 STATIC int dbg_getAdcSample(int argc, char *argv[]);
 #endif
 
+STATIC int dbg_testCmdQueue(int argc, char *argv[]);
 STATIC int dbg_tmpTest(int argc, char *argv[]);
 
 STATIC int EchoSetting(int argc, char*argv[]);
@@ -323,6 +325,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 #ifdef SAMPLE_ADC_VALUE
 	{"iadc", dbg_getAdcSample, " iadc (0,1) read ADC sample"},
 #endif
+	{"que", dbg_testCmdQueue, " que : test cmd queue"},
 	{"tmp", dbg_tmpTest, " tmp : test command"}
 #else
 	{"help", dbg_processHelp, " help : show command list"},
@@ -368,6 +371,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 #ifdef SAMPLE_ADC_VALUE
 	{"iadc", dbg_getAdcSample, " read ADC I"},
 #endif
+	{"que", dbg_testCmdQueue, " que "},
 	{"tmp", dbg_tmpTest, " tmp"}
 #endif
 };
@@ -704,7 +708,7 @@ STATIC int dbg_runMotor(int argc, char *argv[])
 {
     if(argc >= 2) goto run_err;
 
-	MAIN_enableSystem(0);
+	MAIN_enableSystem();
 	STA_calcResolution();
 	UARTprintf("start running motor\n");
 
@@ -763,15 +767,12 @@ STATIC int dbg_setDirection(int argc, char *argv[])
 	{
         if(dir == 0) //forward direction
         {
-			MAIN_setForwardDirection();
-			UARTprintf("set direction forward\n");
+        	PARAM_setFwdDirection();
         }
         else
         {
-			MAIN_setReverseDirection();
-			UARTprintf("set direction backward\n");
+        	PARAM_setRevDirection();
         }
-        STA_calcResolution4Reverse(m_status.cur_freq);
 	}
 //	else
 //	{
@@ -806,7 +807,7 @@ STATIC int dbg_readParameter(int argc, char *argv[])
 {
 	uint16_t index, type;
 	union32_st val;
-	uint16_t buf[4];
+	uint16_t i, buf[4];
 
     if(argc != 2) goto param_err;
 
@@ -817,13 +818,15 @@ STATIC int dbg_readParameter(int argc, char *argv[])
 		goto param_err;
 	}
 
-	type = PARAM_getValue(index, &buf[0]);
+	for(i=0; i<4; i++) buf[i] = 0;
+	PARAM_getValue(index, &buf[0]);
 
+	type = iparam[index].type;
 	val.arr[0] = buf[0];
 	val.arr[1] = buf[1];
 	if(type == PARAMETER_TYPE_LONG)
 	{
-		UARTprintf(" param[%d] is long, value = %d\n", index, val.l);
+		UARTprintf(" param[%d] is long, value = %d\n", index, (int)val.l);
 	}
 	else
 	{
@@ -1644,7 +1647,54 @@ iadc_err:
 #endif
 
 
-unsigned long b = 0xFFFFFFFE;
+STATIC int dbg_testCmdQueue(int argc, char *argv[])
+{
+	static uint16_t index=0;
+	static uint32_t command=0;
+	int type;
+	cmd_type_st cmd_data;
+
+    if(argc != 2) goto que_err;
+
+    type = argv[1][0];
+
+    if(type != 'r' && type != 'w') goto que_err;
+
+	switch(type)
+	{
+	case 'r':
+		if(!QUE_isEmpty())
+		{
+			cmd_data = QUE_getCmd();
+			UARTprintf(" QUE read cmd=%d, index=%d, cmd=%d\n", cmd_data.cmd, cmd_data.index, (int)cmd_data.data.l);
+		}
+		else
+			UARTprintf(" QUE empty!\n");
+
+		break;
+
+	case 'w':
+		if(!QUE_isFull())
+		{
+			cmd_data.cmd = index;
+			cmd_data.index=index++;
+			cmd_data.data.l=command++;
+			QUE_putCmd(cmd_data);
+			UARTprintf(" QUE write cmd=%d, index=%d cmd=%d\n", cmd_data.cmd, cmd_data.index, (int)cmd_data.data.l);
+		}
+		else
+			UARTprintf(" QUE full!\n");
+
+		break;
+	}
+
+    return 0;
+
+que_err:
+	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_QUE_TEST].pcHelp);
+    return 1;
+}
+
 //extern float MAIN_convert2InternalSpeedRef(int freq);
 //extern int MAIN_convert2Speed(float speed);
 //extern void initParam(void);
@@ -1715,6 +1765,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     }
     else if(index == 3) // check sizeof(int) -> 2byte
     {
+//    	unsigned long b = 0xFFFFFFFE;
 //    	unsigned int a=0xFFFE;
 //    	UARTprintf("a=%d b=%d \n", (unsigned int)(a+1), (unsigned int)(a+2));
 

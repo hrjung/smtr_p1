@@ -133,6 +133,8 @@ int Freq_isInWorkingFreqRange(float_t value)
 
 int FREQ_setFreqValue(float_t value)
 {
+	if(iparam[FREQ_VALUE_INDEX].value.f == value) return 0;
+
 	iparam[FREQ_VALUE_INDEX].value.f = value;
 
 	STA_setNextFreq(value);

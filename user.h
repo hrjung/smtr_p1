@@ -189,9 +189,9 @@ extern "C" {
 //#define   V_B_offset    (0.354)
 //#define   V_C_offset    (0.354)
 //for V0.8
-#define   V_A_offset    (0.284)  // V
-#define   V_B_offset    (0.282)  // W
-#define   V_C_offset    (0.284)  // U
+//#define   V_A_offset    (0.284)  // V
+//#define   V_B_offset    (0.282)  // W
+//#define   V_C_offset    (0.284)  // U
 // for V0.8 after rescale voltage measure
 //#define   V_A_offset    (0.332) //(0.284)  // V
 //#define   V_B_offset    (0.332) //(0.282)  // W
@@ -200,6 +200,10 @@ extern "C" {
 //#define   V_A_offset    (0.172)  // V
 //#define   V_B_offset    (0.172)  // W
 //#define   V_C_offset    (0.172)  // U
+// for P2
+#define   V_A_offset    (0.269)  // V
+#define   V_B_offset    (0.267)  // W
+#define   V_C_offset    (0.269)  // U
 #endif
 
 //! \brief CLOCKS & TIMERS
@@ -437,7 +441,7 @@ extern "C" {
 
 #define USER_MOTOR_TYPE                 MOTOR_Type_Induction
 #define USER_MOTOR_NUM_POLE_PAIRS       (2)
-#if 0 // 1.5kW
+#if 1 // 1.5kW
 #define USER_MOTOR_Rr                   (2.14568)
 #define USER_MOTOR_Rs                   (2.5)
 //#define USER_MOTOR_Ls_d                 (0.02791)

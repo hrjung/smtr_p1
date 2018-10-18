@@ -80,6 +80,8 @@
 #include "motor_param.h"
 #include "common_tools.h"
 
+#include "cmd_queue.h"
+
 
 #ifdef UNIT_TEST_ENABLED
 #include "test/unity.h"
@@ -240,6 +242,8 @@ float_t temp_spd_ref=0.0;
 
 float_t direction = 1.0;
 int for_rev_flag=0; //flag for forward <-> reverse drive
+
+uint16_t Vinst[3];
 
 uint16_t block_count=0;
 #ifdef SUPPORT_I_RMS_MEASURE
@@ -786,6 +790,11 @@ void MAIN_setDeviceConstant(void)
 	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection
 	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 
+
+	// variable setting from parameter
+	direction = iparam[DIRECTION_INDEX].value.f;
+
+
 	//set additional flag
 
 	state_param.inv = STATE_STOP;
@@ -895,6 +904,80 @@ int MAIN_processDCBrake(void)
 	return 1;
 }
 #endif
+
+void processMcuCommand(void)
+{
+#if 1
+	if(!QUE_isEmpty())
+	{
+		cmd_type_st cmd_data = QUE_getCmd();
+		//UARTprintf(" QUE read cmd=%d, index=%d, data=%d\n", cmd_data.cmd, cmd_data.index, (int)cmd_data.data.l);
+		UARTprintf(" QUE read cmd=%d, index=%d, data=%f\n", cmd_data.cmd, cmd_data.index, cmd_data.data.f);
+		switch(cmd_data.cmd)
+		{
+		case SPICMD_CTRL_RUN:
+			PARAM_startRun();
+			break;
+
+		case SPICMD_CTRL_STOP:
+			PARAM_stopRun();
+			break;
+
+		case SPICMD_CTRL_DIR_F:
+			PARAM_setFwdDirection();
+			break;
+
+		case SPICMD_CTRL_DIR_R:
+			PARAM_setRevDirection();
+			break;
+
+		case SPICMD_PARAM_W:
+			UARTprintf("PARAM W command\n");
+			PARAM_process(cmd_data.index, cmd_data.data);
+			break;
+
+		}
+	}
+
+#else
+    	if(SPI_isPacketReceived())
+    	{
+    		if(spi_chk_ok == 0)
+    		{
+    			spi_err++;
+    			UARTprintf("NAK response\n");
+    		}
+    		else
+    		{
+    			switch(spi_rcv_cmd)
+    			{
+    			case SPICMD_CTRL_RUN:
+    				UARTprintf("RUN received seq=%d\n", rx_seq_no);
+    				break;
+    			case SPICMD_CTRL_STOP:
+    				UARTprintf("STOP received seq=%d\n", rx_seq_no);
+    				break;
+    			case SPICMD_CTRL_DIR_F:
+    				UARTprintf("DIR_F received seq=%d\n", rx_seq_no);
+    				break;
+    			case SPICMD_CTRL_DIR_R:
+    				UARTprintf("DIR_R received seq=%d\n", rx_seq_no);
+    				break;
+
+    			case SPICMD_PARAM_W:
+    				UARTprintf("PARAM_W received seq=%d\n", rx_seq_no);
+    				break;
+
+    			case SPICMD_PARAM_R:
+    				UARTprintf("PARAM_R received seq=%d\n", rx_seq_no);
+    				break;
+    			}
+    		}
+    		prev_seqNo = rx_seq_no;
+    		SPI_clearPacketReceived();
+    	}
+#endif
+}
 
 #if 0
 void initParam(void)
@@ -1151,6 +1234,8 @@ void main(void)
   UTIL_setRegenPwmDuty(0);
   PROT_init(mtr_param.voltage_in);
   //DRV_setPwmFrequency(PWM_4KHz); //test
+
+  QUE_init();
 
 #ifdef SUPPORT_USER_VARIABLE
 
@@ -1420,47 +1505,10 @@ void main(void)
     // Waiting for enable system flag to be set
     while(!(gMotorVars.Flag_enableSys))
 	{
-#if 1
-    	if(SPI_isPacketReceived())
-    	{
-    		if(spi_chk_ok == 0)
-    		{
-    			spi_err++;
-    			UARTprintf("NAK response\n");
-    		}
-    		else
-    		{
-    			switch(spi_rcv_cmd)
-    			{
-    			case SPICMD_CTRL_RUN:
-    				UARTprintf("RUN received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_STOP:
-    				UARTprintf("STOP received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_DIR_F:
-    				UARTprintf("DIR_F received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_DIR_R:
-    				UARTprintf("DIR_R received seq=%d\n", rx_seq_no);
-    				break;
-
-    			case SPICMD_PARAM_W:
-    				UARTprintf("PARAM_W received seq=%d\n", rx_seq_no);
-    				break;
-
-    			case SPICMD_PARAM_R:
-    				UARTprintf("PARAM_R received seq=%d\n", rx_seq_no);
-    				break;
-    			}
-    		}
-    		prev_seqNo = rx_seq_no;
-    		SPI_clearPacketReceived();
-    	}
-    	//usDelay(US_TO_CNT(100));
-#endif
 
         processProtection();
+
+        processMcuCommand();
 
         //TODO : should find correct location
         state_param.inv = STA_control();
@@ -1773,7 +1821,7 @@ void main(void)
 
         	CTRL_setFlag_enablePowerWarp(ctrlHandle,gMotorVars.Flag_enablePowerWarp);
         }
-#if 1
+#if 0
     	if(SPI_isPacketReceived())
     	{
     		{
@@ -1784,16 +1832,17 @@ void main(void)
     		SPI_clearPacketReceived();
     	}
 #endif
+
         // protection
         processProtection();
+
+        processMcuCommand();
 
         //DC Injection Brake
         DCIB_processBrakeSigHandler();
 
         //TODO : should find correct location
         state_param.inv = STA_control();
-
-        //AO_generateOutput();
 
         // debug command in Motor running
         ProcessDebugCommand();
@@ -1825,7 +1874,6 @@ void main(void)
 } // end of main() function
 
 
-uint16_t Vinst[3];
 interrupt void mainISR(void)
 {
 #ifdef SUPPORT_VF_CONTROL
@@ -2082,7 +2130,11 @@ interrupt void mainISR(void)
   if(DRV_isFocControl()
 	 && STA_getTargetFreq() == 0.0
 	 && _IQabs(gMotorVars.Speed_krpm) <= _IQ(0.09)) // about 3Hz for 2.2k, 1Hz for 1.5k
+  {
+	  gFlag_PwmTest=0;
 	  MAIN_disableSystem();
+  }
+
 
   //process PWM for DCI brake
   MAIN_processDCBrake();
@@ -2519,7 +2571,7 @@ void dbg_disableSystem(void)
 }
 #endif
 
-int MAIN_enableSystem(int index)
+int MAIN_enableSystem(void)
 {
 	int result=0;
 
@@ -2549,7 +2601,8 @@ void MAIN_disableSystem(void)
 
 int MAIN_setForwardDirection(void)
 {
-	direction = 1.0;
+	iparam[DIRECTION_INDEX].value.f = 1.0;
+	direction = iparam[DIRECTION_INDEX].value.f;
 
 	return 0;
 
@@ -2557,7 +2610,8 @@ int MAIN_setForwardDirection(void)
 
 int MAIN_setReverseDirection(void)
 {
-	direction = -1.0;
+	iparam[DIRECTION_INDEX].value.f = -1.0;
+	direction = iparam[DIRECTION_INDEX].value.f;
 
 	return 0;
 }

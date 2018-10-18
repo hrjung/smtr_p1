@@ -49,8 +49,8 @@ extern int DRV_setSpdGainI(float_t value);
 
 extern float_t DRV_calculateAccelRate_krpm(float_t time_100msec, float_t diff);
 
-extern int DRV_runForward(int index);
-extern int DRV_runBackward(int index);
+extern int DRV_runForward(void);
+extern int DRV_runBackward(void);
 extern int DRV_stopMotor(void);
 
 #endif /* DRIVE_H_ */

@@ -67,8 +67,8 @@
 
 // motor setting, only one setting available
 //#define TEST_MOTOR
-//#define SAMYANG_1_5K_MOTOR
-#define SAMYANG_2_2K_MOTOR
+#define SAMYANG_1_5K_MOTOR
+//#define SAMYANG_2_2K_MOTOR
 
 // COMMON feature of V0 and V0.8
 #define SUPPORT_HW_COMMON

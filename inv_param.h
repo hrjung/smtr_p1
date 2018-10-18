@@ -333,7 +333,7 @@ extern void MAIN_setJumpSpeed(int index, float_t low, float_t high);
 
 extern float_t MAIN_getVdcBus(void);
 extern int MAIN_isSystemEnabled(void);
-extern int MAIN_enableSystem(int index);
+extern int MAIN_enableSystem(void);
 extern void MAIN_disableSystem(void);
 extern int MAIN_isTripHappened(void);
 extern int MAIN_setForwardDirection(void);

@@ -386,7 +386,7 @@ interrupt void timer0ISR(void)
 		if(TMR_isTimeOutCondition(OVERLOAD_TRIP_TSIG))
 		{
 			time_sig[OVERLOAD_TRIP_TSIG].timeout_flag = 1;
-			MAIN_disableSystem();
+//			MAIN_disableSystem();
 		}
 	}
 
@@ -395,7 +395,7 @@ interrupt void timer0ISR(void)
 		if(TMR_isTimeOutCondition(OVERLOAD_OVC_TSIG))
 		{
 			time_sig[OVERLOAD_OVC_TSIG].timeout_flag = 1;
-			MAIN_disableSystem();
+//			MAIN_disableSystem();
 		}
 	}
 

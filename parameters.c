@@ -18,6 +18,10 @@
 #include "common_tools.h"
 #include "uartstdio.h"
 
+#include "freq.h"
+#include "drive.h"
+#include "state_func.h"
+
 //*****************************************************************************
 //
 //! \addtogroup
@@ -25,13 +29,21 @@
 //
 //*****************************************************************************
 
+//typedef struct
+//{
+//
+//};
+
 
 inv_parameter_st iparam[INV_PARAM_INDEX_MAX];
 inv_parameter_st err_info[ERR_CODE_MAX];
 inv_parameter_st inv_status[INV_STATUS_MAX];
 
-
+extern MOTOR_working_st m_status;
 extern motor_param_st mtr_param;
+extern const char *res_str[2];
+
+extern void STA_printInvState(void);
 //*****************************************************************************
 //
 // Function implementation
@@ -49,8 +61,11 @@ void PARAM_init(void)
 	iparam[DECEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[DECEL_TIME_INDEX].value.f = 10.0;
 
+	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_FLOAT;
+	iparam[DIRECTION_INDEX].value.f = 1.0;
+
 	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL  ; //VF_CONTROL
+	iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL; //FOC_CONTROL
 
 	iparam[ENERGY_SAVE_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[ENERGY_SAVE_INDEX].value.l = ESAVE_UNUSED; //  ESAVE_BOTH;
@@ -163,6 +178,9 @@ void PARAM_init(void)
 	iparam[RATED_FREQ_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[RATED_FREQ_INDEX].value.l = mtr_param.rated_freq;
 
+	iparam[INV_RUN_STOP_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[INV_RUN_STOP_INDEX].value.l = 0; // default stop
+
 	// error parameter
 	PARAM_initErrInfo();
 
@@ -186,7 +204,86 @@ uint16_t PARAM_getValue(uint16_t index, uint16_t *buf)
 	buf[0] = iparam[index].value.arr[0];
 	buf[1] = iparam[index].value.arr[1];
 
-	return iparam[index].type; // type
+	return 2;
+}
+
+void PARAM_setFwdDirection(void)
+{
+	MAIN_setForwardDirection();
+	STA_calcResolution4Reverse(m_status.cur_freq);
+	UARTprintf("set direction forward\n");
+}
+
+void PARAM_startRun(void)
+{
+	if(!MAIN_isSystemEnabled())
+	{
+		MAIN_enableSystem();
+		STA_calcResolution();
+		UARTprintf("start running motor\n");
+
+	    STA_printInvState();
+	}
+}
+
+void PARAM_stopRun(void)
+{
+	if(MAIN_isSystemEnabled())
+	{
+		STA_setStopCondition();
+		UARTprintf("STOP command\n");
+	}
+}
+
+void PARAM_setRevDirection(void)
+{
+	MAIN_setReverseDirection();
+	STA_calcResolution4Reverse(m_status.cur_freq);
+	UARTprintf("set direction backward\n");
+}
+
+void PARAM_process(uint16_t index, union32_st data)
+{
+	uint32_t ldata;
+	float_t fdata;
+	int result;
+
+	if(iparam[index].type == PARAMETER_TYPE_LONG)
+		ldata = data.l;
+	else
+		fdata = data.f;
+
+	switch(index)
+	{
+	case FREQ_VALUE_INDEX:
+		result = FREQ_setFreqValue(fdata);
+		UARTprintf("set frequency=%f, result=%s\n", fdata, res_str[result]);
+		UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
+		break;
+
+	case ACCEL_TIME_INDEX:
+		result = DRV_setAccelTime(fdata);
+		UARTprintf("set accel time=%f, result=%s\n", fdata, res_str[result]);
+		break;
+
+	case DECEL_TIME_INDEX:
+		result = DRV_setDecelTime(fdata);
+		UARTprintf("set decel time=%f, result=%s\n", fdata, res_str[result]);
+		break;
+
+	case VF_FOC_SEL_INDEX:
+		if(ldata == 0)
+		{
+			DRV_enableVfControl();
+			UARTprintf("set VF control\n");
+		}
+		else
+		{
+			DRV_enableFocControl();
+			UARTprintf("set FOC control\n");
+		}
+		break;
+	}
 }
 
 void PARAM_initErrInfo(void)

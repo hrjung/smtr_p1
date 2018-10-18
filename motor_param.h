@@ -39,7 +39,7 @@ typedef struct
 } motor_param_st ;
 
 
-
+extern void MPARAM_init(uint16_t type);
 extern void MPARAM_setDciPwmRate(float_t rate);
 extern void MPARAM_setOvlTripLevel(uint32_t level);
 extern void MPARAM_setOvlWarnLevel(uint32_t level);

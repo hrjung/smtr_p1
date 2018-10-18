@@ -200,26 +200,26 @@ float_t DRV_getPwmFrequency(void)
 }
 
 
-int DRV_runForward(int index)
+int DRV_runForward(void)
 {
 	if(MAIN_isSystemEnabled())
 		STA_setNextFreq(iparam[FREQ_VALUE_INDEX].value.f);
 	else
 	{
-		MAIN_enableSystem(index);
+		MAIN_enableSystem();
 		UARTprintf("start running motor freq=%f\n", iparam[FREQ_VALUE_INDEX].value.f);
 	}
 
     return 0;
 }
 
-int DRV_runBackward(int index)
+int DRV_runBackward(void)
 {
 	if(MAIN_isSystemEnabled())
 		STA_setNextFreq(iparam[FREQ_VALUE_INDEX].value.f);
 	else
 	{
-		MAIN_enableSystem(0);
+		MAIN_enableSystem();
 		UARTprintf("start running motor freq=%f\n", iparam[FREQ_VALUE_INDEX].value.f);
 	}
 

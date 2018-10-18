@@ -18,6 +18,7 @@
 #include "spi.h"
 #include "common_tools.h"
 #include "parameters.h"
+#include "cmd_queue.h"
 //*****************************************************************************
 //
 //! \addtogroup modebus_api
@@ -210,15 +211,15 @@ uint16_t SPI_writeMCU(uint16_t *txData)
 }
 #endif
 
-int SPI_isPacketReceived(void)
-{
-	return spiPacketReceived;
-}
-
-void SPI_clearPacketReceived(void)
-{
-	spiPacketReceived=0;
-}
+//int SPI_isPacketReceived(void)
+//{
+//	return spiPacketReceived;
+//}
+//
+//void SPI_clearPacketReceived(void)
+//{
+//	spiPacketReceived=0;
+//}
 
 void SPI_enableInterrupt(void)
 {
@@ -230,7 +231,7 @@ void SPI_enableInterrupt(void)
 	  CPU_enableInt(halHandle->cpuHandle, CPU_IntNumber_6);
 }
 
-void SPI_makeStatusResponse(uint16_t seq_no)
+inline void SPI_makeStatusResponse(uint16_t seq_no)
 {
 	uint16_t i, checksum=0, size;
 	uint16_t buf[20];
@@ -249,7 +250,7 @@ void SPI_makeStatusResponse(uint16_t seq_no)
 	for(i=0; i<txLen; i++) spiTx.buf[i] = buf[i];
 }
 
-void SPI_makeErrorResponse(uint16_t seq_no)
+inline void SPI_makeErrorResponse(uint16_t seq_no)
 {
 	uint16_t i, checksum=0, size;
 	uint16_t buf[15];
@@ -268,7 +269,7 @@ void SPI_makeErrorResponse(uint16_t seq_no)
 	for(i=0; i<txLen; i++) spiTx.buf[i] = buf[i];
 }
 
-void SPI_makeParamResponse(uint16_t seq_no, uint16_t index)
+inline void SPI_makeParamResponse(uint16_t seq_no, uint16_t index)
 {
 	uint16_t i, checksum=0, size;
 	uint16_t buf[10];
@@ -288,7 +289,7 @@ void SPI_makeParamResponse(uint16_t seq_no, uint16_t index)
 	for(i=0; i<txLen; i++) spiTx.buf[i] = buf[i];
 }
 
-void SPI_makeResponse(uint16_t seq_no, uint16_t resp)
+inline void SPI_makeResponse(uint16_t seq_no, uint16_t resp)
 {
 	uint16_t i, checksum=0;
 	uint16_t buf[10];
@@ -311,6 +312,7 @@ interrupt void spiARxISR(void)
 {
 	HAL_Obj *obj = (HAL_Obj *)halHandle;
 	uint16_t i, data, seq_no, cmd, checksum=0;
+	cmd_type_st que_data;
 
 	data = SPI_read(halHandle->spiAHandle);
 
@@ -345,28 +347,44 @@ interrupt void spiARxISR(void)
 				cmd = spiRx.buf[4]&0x00FF;
 				if(cmd&0x001F) // command
 				{
-					switch(cmd&0x001F)
+					spi_rcv_cmd = cmd&0x001F;
+					switch(spi_rcv_cmd)
 					{
 					case SPICMD_CTRL_RUN:
 					case SPICMD_CTRL_STOP:
 					case SPICMD_CTRL_DIR_F:
 					case SPICMD_CTRL_DIR_R:
-						spi_rcv_cmd = cmd&0x001F;
+						que_data.cmd = spi_rcv_cmd;
+						que_data.data.l = 0;
+						if(spi_rcv_cmd == SPICMD_CTRL_RUN
+						  || spi_rcv_cmd == SPICMD_CTRL_STOP)
+							que_data.index = INV_RUN_STOP_INDEX;
+						else
+							que_data.index = DIRECTION_INDEX;
 						break;
 
 					case SPICMD_PARAM_W:
-						spi_rcv_cmd = cmd&0x001F;
+						que_data.cmd = spi_rcv_cmd;
+						que_data.index = spiRx.buf[5];
+						que_data.data.arr[0] = spiRx.buf[6];
+						que_data.data.arr[1] = spiRx.buf[7];
 						break;
 					}
 
-					//generate ack response
-					SPI_makeResponse(seq_no, SPI_ACK);
+					if(!QUE_isFull())
+					{
+						QUE_putCmd(que_data);
+						//generate ack response
+						SPI_makeResponse(seq_no, SPI_ACK);
+					}
+					else
+						spi_chk_ok=0; //  queue is full
 
 				}
-				else if(cmd&0x00E0) // status request
+				else if(cmd&0x00E0) // status request, respond now
 				{
 					spi_rcv_cmd = cmd&0x00E0;
-					switch(cmd&0x00E0)
+					switch(spi_rcv_cmd)
 					{
 					case SPICMD_REQ_ST:
 						SPI_makeStatusResponse(seq_no);
