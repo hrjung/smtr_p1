@@ -308,6 +308,8 @@ typedef struct
 	float_t		decel_resol;
 	float_t		rev_resol;
 
+	int32_t		spd_rpm;
+
 	uint16_t 	ipm_temp;
 	uint16_t 	mtr_temp;
 

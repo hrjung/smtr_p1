@@ -493,15 +493,18 @@ inline void MAIN_readCurrent(void)
 
 int MAIN_getSampleCountLimit(void)
 {
+	float_t freq=0.0;
 	//float_t pwm_freq[] = {4000.0, 8000.0, 12000.0, 16000.0};
 
 #ifdef SUPPORT_USER_VARIABLE
 	return (int)(gUserParams.pwmPeriod_kHz*1000.0/(STA_getCurFreq()*(float_t)I_RMS_SAMPLE_COUNT));
 #else
-	if(gFlag_PwmTest)
+
+	freq = STA_getCurFreq();
+	if(freq < 1.0)
 		return (int)(USER_PWM_FREQ_kHz*1000.0/(60.0*(float_t)I_RMS_SAMPLE_COUNT));
 	else
-		return (int)(USER_PWM_FREQ_kHz*1000.0/(STA_getCurFreq()*(float_t)I_RMS_SAMPLE_COUNT));
+		return (int)(USER_PWM_FREQ_kHz*1000.0/(freq*(float_t)I_RMS_SAMPLE_COUNT));
 #endif
 }
 
@@ -832,6 +835,8 @@ void MAIN_setDeviceConstant(void)
 
 	internal_status.accel_resol = 0.0;
 	internal_status.decel_resol = 0.0;
+
+	internal_status.spd_rpm = 0;
 
 	internal_status.ipm_temp = 0.0;
 	internal_status.mtr_temp = 0.0;
@@ -1409,7 +1414,8 @@ void main(void)
 #endif
   datalog.iptr[0] = &gAdcData.V.value[0];  // V
   datalog.iptr[1] = &gAdcData.V.value[1];  // W
-  datalog.iptr[2] = &gAdcData.V.value[2];  // U
+  //datalog.iptr[2] = &gAdcData.V.value[2];  // U
+  datalog.iptr[2] = &internal_status.spd_rpm;
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -2129,7 +2135,7 @@ interrupt void mainISR(void)
   //TODO : just temp stop for haunting at low speed of FOC
   if(DRV_isFocControl()
 	 && STA_getTargetFreq() == 0.0
-	 && _IQabs(gMotorVars.Speed_krpm) <= _IQ(0.09)) // about 3Hz for 2.2k, 1Hz for 1.5k
+	 && _IQabs(gMotorVars.Speed_krpm) <= _IQ(0.03)) // about 3Hz for 2.2k, 1Hz for 1.5k
   {
 	  gFlag_PwmTest=0;
 	  MAIN_disableSystem();
@@ -2221,6 +2227,9 @@ interrupt void mainISR(void)
     Vinst[0] = gAdcData.v_adc[0];
     Vinst[1] = gAdcData.v_adc[1];
     Vinst[2] = gAdcData.v_adc[2];
+
+    float_t spd_rpm_f = _IQtoF(gMotorVars.Speed_krpm)*1000.0;
+    internal_status.spd_rpm = (int32_t) spd_rpm_f;
 
   	internal_status.Vu_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 	internal_status.Vv_inst = _IQtoF(gAdcData.V.value[0])*USER_IQ_FULL_SCALE_VOLTAGE_V;

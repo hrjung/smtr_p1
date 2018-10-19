@@ -137,11 +137,6 @@
 			<locationURI>MW_INSTALL_DIR/sw/drivers/cpu/src/32b/f28x/f2806x/cpu.c</locationURI>
 		</link>
 		<link>
-			<name>ctrl.c</name>
-			<type>1</type>
-			<locationURI>MW_INSTALL_DIR/sw/modules/ctrl/src/32b/ctrl.c</locationURI>
-		</link>
-		<link>
 			<name>filter_fo.c</name>
 			<type>1</type>
 			<locationURI>MW_INSTALL_DIR/sw/modules/filter/src/32b/filter_fo.c</locationURI>
