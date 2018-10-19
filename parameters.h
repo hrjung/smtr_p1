@@ -110,7 +110,7 @@ extern void PARAM_setErrInfo(uint16_t err_code, uint16_t err_status, float curre
 extern uint16_t PARAM_getErrorInfo(uint16_t *buf);
 
 extern void PARAM_initInvStatus(void);
-extern void PARAM_setInvStatus(uint16_t run, uint16_t dir, float icurr, float freq, float vdc, float ipm_t, float mtr_t);
+extern void PARAM_setInvStatus(void);
 extern uint16_t PARAM_getInvStatus(uint16_t *buf);
 
 #endif /* PARAMETERS_H_ */

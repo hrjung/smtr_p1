@@ -336,6 +336,17 @@ void processFullLoadTest(void);
 // **************************************************************************
 // the functions
 
+uint16_t MAIN_isRunState(void)
+{
+	return (uint16_t)(state_param.run != STOP);
+}
+
+uint16_t MAIN_getDirection(void)
+{
+	if(direction == 1.0) return 0;
+	else return 1;
+}
+
 STATIC _iq MAIN_getActualSpeedWithDirection(void)
 {
 	float_t ref_krpm;
@@ -2223,6 +2234,8 @@ interrupt void mainISR(void)
   }
   //UTIL_testbit(0);
 
+  PARAM_setInvStatus();
+
 #if 1
     Vinst[0] = gAdcData.v_adc[0];
     Vinst[1] = gAdcData.v_adc[1];
@@ -2686,7 +2699,7 @@ float_t UTIL_readIpmTemperature(void)
 
 float_t UTIL_readMotorTemperature(void)
 {
-	return (float_t)0.0;
+	return (float_t)40.0;
 }
 
 

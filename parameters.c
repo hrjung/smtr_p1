@@ -44,6 +44,13 @@ extern motor_param_st mtr_param;
 extern const char *res_str[2];
 
 extern void STA_printInvState(void);
+extern uint16_t MAIN_isRunState(void);
+extern uint16_t MAIN_getDirection(void);
+extern float_t MAIN_getIave(void);
+extern float_t STA_getCurFreq(void);
+extern float_t MAIN_getVdcBus(void);
+extern float_t UTIL_readIpmTemperature(void);
+extern float_t UTIL_readMotorTemperature(void);
 //*****************************************************************************
 //
 // Function implementation
@@ -204,7 +211,7 @@ uint16_t PARAM_getValue(uint16_t index, uint16_t *buf)
 	buf[0] = iparam[index].value.arr[0];
 	buf[1] = iparam[index].value.arr[1];
 
-	return 2;
+	return 2; // return size
 }
 
 void PARAM_setFwdDirection(void)
@@ -321,7 +328,7 @@ uint16_t PARAM_getErrorInfo(uint16_t *buf)
 	buf[4] = err_info[ERR_FREQ_INDEX].value.arr[0];
 	buf[5] = err_info[ERR_FREQ_INDEX].value.arr[1];
 
-	return (ERR_CODE_MAX*2);
+	return (ERR_CODE_MAX*2); // return size
 }
 
 void PARAM_initInvStatus(void)
@@ -345,16 +352,17 @@ void PARAM_initInvStatus(void)
 	inv_status[INV_MOTOR_TEMP_INDEX].value.f = 0.0;
 }
 
-void PARAM_setInvStatus(uint16_t run, uint16_t dir, float_t icurr, float_t freq, float_t vdc, float_t ipm_t, float_t mtr_t)
-{
-	inv_status[INV_STATUS_INDEX].value.arr[0] = run;
-	inv_status[INV_STATUS_INDEX].value.arr[1] = dir;
 
-	inv_status[INV_I_RMS_INDEX].value.f = icurr;
-	inv_status[INV_RUN_FREQ_INDEX].value.f = freq;
-	inv_status[INV_DC_VOLTAGE_INDEX].value.f = vdc;
-	inv_status[INV_IPM_TEMP_INDEX].value.f = ipm_t;
-	inv_status[INV_MOTOR_TEMP_INDEX].value.f = mtr_t;
+void PARAM_setInvStatus(void)
+{
+	inv_status[INV_STATUS_INDEX].value.arr[0] = MAIN_isRunState();
+	inv_status[INV_STATUS_INDEX].value.arr[1] = MAIN_getDirection();
+
+	inv_status[INV_I_RMS_INDEX].value.f = MAIN_getIave();
+	inv_status[INV_RUN_FREQ_INDEX].value.f = STA_getCurFreq();
+	inv_status[INV_DC_VOLTAGE_INDEX].value.f = MAIN_getVdcBus();
+	inv_status[INV_IPM_TEMP_INDEX].value.f = UTIL_readIpmTemperature();
+	inv_status[INV_MOTOR_TEMP_INDEX].value.f = UTIL_readMotorTemperature();
 }
 
 uint16_t PARAM_getInvStatus(uint16_t *buf)
@@ -381,7 +389,7 @@ uint16_t PARAM_getInvStatus(uint16_t *buf)
 	buf[10] = inv_status[INV_MOTOR_TEMP_INDEX].value.arr[0];
 	buf[11] = inv_status[INV_MOTOR_TEMP_INDEX].value.arr[1];
 
-	return (INV_STATUS_MAX*2);
+	return (INV_STATUS_MAX*2); // return size
 }
 
 //*****************************************************************************
