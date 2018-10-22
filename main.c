@@ -927,8 +927,10 @@ void processMcuCommand(void)
 	if(!QUE_isEmpty())
 	{
 		cmd_type_st cmd_data = QUE_getCmd();
-		//UARTprintf(" QUE read cmd=%d, index=%d, data=%d\n", cmd_data.cmd, cmd_data.index, (int)cmd_data.data.l);
-		UARTprintf(" QUE read cmd=%d, index=%d, data=%f\n", cmd_data.cmd, cmd_data.index, cmd_data.data.f);
+
+		if(cmd_data.index == 8192) return; //ignore
+
+		UARTprintf(" QUE read cmd=%d, index=%d\n", cmd_data.cmd, cmd_data.index);
 		switch(cmd_data.cmd)
 		{
 		case SPICMD_CTRL_RUN:
@@ -951,7 +953,6 @@ void processMcuCommand(void)
 			UARTprintf("PARAM W command\n");
 			PARAM_process(cmd_data.index, cmd_data.data);
 			break;
-
 		}
 	}
 
@@ -2623,8 +2624,8 @@ void MAIN_disableSystem(void)
 
 int MAIN_setForwardDirection(void)
 {
-	iparam[DIRECTION_INDEX].value.f = 1.0;
-	direction = iparam[DIRECTION_INDEX].value.f;
+	iparam[DIRECTION_INDEX].value.l = 0;
+	direction = 1.0;
 
 	return 0;
 
@@ -2632,8 +2633,8 @@ int MAIN_setForwardDirection(void)
 
 int MAIN_setReverseDirection(void)
 {
-	iparam[DIRECTION_INDEX].value.f = -1.0;
-	direction = iparam[DIRECTION_INDEX].value.f;
+	iparam[DIRECTION_INDEX].value.l = 1;
+	direction = -1.0;
 
 	return 0;
 }

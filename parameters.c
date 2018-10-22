@@ -60,7 +60,7 @@ extern float_t UTIL_readMotorTemperature(void);
 void PARAM_init(void)
 {
 	iparam[FREQ_VALUE_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[FREQ_VALUE_INDEX].value.f = 10.0;
+	iparam[FREQ_VALUE_INDEX].value.f = 20.0;
 
 	iparam[ACCEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[ACCEL_TIME_INDEX].value.f = 10.0;
@@ -68,8 +68,8 @@ void PARAM_init(void)
 	iparam[DECEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[DECEL_TIME_INDEX].value.f = 10.0;
 
-	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[DIRECTION_INDEX].value.f = 1.0;
+	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[DIRECTION_INDEX].value.f = 0;
 
 	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL; //FOC_CONTROL
@@ -276,6 +276,13 @@ void PARAM_process(uint16_t index, union32_st data)
 	case DECEL_TIME_INDEX:
 		result = DRV_setDecelTime(fdata);
 		UARTprintf("set decel time=%f, result=%s\n", fdata, res_str[result]);
+		break;
+
+	case DIRECTION_INDEX:
+		if(ldata == 0)
+			PARAM_setFwdDirection();
+		else
+			PARAM_setRevDirection();
 		break;
 
 	case VF_FOC_SEL_INDEX:
