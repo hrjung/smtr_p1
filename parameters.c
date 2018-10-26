@@ -21,6 +21,8 @@
 #include "freq.h"
 #include "drive.h"
 #include "state_func.h"
+#include "brake.h"
+#include "protect.h"
 
 //*****************************************************************************
 //
@@ -29,10 +31,50 @@
 //
 //*****************************************************************************
 
-//typedef struct
-//{
-//
-//};
+
+
+int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
+		PARAM_setFreq, 			//FREQ_VALUE_INDEX
+		PARAM_setAccel, 		//ACCEL_TIME_INDEX
+		PARAM_setDecel, 		//DECEL_TIME_INDEX
+		PARAM_setDirection, 	//DIRECTION_INDEX
+		PARAM_setVfFoc,			//VF_FOC_SEL_INDEX
+		PARAM_setEnergySave,	//ENERGY_SAVE_INDEX
+		PARAM_setPwmFreq,		//PWM_FREQ_INDEX
+
+		PARAM_setEnableJump0,	//JUMP_ENABLE0_INDEX
+		PARAM_setEnableJump1,	//JUMP_ENABLE1_INDEX
+		PARAM_setEnableJump2,	//JUMP_ENABLE2_INDEX
+		PARAM_setJumpFreqLow0,	//JUMP_LOW0_INDEX
+		PARAM_setJumpFreqLow1,	//JUMP_LOW1_INDEX
+		PARAM_setJumpFreqLow2,	//JUMP_LOW2_INDEX
+		PARAM_setJumpFreqHigh0, //JUMP_HIGH0_INDEX
+		PARAM_setJumpFreqHigh1, //JUMP_HIGH1_INDEX
+		PARAM_setJumpFreqHigh2, //JUMP_HIGH2_INDEX
+		PARAM_setVoltageBoost,	//V_BOOST_INDEX
+		PARAM_setTorqueLimit,	//FOC_TORQUE_LIMIT_INDEX
+
+		PARAM_setBrakeType, 	//BRK_TYPE_INDEX
+		PARAM_setBrakeFreq, 	//BRK_FREQ_INDEX
+		PARAM_setDciBrakeStartFreq,	//BRK_DCI_START_FREQ_INDEX
+		PARAM_setDciBrakeBlockTime, //BRK_DCI_BLOCK_TIME_INDEX
+		PARAM_setDciBrakeTime, 	//BRK_DCI_BRAKING_TIME_INDEX
+		PARAM_setDciBrakeRate, 	//BRK_DCI_BRAKING_RATE_INDEX
+
+		PARAM_setOvlWarnLevel, 	//OVL_WARN_LIMIT_INDEX
+		PARAM_setOvlWarnTime, 	//OVL_WR_DURATION_INDEX
+		PARAM_setOvlEnableTrip, //OVL_ENABLE_INDEX
+		PARAM_setOvlTripLevel, 	//OVL_TR_LIMIT_INDEX
+		PARAM_setOvlTripTime, 	//OVL_TR_DURATION_INDEX
+
+		PARAM_setRegenResistance,		//REGEN_RESISTANCE_INDEX
+		PARAM_setRegenResistThermal,	//REGEN_THERMAL_INDEX
+		PARAM_setRegenResistPower,		//REGEN_POWER_INDEX
+		PARAM_setRegenBand, 			//REGEN_BAND_INDEX
+
+		PARAM_setFanControl,	//FAN_COMMAND_INDEX
+
+};
 
 
 inv_parameter_st iparam[INV_PARAM_INDEX_MAX];
@@ -120,7 +162,7 @@ void PARAM_init(void)
 	iparam[BRK_FREQ_INDEX].value.f = 3.0;
 
 	iparam[BRK_DCI_START_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[BRK_DCI_START_FREQ_INDEX].value.f = REDUCE_SPEED_BRAKE;
+	iparam[BRK_DCI_START_FREQ_INDEX].value.f = 3.0;
 
 	iparam[BRK_DCI_BLOCK_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f = 1.0;
@@ -214,11 +256,382 @@ uint16_t PARAM_getValue(uint16_t index, uint16_t *buf)
 	return 2; // return size
 }
 
-void PARAM_setFwdDirection(void)
+int PARAM_setFreq(union32_st value)
 {
-	MAIN_setForwardDirection();
+	float_t freq = value.f;
+	int result;
+
+	result = FREQ_setFreqValue(freq);
+
+	UARTprintf("set frequency=%f, result=%s\n", freq, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setAccel(union32_st value)
+{
+	float_t acc_rate = value.f;
+	int result;
+
+	result = DRV_setAccelTime(acc_rate);
+
+	return result;
+}
+
+int PARAM_setDecel(union32_st value)
+{
+	float_t dec_rate = value.f;
+	int result;
+
+	result = DRV_setDecelTime(dec_rate);
+
+	return result;
+}
+
+int PARAM_setDirection(union32_st value)
+{
+	uint16_t dir = (uint16_t)value.l;
+	int result=0;
+
+	if(dir == 0)
+	{
+		MAIN_setForwardDirection();
+		UARTprintf("set direction forward\n");
+	}
+	else
+	{
+		MAIN_setReverseDirection();
+		UARTprintf("set direction backward\n");
+	}
 	STA_calcResolution4Reverse(m_status.cur_freq);
-	UARTprintf("set direction forward\n");
+
+	return result;
+}
+
+int PARAM_setVfFoc(union32_st value)
+{
+	uint16_t ctrl_type = (uint16_t)value.l;
+	int result=0;
+
+	if(ctrl_type == VF_CONTROL)
+	{
+		DRV_enableVfControl();
+		UARTprintf("set VF control\n");
+	}
+	else if(ctrl_type == FOC_CONTROL)
+	{
+		DRV_enableFocControl();
+		UARTprintf("set FOC control\n");
+	}
+	else
+		result = 1;
+
+	return result;
+}
+
+int PARAM_setEnergySave(union32_st value)
+{
+	uint32_t on_off = value.l;
+	int result;
+
+	//TODO : only work on FOC running
+	result = DRV_setEnergySave((int)on_off);
+	UARTprintf("set Energy_save %d is %s\n", on_off, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setPwmFreq(union32_st value)
+{
+	uint32_t pwm_freq = value.l;
+	int result;
+	const char *pwm_str[] = {"6kHz", "9kHz", "12kHz", "15kHz" };
+
+	result = DRV_setPwmFrequency((int)pwm_freq);
+	UARTprintf("set pwm freq=%s, result=%s\n", pwm_str[pwm_freq], res_str[result]);
+
+	return result;
+}
+
+int PARAM_setEnableJump0(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = FREQ_setJumpFreqEnable(0, (uint16_t)ldata);
+
+	return result;
+}
+
+int PARAM_setEnableJump1(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = FREQ_setJumpFreqEnable(1, (uint16_t)ldata);
+
+	return result;
+}
+
+int PARAM_setEnableJump2(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = FREQ_setJumpFreqEnable(2, (uint16_t)ldata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqLow0(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqLow(0, fdata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqLow1(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqLow(1, fdata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqLow2(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqLow(2, fdata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqHigh0(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqHigh(0, fdata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqHigh1(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqHigh(1, fdata);
+
+	return result;
+}
+
+int PARAM_setJumpFreqHigh2(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = FREQ_setJumpFreqHigh(2, fdata);
+
+	return result;
+}
+
+int PARAM_setVoltageBoost(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	//TODO : need implementation
+	result = DRV_setVoltageBoost(fdata);
+
+	return result;
+}
+
+int PARAM_setTorqueLimit(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = DRV_setTorqueLimit(fdata);
+
+	return result;
+}
+
+int PARAM_setBrakeType(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = BRK_setBrakeMethod((uint16_t)ldata);
+
+	return result;
+}
+
+int PARAM_setBrakeFreq(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = BRK_setBrakeFreq(fdata);
+
+	return result;
+}
+
+int PARAM_setDciBrakeStartFreq(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = DCIB_setStartFreq(fdata);
+
+	return result;
+}
+
+int PARAM_setDciBrakeBlockTime(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = DCIB_setBlockTime(fdata);
+
+	return result;
+}
+
+int PARAM_setDciBrakeTime(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = DCIB_setBrakeTime(fdata);
+
+	return result;
+}
+
+int PARAM_setDciBrakeRate(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = DCIB_setBrakeRate(fdata);
+
+	return result;
+}
+
+int PARAM_setOvlWarnLevel(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = OVL_setWarningLevel((uint16_t)ldata);
+	UARTprintf("set Overload waning level %d is %s\n", (int)ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setOvlWarnTime(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = OVL_setWarningTime((uint16_t)ldata);
+	UARTprintf("set Overload warning duration %d is %s\n", ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setOvlEnableTrip(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result=0;
+
+	OVL_enbleOverloadTrip((uint16_t)ldata);
+	UARTprintf("set Overload Trip enable=%d\n", (int)ldata);
+
+	return result;
+}
+
+int PARAM_setOvlTripLevel(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = OVL_setTripLevel((uint16_t)ldata);
+	UARTprintf("set Overload Trip level %d is %s\n", (int)ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setOvlTripTime(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = OVL_setTripTime((uint16_t)ldata);
+	UARTprintf("set Overload trip duration %d is %s\n", ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setRegenResistance(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = REGEN_setRegenResistance(fdata);
+	UARTprintf("set regen resistance %f ohm is %s\n", fdata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setRegenResistThermal(union32_st value)
+{
+	uint32_t fdata = value.f;
+	int result;
+
+	result = REGEN_setRegenThermal(fdata);
+	UARTprintf("set regen thermal %d is %s\n", fdata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setRegenResistPower(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = REGEN_setRegenResistancePower((uint16_t)ldata);
+	UARTprintf("set regen power %d W is %s\n", (int)ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setRegenBand(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = REGEN_setRegenVoltReduction((uint16_t)ldata);
+	UARTprintf("set regen reduce %d is %s\n", (int)ldata, res_str[result]);
+
+	return result;
+}
+
+int PARAM_setFanControl(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	result = DRV_setFanControl((uint16_t)ldata);
+	UARTprintf("set Fan control %d is %s\n", (int)ldata, res_str[result]);
+
+	return result;
 }
 
 void PARAM_startRun(void)
@@ -242,18 +655,19 @@ void PARAM_stopRun(void)
 	}
 }
 
-void PARAM_setRevDirection(void)
+int PARAM_process(uint16_t index, union32_st data)
 {
-	MAIN_setReverseDirection();
-	STA_calcResolution4Reverse(m_status.cur_freq);
-	UARTprintf("set direction backward\n");
-}
+	int result=1;
+#if 1
+	if(index >= INV_PARAM_INDEX_MAX) return result;
 
-void PARAM_process(uint16_t index, union32_st data)
-{
+	result = iparam_func[index](data);
+	UARTprintf("process error! index=%d, fdata=%f, ldata=%d\n", index, data.f, (int)data.l);
+
+	return result;
+#else
 	uint32_t ldata;
 	float_t fdata;
-	int result;
 
 	if(iparam[index].type == PARAMETER_TYPE_LONG)
 		ldata = data.l;
@@ -279,10 +693,7 @@ void PARAM_process(uint16_t index, union32_st data)
 		break;
 
 	case DIRECTION_INDEX:
-		if(ldata == 0)
-			PARAM_setFwdDirection();
-		else
-			PARAM_setRevDirection();
+		PARAM_setDirection(data);
 		break;
 
 	case VF_FOC_SEL_INDEX:
@@ -298,6 +709,7 @@ void PARAM_process(uint16_t index, union32_st data)
 		}
 		break;
 	}
+#endif
 }
 
 void PARAM_initErrInfo(void)

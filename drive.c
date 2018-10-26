@@ -142,7 +142,7 @@ int DRV_setEnergySave(int method)
 {
 	if(method < ESAVE_UNUSED || method > ESAVE_BOTH) return 1;
 
-	iparam[ENERGY_SAVE_INDEX].value.l = method;
+	iparam[ENERGY_SAVE_INDEX].value.l = (uint32_t)method;
 
 	return 0;
 }
@@ -166,7 +166,7 @@ int DRV_setPwmFrequency(int value)
 
 	if(MAIN_isSystemEnabled()) return 1;
 
-	iparam[PWM_FREQ_INDEX].value.l = value; //
+	iparam[PWM_FREQ_INDEX].value.l = (uint32_t)value; //
 
 	//gUserParams.pwmPeriod_kHz = pwm_tbl[param.ctrl.pwm_freq];
 	//gUserParams.pwmPeriod_usec = 1000.0/gUserParams.pwmPeriod_kHz;
@@ -197,6 +197,15 @@ int DRV_setSpdGainI(float_t value)
 float_t DRV_getPwmFrequency(void)
 {
 	return pwm_tbl[(int)iparam[PWM_FREQ_INDEX].value.l];
+}
+
+int DRV_setFanControl(uint16_t value)
+{
+	if(value != 0 && value != 1) return 1;
+
+	iparam[FAN_COMMAND_INDEX].value.l = (uint32_t)value; //
+
+	return 0;
 }
 
 

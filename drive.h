@@ -44,6 +44,7 @@ extern int DRV_setTorqueLimit(float_t limit);
 extern int DRV_setEnergySave(int on_off);
 extern int DRV_setVoltageBoost(float_t value);
 extern int DRV_setPwmFrequency(int value);
+extern int DRV_setFanControl(uint16_t value);
 extern int DRV_setSpdGainP(float_t value);
 extern int DRV_setSpdGainI(float_t value);
 

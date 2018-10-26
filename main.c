@@ -924,14 +924,16 @@ int MAIN_processDCBrake(void)
 }
 #endif
 
-void processMcuCommand(void)
+int processMcuCommand(void)
 {
+	int result=0;
 #if 1
 	if(!QUE_isEmpty())
 	{
+		union32_st data;
 		cmd_type_st cmd_data = QUE_getCmd();
 
-		if(cmd_data.index == 8192) return; //ignore
+		if(cmd_data.index == 8192) return result; //ignore
 
 		UARTprintf(" QUE read cmd=%d, index=%d\n", cmd_data.cmd, cmd_data.index);
 		switch(cmd_data.cmd)
@@ -945,19 +947,23 @@ void processMcuCommand(void)
 			break;
 
 		case SPICMD_CTRL_DIR_F:
-			PARAM_setFwdDirection();
+			data.l = 0;
+			PARAM_setDirection(data);
 			break;
 
 		case SPICMD_CTRL_DIR_R:
-			PARAM_setRevDirection();
+			data.l = 1;
+			PARAM_setDirection(data);
 			break;
 
 		case SPICMD_PARAM_W:
 			UARTprintf("PARAM W command\n");
-			PARAM_process(cmd_data.index, cmd_data.data);
+			result = PARAM_process(cmd_data.index, cmd_data.data);
 			break;
 		}
 	}
+
+	return result;
 
 #else
     	if(SPI_isPacketReceived())
@@ -2238,7 +2244,7 @@ interrupt void mainISR(void)
   }
   //UTIL_testbit(0);
 
-  PARAM_setInvStatus();
+  //temp PARAM_setInvStatus();
 
 #if 1
     Vinst[0] = gAdcData.v_adc[0];
