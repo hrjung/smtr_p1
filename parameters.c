@@ -69,7 +69,7 @@ void PARAM_init(void)
 	iparam[DECEL_TIME_INDEX].value.f = 10.0;
 
 	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[DIRECTION_INDEX].value.f = 0;
+	iparam[DIRECTION_INDEX].value.l = 0;
 
 	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL; //FOC_CONTROL

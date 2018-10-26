@@ -806,7 +806,10 @@ void MAIN_setDeviceConstant(void)
 
 
 	// variable setting from parameter
-	direction = iparam[DIRECTION_INDEX].value.f;
+	if(iparam[DIRECTION_INDEX].value.l == 0)
+		direction = 1.0;
+	else
+		direction = -1.0;
 
 
 	//set additional flag
