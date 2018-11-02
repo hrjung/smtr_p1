@@ -74,6 +74,7 @@ void test_errorTrip(void)
 	int exp=0;
 	int err=0;
 
+#if 0
 	ERR_clearTripData();
 
 	// first error;
@@ -112,6 +113,7 @@ void test_errorTrip(void)
 	exp=25;
 	result = ERR_getCurrentErrCode();
 	TEST_ASSERT_EQUAL_INT(exp, result);
+#endif
 }
 
 #endif

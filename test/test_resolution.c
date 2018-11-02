@@ -13,6 +13,7 @@
 
 #include "unity.h"
 #include "../inv_param.h"
+#include "../parameters.h"
 #include "../drive.h"
 #include "../state_func.h"
 #include "../freq.h"
@@ -273,8 +274,8 @@ void test_processResolutionTargetFreq(void)
 	TEST_ASSERT_EQUAL_INT(0, result); //not same
 
 	// 5 sec
-	param.ctrl.accel_time = 5.0;
-	param.ctrl.decel_time = 5.0;
+	iparam[ACCEL_TIME_INDEX].value.f = 5.0;
+	iparam[DECEL_TIME_INDEX].value.f = 5.0;
 
 	m_status.cur_freq = 10.0;
 	exp = 0.06; // krpm
@@ -325,8 +326,8 @@ void test_processResolutionTargetFreq(void)
 //	TEST_ASSERT_EQUAL_INT(1, result);
 
 	//1 sec
-	param.ctrl.accel_time = 1.0;
-	param.ctrl.decel_time = 1.0;
+	iparam[ACCEL_TIME_INDEX].value.f = 1.0;
+	iparam[DECEL_TIME_INDEX].value.f = 1.0;
 
 	m_status.cur_freq = 10.0;
 	exp = 0.3; // krpm
@@ -378,8 +379,8 @@ void test_processResolutionTargetFreq(void)
 
 
 	//10 sec
-	param.ctrl.accel_time = 10.0;
-	param.ctrl.decel_time = 10.0;
+	iparam[ACCEL_TIME_INDEX].value.f = 10.0;
+	iparam[DECEL_TIME_INDEX].value.f = 10.0;
 
 	m_status.cur_freq = 10.0;
 	exp = 0.03; // krpm
@@ -431,8 +432,8 @@ void test_processResolutionTargetFreq(void)
 
 
 	// 50 sec
-	param.ctrl.accel_time = 50.0;
-	param.ctrl.decel_time = 50.0;
+	iparam[ACCEL_TIME_INDEX].value.f = 50.0;
+	iparam[DECEL_TIME_INDEX].value.f = 50.0;
 
 	m_status.cur_freq = 10.0;
 	exp = 0.006; // krpm

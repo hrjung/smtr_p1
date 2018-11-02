@@ -83,10 +83,6 @@
 #include "cmd_queue.h"
 
 
-#ifdef UNIT_TEST_ENABLED
-#include "test/unity.h"
-#endif
-
 // **************************************************************************
 // the defines
 
@@ -110,27 +106,7 @@ extern void init_test_param(void);
 extern void dbg_getSample(float_t val1, float_t val2, float_t val3);
 #endif
 
-#ifdef UNIT_TEST_ENABLED
 
-extern void test_setFreqParam(void); // test_freq.c
-extern void test_setSpeedParam(void); // test_speed.c
-extern void test_setAccelTime(void);
-
-//extern void test_processSpeedScaling(void); //test_resolution.c
-//extern void test_processResolution(void);
-extern void test_processConvertFreq(void); //test_resolution.c
-//extern void test_processResolutionMinMax(void);
-extern void test_processResolutionTargetFreq(void);
-
-extern void test_setDciBrakeParam(void);
-extern void test_setOverload(void);
-extern void test_processDcVoltage(void);
-
-extern void test_controlState(void);
-extern void test_controlDrive(void);
-extern void test_errorTrip(void); // test_trip.c
-
-#endif
 // **************************************************************************
 // the globals
 
@@ -1464,41 +1440,6 @@ void main(void)
   gFlux_pu_to_VpHz_sf = USER_computeFlux_pu_to_VpHz_sf();
   gTorque_Ls_Id_Iq_pu_to_Nm_sf = USER_computeTorque_Ls_Id_Iq_pu_to_Nm_sf();
   gTorque_Flux_Iq_pu_to_Nm_sf = USER_computeTorque_Flux_Iq_pu_to_Nm_sf();
-
-#ifdef UNIT_TEST_ENABLED
-    //UARTFlushTx(0);
-    UARTprintf("--Unit Test Running\n");
-
-	UNITY_BEGIN();
-
-//	//RUN_TEST(test_setSpeedParam);
-//	RUN_TEST(test_setFreqParam); //test_freq.c
-//	RUN_TEST(test_setAccelTime); //test_speed.c
-//
-//	//RUN_TEST(test_processSpeedScaling); //test_resolution.c
-//	RUN_TEST(test_processConvertFreq); //test_resolution.c
-//	//RUN_TEST(test_processResolution);
-//	RUN_TEST(test_processResolutionTargetFreq);
-//
-//	RUN_TEST(test_setDciBrakeParam); //test_dci_brake.c
-//
-//	RUN_TEST(test_setOverload); // test_protect.c
-//	//RUN_TEST(test_processDcVoltage); not ready
-//
-//	RUN_TEST(test_controlState); //test_state.c
-//
-//	RUN_TEST(test_controlDrive); //test_drive.c
-//
-
-	RUN_TEST(test_errorTrip); // test_trip.c
-
-	UNITY_END();
-
-	UARTprintf(" End of Unit Test\n");
-	//UARTprintf(" regen_resist %f trip=%d %d\n", regen_resistance.value, internal_status.trip_happened, internal_status.nv_error_index);
-	//UARTFlushTx(0);
-	while(1);
-#endif
 
 
   // set the voltage bias

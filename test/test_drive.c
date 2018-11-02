@@ -10,6 +10,7 @@
 
 #include "unity.h"
 #include "../inv_param.h"
+#include "../parameters.h"
 #include "../drive.h"
 #include "../protect.h"
 
@@ -71,13 +72,13 @@ void test_controlDrive(void)
 	exp = 0;
 	result = DRV_setEnergySave(ESAVE_UNUSED);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_INT(0, param.ctrl.energy_save);
+	TEST_ASSERT_EQUAL_INT(0, (int)iparam[ENERGY_SAVE_INDEX].value.l);
 
 	// set energy saving startup
 	exp = 0;
 	result = DRV_setEnergySave(ESAVE_STARTUP);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_INT(1, param.ctrl.energy_save);
+	TEST_ASSERT_EQUAL_INT(1, (int)iparam[ENERGY_SAVE_INDEX].value.l);
 
 	// set energy saving wrong value
 	exp = 1;
@@ -88,30 +89,30 @@ void test_controlDrive(void)
 	exp = 0;
 	result = DRV_setVoltageBoost(0.0);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_FLOAT(0, param.ctrl.v_boost);
+	TEST_ASSERT_EQUAL_FLOAT(0, iparam[V_BOOST_INDEX].value.f);
 
-	// set Vmin boost correct value
+	// set Vmin boost correct value 0 ~ 15%
 	exp = 0;
-	result = DRV_setVoltageBoost(100.0);
+	result = DRV_setVoltageBoost(10.0);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_FLOAT(100.0, param.ctrl.v_boost);
+	TEST_ASSERT_EQUAL_FLOAT(10.0, iparam[V_BOOST_INDEX].value.f);
 
-	// set Vmin boost wrong value
+	// set Vmin boost wrong value > 15%
 	exp = 1;
-	result = DRV_setVoltageBoost(100.1);
+	result = DRV_setVoltageBoost(20.1);
 	TEST_ASSERT_EQUAL_INT(exp, result);
 
 	// set PWM freq correct value
 	exp = 0;
 	result = DRV_setPwmFrequency(PWM_4KHz);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_INT(PWM_4KHz, param.ctrl.pwm_freq);
+	TEST_ASSERT_EQUAL_INT(PWM_4KHz, iparam[PWM_FREQ_INDEX].value.l);
 
 	// set PWM freq correct value
 	exp = 0;
 	result = DRV_setPwmFrequency(PWM_16KHz);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_INT(PWM_16KHz, param.ctrl.pwm_freq);
+	TEST_ASSERT_EQUAL_INT(PWM_16KHz, iparam[PWM_FREQ_INDEX].value.l);
 
 	// set PWM freq wrong value
 	exp = 1;

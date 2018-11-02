@@ -13,6 +13,7 @@
 
 #include "unity.h"
 #include "../inv_param.h"
+#include "../parameters.h"
 #include "../freq.h"
 
 
@@ -47,6 +48,7 @@
 /*******************************************************************************
  * EXTERNS
  */
+extern void PARAM_init(void);
 
 /*
  *  ======== function ========
@@ -54,11 +56,11 @@
 
 void setUp(void) {
 // set stuff up here
-	memset(&param, 0, sizeof(param));
+	PARAM_init();
 }
 void tearDown(void) {
 // clean stuff up here
-	memset(&param, 0, sizeof(param));
+	PARAM_init();
 }
 
 /*
@@ -85,23 +87,11 @@ void test_setFreqParam(void)
 	exp=0; // OK
 	result = FREQ_setFreqValue(value);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.ctrl.value);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[FREQ_VALUE_INDEX].value.f);
 
-	// set higher than default frequency
-	value=500.0;
-	exp=1; //NOK
+	value=450.0;
+	exp=1; // NOK
 	result = FREQ_setFreqValue(value);
-	TEST_ASSERT_EQUAL_INT(exp, result);
-
-	cur = value;
-	value = 90.0;
-	exp = 100; // min range
-	result = FREQ_getVarifiedFreq(cur, value);
-	TEST_ASSERT_EQUAL_INT(exp, result);
-
-	value = 310.0;
-	exp = 300; // max range
-	result = FREQ_getVarifiedFreq(cur, value);
 	TEST_ASSERT_EQUAL_INT(exp, result);
 
 	//UARTprintf("min=%f max=%f\n", param.ctrl.freq_min, param.ctrl.freq_max);
@@ -112,18 +102,17 @@ void test_setFreqParam(void)
 	exp = 0;
 	result = FREQ_setFreqValue(value);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.ctrl.value);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[FREQ_VALUE_INDEX].value.f);
 
 	//set jump freq
-	// current min ~ max : 100 ~ 300
-	low=50.0; // out of limit
+	low=-50.0; // out of limit
 	high=200.0;
 	exp = 1; //NOK
 	result = FREQ_setJumpFreqRange(0, low, high);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
 	low=170;
-	high=310;// out of limit
+	high=410;// out of limit
 	exp = 1; //NOK
 	result = FREQ_setJumpFreqRange(0, low, high);
 	TEST_ASSERT_EQUAL_INT(exp, result);
@@ -139,9 +128,9 @@ void test_setFreqParam(void)
 	exp = 0; //OK
 	result = FREQ_setJumpFreqRange(0, low, high);
 	TEST_ASSERT_EQUAL_INT(exp, result);
-	TEST_ASSERT_EQUAL_INT(param.ctrl.jump[0].enable, 1);
-	TEST_ASSERT_EQUAL_FLOAT(param.ctrl.jump[0].low, low);
-	TEST_ASSERT_EQUAL_FLOAT(param.ctrl.jump[0].high, high);
+	TEST_ASSERT_EQUAL_INT(iparam[JUMP_ENABLE0_INDEX].value.l, 1);
+	TEST_ASSERT_EQUAL_FLOAT(iparam[JUMP_LOW0_INDEX].value.f, low);
+	TEST_ASSERT_EQUAL_FLOAT(iparam[JUMP_HIGH0_INDEX].value.f, high);
 
 	cur = 150.0;
 	result = FREQ_setFreqValue(cur);

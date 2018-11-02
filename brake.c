@@ -121,8 +121,7 @@ int BRK_setBrakeFreq(float_t freq)
 int DCIB_setStartFreq(float_t freq)
 {
 
-	if(freq < 0 || freq > DC_BRAKE_FREQ_LIMIT)
-		return 1;
+	if(freq < 0 || freq > DC_BRAKE_FREQ_LIMIT)	return 1;
 
 	iparam[BRK_DCI_START_FREQ_INDEX].value.f = freq;
 

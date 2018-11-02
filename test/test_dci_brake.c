@@ -9,6 +9,7 @@
 
 #include "unity.h"
 #include "../inv_param.h"
+#include "../parameters.h"
 #include "../drive.h"
 
 
@@ -76,14 +77,14 @@ void test_setDciBrakeParam(void)
 	exp = 0;
 	result = DCIB_setStartFreq(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.brk.dci_start_freq);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[BRK_DCI_START_FREQ_INDEX].value.f);
 
-	value = 370.0; // out of range > DC_BRAKE_SPEED_MAX
+	value = 70.0; // out of range > DC_BRAKE_FREQ_LIMIT
 	exp = 1;
 	result = DCIB_setStartFreq(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
-	value = 5.0; // lower than min speed
+	value = -5.0; // lower than min speed
 	exp = 1;
 	result = DCIB_setStartFreq(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
@@ -93,34 +94,34 @@ void test_setDciBrakeParam(void)
 	exp = 0;
 	result = DCIB_setBlockTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.brk.dci_block_time);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f);
 
-	value = 100.0; // out of range
+	value = 100.0; // out of range > DC_BRAKE_TIME_MAX
 	exp = 1;
 	result = DCIB_setBlockTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
 	//brake rate
-	value = 150.0; // in range
+	value = 150.0; // in range < DC_BRAKE_RATE_MAX
 	exp = 0;
 	result = DCIB_setBrakeRate(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.brk.dci_braking_rate);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 
-	value = 210.0; // out of range
+	value = 210.0; // out of range > DC_BRAKE_RATE_MAX
 	exp = 1;
 	result = DCIB_setBrakeRate(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
 	//brake time
-	value = 30.0; // in range
+	value = 30.0; // in range < DC_BRAKE_TIME_MAX
 	exp = 0;
 	result = DCIB_setBrakeTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_FLOAT(value, param.brk.dci_braking_time);
+	TEST_ASSERT_EQUAL_FLOAT(value, iparam[BRK_DCI_BRAKING_TIME_INDEX].value.f);
 
-	value = 100.0; // out of range
-	exp = 1;
+	value = 100.0; // in range < DC_BRAKE_TIME_MAX
+	exp = 0;
 	result = DCIB_setBrakeTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 }

@@ -10,6 +10,7 @@
 
 #include "unity.h"
 #include "../inv_param.h"
+#include "../parameters.h"
 #include "drive.h"
 
 
@@ -72,32 +73,32 @@ void test_setOverload(void)
 	int exp=0;
 	int value;
 
-	// set max current level OK, 30 ~ 150%
+	// set max current level OK, 30 ~ 200%
 	value = 140;
 	exp = 0; //OK
 	result = OVL_setWarningLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_INT(value, param.protect.ovl.wr_limit);
+	TEST_ASSERT_EQUAL_INT(value, (int)iparam[OVL_WARN_LIMIT_INDEX].value.l);
 
-	value = 20; //set level under limit -> NOK
+	value = 20; //set level under limit < TRIP_LEVEL_MIN
 	exp = 1; //NOK
 	result = OVL_setWarningLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
-	value = 160; //set level over limit -> NOK
+	value = 210; //set level over limit > TRIP_LEVEL_WARN
 	exp = 1; //NOK
 	result = OVL_setWarningLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
 
-	// set warning duration OK, 0 ~ 30sec
+	// set warning duration OK, 0 ~ 30sec < TRIP_TIME_WARN_MAX
 	value = 20;
 	exp = 0; //OK
 	result = OVL_setWarningTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_INT(value, param.protect.ovl.wr_duration);
+	TEST_ASSERT_EQUAL_INT(value, (int)iparam[OVL_WR_DURATION_INDEX].value.l);
 
-	value = 40; //set warning duration over limit -> NOK
+	value = 40; //set warning duration over limit > TRIP_TIME_WARN_MAX
 	exp = 1; //NOK
 	result = OVL_setWarningTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
@@ -108,14 +109,14 @@ void test_setOverload(void)
 	exp = 0; //OK
 	result = OVL_setTripLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_INT(value, param.protect.ovl.tr_limit);
+	TEST_ASSERT_EQUAL_INT(value, (int)iparam[OVL_TR_LIMIT_INDEX].value.l);
 
-	value = 20; //set level under limit -> NOK
+	value = 20; //set level under limit < TRIP_LEVEL_MIN
 	exp = 1; //NOK
 	result = OVL_setTripLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
 
-	value = 210; //set trip level over limit -> NOK
+	value = 210; //set trip level over limit > TRIP_LEVEL_TRIP
 	exp = 1; //NOK
 	result = OVL_setTripLevel(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
@@ -125,9 +126,9 @@ void test_setOverload(void)
 	exp = 0; //OK
 	result = OVL_setTripTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);
-	TEST_ASSERT_EQUAL_INT(value, param.protect.ovl.tr_duration);
+	TEST_ASSERT_EQUAL_INT(value, (int)iparam[OVL_TR_DURATION_INDEX].value.l);
 
-	value = 70; //set trip duration over limit -> NOK
+	value = 70; //set trip duration over limit > TRIP_TIME_TRIP_MAX
 	exp = 1; //NOK
 	result = OVL_setTripTime(value);
 	TEST_ASSERT_EQUAL_INT(result, exp);

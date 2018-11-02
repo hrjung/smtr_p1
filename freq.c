@@ -17,10 +17,8 @@
 /*******************************************************************************
  * MACROS
  */
-#define FREQ_isValidMin()	(param.ctrl.freq_min != NOT_INITIALIZED)
-#define FREQ_isValidMax()	(param.ctrl.freq_max != NOT_INITIALIZED)
 
-//#define FREQ_isAccelTimeBasedMinMaxFreq()	(param.t_const.next_freq == MAX_FREQ_BASE)
+#define FREQ_isValidFreq(freq)	(freq >= 0 && freq <= MAX_FREQ_VALUE)
 
 /*******************************************************************************
  * CONSTANTS
@@ -29,6 +27,8 @@
 #define JMP_ENABLE_BASE		JUMP_ENABLE0_INDEX
 #define JMP_LOW_BASE		JUMP_LOW0_INDEX
 #define JMP_HIGH_BASE		JUMP_HIGH0_INDEX
+
+
 
 /*******************************************************************************
  * TYPEDEFS
@@ -133,6 +133,8 @@ int Freq_isInWorkingFreqRange(float_t value)
 
 int FREQ_setFreqValue(float_t value)
 {
+	if(!FREQ_isValidFreq(value)) return 1;
+
 	if(iparam[FREQ_VALUE_INDEX].value.f == value) return 0;
 
 	iparam[FREQ_VALUE_INDEX].value.f = value;
@@ -162,6 +164,8 @@ int FREQ_setJumpFreqEnable(uint16_t index, uint16_t enable)
 
 int FREQ_setJumpFreqLow(uint16_t index, float_t low)
 {
+	if(!FREQ_isValidFreq(low)) return 1;
+
 	if(!Freq_isInWorkingFreqRange(low)) return 1;
 
 	iparam[JMP_LOW_BASE+index].value.f = low;
@@ -173,6 +177,8 @@ int FREQ_setJumpFreqLow(uint16_t index, float_t low)
 
 int FREQ_setJumpFreqHigh(uint16_t index, float_t high)
 {
+	if(!FREQ_isValidFreq(high)) return 1;
+
 	if(!Freq_isInWorkingFreqRange(high)) return 1;
 
 	iparam[JMP_HIGH_BASE+index].value.f = high;
@@ -184,8 +190,14 @@ int FREQ_setJumpFreqHigh(uint16_t index, float_t high)
 
 int FREQ_setJumpFreqRange(int index, float_t low, float_t high)
 {
+	if(index >= MAX_JUMP_FREQ_NUM) return 1;
+
 	if(low == 0.0 && high == 0.0) // disable setting
 		return FREQ_clearJumpFreq(index);
+
+	if(!FREQ_isValidFreq(low)) return 1;
+
+	if(!FREQ_isValidFreq(high)) return 1;
 
 	if(!Freq_isInWorkingFreqRange(low)) return 1;
 

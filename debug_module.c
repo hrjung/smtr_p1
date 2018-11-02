@@ -5,7 +5,7 @@
  *      Author: hrjung
  */
 
-#ifndef UNIT_TEST_ENABLED
+//#ifndef UNIT_TEST_ENABLED
 
 #include "stdint.h"
 #include "stdlib.h"
@@ -30,6 +30,10 @@
 #include "timer_handler.h"
 #include "common_tools.h"
 #include "cmd_queue.h"
+
+#ifdef UNIT_TEST_ENABLED
+#include "test/unity.h"
+#endif
 
 /*******************************************************************************
  * MACROS
@@ -112,6 +116,9 @@ typedef enum {
 	DBG_CMD_GET_ADC_I_SAMPLE,
 #endif
 	DBG_CMD_QUE_TEST,
+#ifdef UNIT_TEST_ENABLED
+	DBG_UNIT_TEST,
+#endif
 	DBG_CMD_TEST,
 
 	DBG_CMD_ENUM_MAX
@@ -183,6 +190,28 @@ extern bool UTIL_readSwGpio(void);
 extern int TEST_readSwitch(void);
 #endif
 
+#ifdef UNIT_TEST_ENABLED
+
+extern void test_setFreqParam(void); // test_freq.c
+//extern void test_setSpeedParam(void); // test_speed.c
+extern void test_setAccelTime(void);
+
+//extern void test_processSpeedScaling(void); //test_resolution.c
+//extern void test_processResolution(void);
+extern void test_processConvertFreq(void); //test_resolution.c
+//extern void test_processResolutionMinMax(void);
+extern void test_processResolutionTargetFreq(void);
+
+extern void test_setDciBrakeParam(void);
+extern void test_setOverload(void);
+extern void test_processDcVoltage(void);
+
+extern void test_controlState(void);
+extern void test_controlDrive(void);
+extern void test_errorTrip(void); // test_trip.c
+
+#endif
+
 /*******************************************************************************
  * LOCAL FUNCTIONS
  */
@@ -236,6 +265,9 @@ STATIC int dbg_getAdcSample(int argc, char *argv[]);
 #endif
 
 STATIC int dbg_testCmdQueue(int argc, char *argv[]);
+#ifdef UNIT_TEST_ENABLED
+STATIC int dbg_UnitTest(int argc, char *argv[]);
+#endif
 STATIC int dbg_tmpTest(int argc, char *argv[]);
 
 STATIC int EchoSetting(int argc, char*argv[]);
@@ -326,6 +358,9 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"iadc", dbg_getAdcSample, " iadc (0,1) read ADC sample"},
 #endif
 	{"que", dbg_testCmdQueue, " que : test cmd queue"},
+#ifdef UNIT_TEST_ENABLED
+	{"utest", dbg_UnitTest, " utest : unit test"},
+#endif
 	{"tmp", dbg_tmpTest, " tmp : test command"}
 #else
 	{"help", dbg_processHelp, " help : show command list"},
@@ -372,6 +407,9 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"iadc", dbg_getAdcSample, " read ADC I"},
 #endif
 	{"que", dbg_testCmdQueue, " que "},
+#ifdef UNIT_TEST_ENABLED
+	{"utest", dbg_UnitTest, " utest "},
+#endif
 	{"tmp", dbg_tmpTest, " tmp"}
 #endif
 };
@@ -1732,6 +1770,54 @@ que_err:
     return 1;
 }
 
+#ifdef UNIT_TEST_ENABLED
+STATIC int dbg_UnitTest(int argc, char *argv[])
+{
+	if(MAIN_isSystemEnabled())
+	{
+		UARTprintf("Unit Test is not available during running motor! \n");
+		return 0;
+	}
+
+    UARTprintf("--Unit Test Running\n");
+
+	UNITY_BEGIN();
+
+	// for speed setting, not used
+	//RUN_TEST(test_setSpeedParam);
+	//RUN_TEST(test_setAccelTime); //test_speed.c
+	//RUN_TEST(test_processSpeedScaling); //test_resolution.c
+	//RUN_TEST(test_processResolution);
+
+	RUN_TEST(test_setFreqParam); //test_freq.c
+
+	RUN_TEST(test_processConvertFreq); //test_resolution.c
+
+	RUN_TEST(test_processResolutionTargetFreq);
+
+	RUN_TEST(test_setDciBrakeParam); //test_dci_brake.c
+
+	RUN_TEST(test_setOverload); // test_protect.c
+	//RUN_TEST(test_processDcVoltage); not ready
+
+	RUN_TEST(test_controlState); //test_state.c
+
+	RUN_TEST(test_controlDrive); //test_drive.c
+
+
+//	RUN_TEST(test_errorTrip); // test_trip.c
+
+	UNITY_END();
+
+	UARTprintf(" End of Unit Test!\n Please Reset Device!!\n");
+
+	//UARTFlushTx(0);
+	while(1);
+
+	return 0;
+}
+#endif
+
 //extern float MAIN_convert2InternalSpeedRef(int freq);
 //extern int MAIN_convert2Speed(float speed);
 //extern void initParam(void);
@@ -2100,4 +2186,4 @@ int EchoSetting(int argc, char *argv[])
 }
 
 
-#endif
+//#endif
