@@ -4,5 +4,5 @@
 	<deviceFamily value="C2000"/>
 	<isTargetManual value="false"/>
 	<origin value="C:/ti/motorware/motorware_1_01_00_18/sw/solutions/instaspin_foc/boards/hvkit_rev1p1/f28x/f2806xF/projects/ccs/proj_lab05g"/>
-	<connection value="common/targetdb/connections/TIXDS2XXUSB_Connection.xml"/>
+	<connection value="common/targetdb/connections/TIXDS100v3_Dot7_Connection.xml"/>
 </projectOptions>

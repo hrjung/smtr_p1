@@ -587,6 +587,7 @@ static inline void HAL_initIntVectorTable(HAL_Handle handle)
 //!             currents, and one DC bus voltage.
 //! \param[in]  handle    The hardware abstraction layer (HAL) handle
 //! \param[in]  pAdcData  A pointer to the ADC data buffer
+extern _iq V_bias[3];
 static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
 {
   HAL_Obj *obj = (HAL_Obj *)handle;
@@ -641,6 +642,9 @@ static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
 
   // for monitoring
 #if 1
+  V_bias[0] = obj->adcBias.V.value[0];
+  V_bias[1] = obj->adcBias.V.value[1];
+  V_bias[2] = obj->adcBias.V.value[2];
   pAdcData->vdc_adc = ADC_readResult(obj->adcHandle,ADC_ResultNumber_5);
   pAdcData->v_adc[0] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_2); // U_V
   pAdcData->v_adc[1] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_4); // V_V

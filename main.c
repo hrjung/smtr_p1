@@ -272,6 +272,10 @@ extern int sample_type;
 void updateGlobalVariables_motor4Vf(CTRL_Handle handle);
 #endif
 
+#ifdef UNIT_TEST_ENABLED
+extern uint16_t unit_test_running;
+#endif
+
 #ifdef SUPPORT_MODIFIED_VF
 _iq Id_in = _IQ(0.0);
 _iq Iq_in = _IQ(0.0);
@@ -283,6 +287,8 @@ uint16_t ret_status=1;
 uint16_t spi_seqNo=0, prev_seqNo=0, spi_err=0;
 extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
 extern uint16_t spi_rcv_cmd;
+
+_iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
 
 void SetGpioInterrupt(void);
 
@@ -379,22 +385,26 @@ int MAIN_getCurrentSpeed(void)
 
 float_t MAIN_convert2Freq(float_t spd_krpm)
 {
-#ifdef UNIT_TEST_ENABLED
-	float_t speed_rpm = spd_krpm*1000;
-#else
 	float_t speed_rpm;
 
-	if(DRV_isVfControl())
-	{
-		speed_rpm = spd_krpm; // already rmp
-	}
+#ifdef UNIT_TEST_ENABLED
+	if(unit_test_running)
+		speed_rpm = spd_krpm*1000;
 	else
-	{
-		speed_rpm = _IQtoF(gMotorVars.Speed_krpm) * KRPM_SCALE_FACTOR;
-		if(gMotorVars.Speed_krpm < 0.0)
-			speed_rpm *= (-1.0);
-	}
 #endif
+	{
+
+		if(DRV_isVfControl())
+		{
+			speed_rpm = spd_krpm; // already rmp
+		}
+		else
+		{
+			speed_rpm = _IQtoF(gMotorVars.Speed_krpm) * KRPM_SCALE_FACTOR;
+			if(gMotorVars.Speed_krpm < 0.0)
+				speed_rpm *= (-1.0);
+		}
+	}
 
 	return (speed_rpm*mtr_param.pole_pairs/60.0);
 }
@@ -628,6 +638,36 @@ inline void MAIN_calculateIrms(void)
 }
 #endif
 
+void MAIN_resetOffsetV(void)
+{
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(0.0));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(0.0));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(0.0));
+}
+
+void MAIN_setOffset(void)
+{
+#ifdef SUPPORT_USER_VARIABLE
+	// set the current bias from setting
+	HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(gUserParams.I_A_Offset));
+	HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(gUserParams.I_B_Offset));
+	HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(gUserParams.I_C_Offset));
+
+	// set the voltage bias
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(gUserParams.V_A_Offset));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(gUserParams.V_B_Offset));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(gUserParams.V_C_Offset));
+#else
+    HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(I_A_offset));
+    HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(I_B_offset));
+    HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(I_C_offset));
+
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(V_A_offset));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(V_B_offset));
+	HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(V_C_offset));
+#endif
+}
+
 int MAIN_isOverCurrent(void)
 {
 #if 0
@@ -761,6 +801,11 @@ _iq MAIN_avoidJumpSpeed(_iq spd_pu)
 	return conv_spd_pu;
 }
 
+void MAIN_setRegenDuty(float_t resist, uint32_t power)
+{
+	dev_const.regen_max_V = 0.9*sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
+}
+
 void MAIN_setDeviceConstant(void)
 {
 	UTIL_setScaleFactor();
@@ -776,7 +821,7 @@ void MAIN_setDeviceConstant(void)
 	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
 	dev_const.ovc_level = mtr_param.max_current*3.0;
 
-	dev_const.regen_max_V = 0.9*sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
+	MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
 	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection
 	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 
@@ -1411,8 +1456,7 @@ void main(void)
 #endif
   datalog.iptr[0] = &gAdcData.V.value[0];  // V
   datalog.iptr[1] = &gAdcData.V.value[1];  // W
-  //datalog.iptr[2] = &gAdcData.V.value[2];  // U
-  datalog.iptr[2] = &internal_status.spd_rpm;
+  datalog.iptr[2] = &gAdcData.V.value[2];  // U
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -1483,6 +1527,8 @@ void main(void)
 
         //debug command for Motor stop
         ProcessDebugCommand();
+
+        MAIN_resetOffsetV();
 
         MAIN_readCurrent();
         //for DC monitoring
@@ -1590,16 +1636,8 @@ void main(void)
                       //if(!DRV_isVfControl())
 #endif
                       {
-#ifdef SUPPORT_USER_VARIABLE
-						  // set the current bias from setting
-						  HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(gUserParams.I_A_Offset));
-						  HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(gUserParams.I_B_Offset));
-						  HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(gUserParams.I_C_Offset));
-
-						  // set the voltage bias
-						  HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(gUserParams.V_A_Offset));
-						  HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(gUserParams.V_B_Offset));
-						  HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(gUserParams.V_C_Offset));
+#if 1
+	                      MAIN_setOffset();
 #else
 	                      // set the current bias
 	                      HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(I_A_offset));
@@ -1607,14 +1645,14 @@ void main(void)
 	                      HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(I_C_offset));
 
 	                      // set the voltage bias
-	                      HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(V_A_offset));
-	                      HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(V_B_offset));
-	                      HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(V_C_offset));
+						  HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(V_A_offset));
+						  HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(V_B_offset));
+						  HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(V_C_offset));
 #endif
                       }
                     }
 
-#if 1
+#if 0
                     if(!DRV_isVfControl())
                     {
 						// Return the bias value for currents
@@ -2195,9 +2233,10 @@ interrupt void mainISR(void)
     float_t spd_rpm_f = _IQtoF(gMotorVars.Speed_krpm)*1000.0;
     internal_status.spd_rpm = (int32_t) spd_rpm_f;
 
-  	internal_status.Vu_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
+	internal_status.Vu_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 	internal_status.Vv_inst = _IQtoF(gAdcData.V.value[0])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 	internal_status.Vw_inst = _IQtoF(gAdcData.V.value[1])*USER_IQ_FULL_SCALE_VOLTAGE_V;
+
 #ifdef SAMPLE_ADC_VALUE
 	if(sample_type == V_UVW_SAMPLE_TYPE)
 		dbg_getSample(internal_status.Vu_inst, internal_status.Vv_inst, internal_status.Vw_inst);

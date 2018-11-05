@@ -30,6 +30,7 @@
 #include "timer_handler.h"
 #include "common_tools.h"
 #include "cmd_queue.h"
+#include "drv_spi.h"
 
 #ifdef UNIT_TEST_ENABLED
 #include "test/unity.h"
@@ -191,6 +192,7 @@ extern int TEST_readSwitch(void);
 #endif
 
 #ifdef UNIT_TEST_ENABLED
+uint16_t unit_test_running=0;
 
 extern void test_setFreqParam(void); // test_freq.c
 //extern void test_setSpeedParam(void); // test_speed.c
@@ -419,6 +421,23 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
  *  ======== function ========
  */
 
+STATIC void dbg_setQueCommand(uint16_t index, union32_st data)
+{
+	cmd_type_st que_data;
+
+	que_data.cmd = SPICMD_PARAM_W;
+	que_data.index = index;
+	que_data.data = data;
+	if(!QUE_isFull())
+	{
+		QUE_putCmd(que_data);
+	}
+	else
+	{
+		UARTprintf("QUE_full !!\n");
+	}
+}
+
 // command function lists
 STATIC int dbg_processHelp(int argc, char *argv[])
 {
@@ -513,11 +532,10 @@ STATIC void dbg_showRegenParam(void)
 #if 1
 STATIC int dbg_setFreq(int argc, char *argv[])
 {
-	int result;
+	//int result;
 	uint16_t value;
 	float_t f_value;
 	union32_st data;
-	//int cmd;
 
     if(argc != 2) goto freq_err;
 
@@ -526,15 +544,14 @@ STATIC int dbg_setFreq(int argc, char *argv[])
 	if(f_value > MIN_FREQ_VALUE && f_value < MAX_FREQ_VALUE)
 	{
 		data.f = f_value;
-		result = PARAM_setFreq(data);
-		UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
+		dbg_setQueCommand(FREQ_VALUE_INDEX, data);
 	}
 	else
 	{
 		goto freq_err;
 	}
 
-    return result;
+    return 0;
 
 freq_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SET_FREQUENCY].pcHelp);
@@ -543,7 +560,7 @@ freq_err:
 
 STATIC int dbg_setJumpFreq(int argc, char *argv[])
 {
-	int i, index, result=1;
+	int i, index;
 	uint16_t low, high;
 	float_t f_low, f_high;
 	union32_st data;
@@ -568,44 +585,26 @@ STATIC int dbg_setJumpFreq(int argc, char *argv[])
 
     if(low > high) goto jmp_err;
 
-    switch(index)
+    if(index==0 || index==1 || index==2)
     {
-    case 0:
+    	// enable
     	data.l = 1;
-    	PARAM_setEnableJump0(data);
+    	dbg_setQueCommand(JUMP_ENABLE0_INDEX+index, data);
+
+		// low
     	f_low = (float_t)(low/FREQ_INPUT_RESOLUTION);
     	data.f = f_low;
-    	PARAM_setJumpFreqLow0(data);
+    	dbg_setQueCommand(JUMP_LOW0_INDEX+index, data);
 
+		// high
     	f_high = (float_t)(high/FREQ_INPUT_RESOLUTION);
     	data.f = f_high;
-    	PARAM_setJumpFreqHigh0(data);
-    case 1:
-    	data.l = 1;
-    	PARAM_setEnableJump1(data);
-    	f_low = (float_t)(low/FREQ_INPUT_RESOLUTION);
-    	data.f = f_low;
-    	PARAM_setJumpFreqLow1(data);
-
-    	f_high = (float_t)(high/FREQ_INPUT_RESOLUTION);
-    	data.f = f_high;
-    	PARAM_setJumpFreqHigh1(data);
-    	break;
-    case 2:
-    	data.l = 1;
-    	PARAM_setEnableJump2(data);
-    	f_low = (float_t)(low/FREQ_INPUT_RESOLUTION);
-    	data.f = f_low;
-    	PARAM_setJumpFreqLow2(data);
-
-    	f_high = (float_t)(high/FREQ_INPUT_RESOLUTION);
-    	data.f = f_high;
-    	PARAM_setJumpFreqHigh2(data);
-    default:
+    	dbg_setQueCommand(JUMP_HIGH0_INDEX+index, data);
+    }
+    else
     	goto jmp_err;
 
-    }
-    UARTprintf("set jump frequency range %f - %f at index=%d, result=%s\n", f_low, f_high, index, res_str[result]);
+
     return 0;
 
 jmp_err:
@@ -647,7 +646,6 @@ STATIC int dbg_setAccelTime(int argc, char *argv[])
 {
 	int value;
 	float_t f_val;
-	int result;
 	union32_st data;
 
     if(argc != 2 && argc != 3) goto acc_err;
@@ -665,19 +663,17 @@ STATIC int dbg_setAccelTime(int argc, char *argv[])
     	data.f = f_val;
     	if(strcmp("acc", argv[1]) == 0)
     	{
-			result = PARAM_setAccel(data);
-			UARTprintf("set accel time=%f, result=%s\n", f_val, res_str[result]);
+    		dbg_setQueCommand(ACCEL_TIME_INDEX, data);
     	}
     	else if(strcmp("dec", argv[1]) == 0)
     	{
-			result = PARAM_setDecel(data);
-			UARTprintf("set decel time=%f, result=%s\n", f_val, res_str[result]);
+    		dbg_setQueCommand(DECEL_TIME_INDEX, data);
     	}
     	else
     		goto acc_err;
 
 
-		return result;
+		return 0;
     }
 
 acc_err:
@@ -687,7 +683,7 @@ acc_err:
 
 STATIC int dbg_setEnergySave(int argc, char *argv[])
 {
-	int on_off, result;
+	int on_off;
 	union32_st data;
 
 	if(argc != 1 && argc != 2) goto save_err;
@@ -699,10 +695,12 @@ STATIC int dbg_setEnergySave(int argc, char *argv[])
 	}
 
 	on_off = atoi(argv[1]);
-	data.l = (uint32_t)on_off;
-	result = PARAM_setEnergySave(data);
+	if(on_off > ESAVE_BOTH) goto save_err;
 
-	return result;
+	data.l = (uint32_t)on_off;
+	dbg_setQueCommand(ENERGY_SAVE_INDEX, data);
+
+	return 0;
 
 save_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SET_ENERGY_SAVE].pcHelp);
@@ -711,7 +709,7 @@ save_err:
 
 STATIC int dbg_setVoltVoost(int argc, char *argv[])
 {
-	int value, result;
+	int value;
 	float_t f_value;
 	union32_st data;
 
@@ -724,10 +722,11 @@ STATIC int dbg_setVoltVoost(int argc, char *argv[])
 	}
 
 	value = atoi(argv[1]);
+	if(value < 0 || value > 150) goto boost_err;
+
 	f_value = (float_t)(value/10.0);
 	data.f = f_value;
-	result = PARAM_setVoltageBoost(data);
-	UARTprintf("set voltage boost %f is %s\n", f_value, res_str[result]);
+	dbg_setQueCommand(V_BOOST_INDEX, data);
 
 	return 0;
 
@@ -739,9 +738,7 @@ boost_err:
 STATIC int dbg_setDriveControl(int argc, char *argv[])
 {
 	int value;
-	int result;
 	union32_st data;
-	const char *pwm_str[] = {"6kHz", "9kHz", "12kHz", "15kHz" };
 
     if(argc != 2 && argc != 3) goto drv_err;
 
@@ -749,20 +746,17 @@ STATIC int dbg_setDriveControl(int argc, char *argv[])
     {
     	if(strcmp("vf", argv[1]) == 0)
     	{
-    		data.l = VF_CONTROL;
-    		PARAM_setVfFoc(data);
-    		return 0;
+    		data.l = (uint32_t)VF_CONTROL;
+    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
     	}
     	else if(strcmp("foc", argv[1]) == 0)
     	{
-    		data.l = FOC_CONTROL;
-    		PARAM_setVfFoc(data);
-    		return 0;
+    		data.l = (uint32_t)FOC_CONTROL;
+    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
     	}
     	else
     		goto drv_err;
     }
-
 
     if(argc == 3)
     {
@@ -770,14 +764,12 @@ STATIC int dbg_setDriveControl(int argc, char *argv[])
     	if(strcmp("pwm", argv[1]) == 0)
     	{
     		data.l = (uint32_t)value;
-			result = PARAM_setPwmFreq(data);
-			UARTprintf("set pwm freq=%s, result=%s\n", pwm_str[value], res_str[result]);
+    		dbg_setQueCommand(PWM_FREQ_INDEX, data);
     	}
     	else
     		goto drv_err;
-
-		return result;
     }
+    return 0;
 
 drv_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_MAIN_CONTROL].pcHelp);
@@ -787,13 +779,30 @@ drv_err:
 
 STATIC int dbg_runMotor(int argc, char *argv[])
 {
+	cmd_type_st que_data;
+
     if(argc >= 2) goto run_err;
 
+#if 1
+	que_data.cmd = SPICMD_CTRL_RUN;
+	que_data.index = INV_RUN_STOP_INDEX;
+	que_data.data.l = 0;
+	if(!QUE_isFull())
+	{
+		QUE_putCmd(que_data);
+	}
+	else
+	{
+		UARTprintf("QUE_full !!\n");
+	}
+
+#else
 	MAIN_enableSystem();
 	STA_calcResolution();
 	UARTprintf("start running motor\n");
 
     STA_printInvState();
+#endif
 
     return 0;
 
@@ -804,13 +813,31 @@ run_err:
 
 STATIC int dbg_stopMotor(int argc, char *argv[])
 {
-	//int result;
+	cmd_type_st que_data;
 
     if(argc >= 2) goto stop_err;
+
+#if 1
+	que_data.cmd = SPICMD_CTRL_STOP;
+	que_data.index = INV_RUN_STOP_INDEX;
+	que_data.data.l = 0;
+	if(!QUE_isFull())
+	{
+		QUE_putCmd(que_data);
+		UARTprintf("reduce speed cur_freq=%f to stop\n", m_status.cur_freq);
+		UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
+	}
+	else
+	{
+		UARTprintf("QUE_full !!\n");
+	}
+
+#else
 
 	STA_setStopCondition();
 	UARTprintf("reduce speed cur_freq=%f to stop\n", m_status.cur_freq);
 	UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
+#endif
 
     return 0;
 
@@ -846,7 +873,7 @@ STATIC int dbg_setDirection(int argc, char *argv[])
 	if(dir != 0 && dir != 1) goto dir_err;
 
 	data.l = (uint32_t)dir;
-	PARAM_setDirection(data);
+	dbg_setQueCommand(DIRECTION_INDEX, data);
 
     return 0;
 
@@ -911,10 +938,9 @@ param_err:
 
 STATIC int dbg_setBrakeControl(int argc, char *argv[])
 {
-	int value, result=0;
+	int value;
 	float_t f_value;
 	union32_st data;
-	char *brk_str[3] = { "Decel", "DC inject", "FreeRun" };
 
 	if(argc < 2 || argc > 3) goto brk_err;
 
@@ -935,20 +961,13 @@ STATIC int dbg_setBrakeControl(int argc, char *argv[])
 		if(strcmp(argv[1], "mth")==0)
 		{
 			data.l = (uint32_t)value;
-			result = PARAM_setBrakeType(data);
-			if(result)
-				UARTprintf("set brake method %d is %s\n", value, res_str[result]);
-			else
-				UARTprintf("set brake method %d is %s\n", value, brk_str[value]);
-			return result;
+			dbg_setQueCommand(BRK_TYPE_INDEX, data);
 		}
 		else if(strcmp(argv[1], "freq")==0)
 		{
 			f_value = (float_t)(value/FREQ_INPUT_RESOLUTION);
 			data.f = f_value;
-			result = PARAM_setBrakeFreq(data);
-			UARTprintf("set brake start freq %f is %s\n", f_value, res_str[result]);
-			return result;
+			dbg_setQueCommand(BRK_FREQ_INDEX, data);
 		}
 		else
 			goto brk_err;
@@ -963,7 +982,7 @@ brk_err:
 
 STATIC int dbg_setDcInjBrake(int argc, char *argv[])
 {
-	int value, result;
+	int value;
 	float_t f_value;
 	union32_st data;
 
@@ -979,12 +998,12 @@ STATIC int dbg_setDcInjBrake(int argc, char *argv[])
 		else if(strcmp(argv[1], "on") == 0)
 		{
 			data.l = (uint32_t)DC_INJECT_BRAKE;
-			result = PARAM_setBrakeType(data);
+			dbg_setQueCommand(BRK_TYPE_INDEX, data);
 		}
 		else if(strcmp(argv[1], "off") == 0)
 		{
 			data.l = (uint32_t)REDUCE_SPEED_BRAKE;
-			result = PARAM_setBrakeType(data);
+			dbg_setQueCommand(BRK_TYPE_INDEX, data);
 		}
 		else
 			goto dcib_err;
@@ -997,27 +1016,19 @@ STATIC int dbg_setDcInjBrake(int argc, char *argv[])
 		data.f = f_value;
 		if(strcmp(argv[1], "frq")==0)
 		{
-			result = PARAM_setDciBrakeStartFreq(data);
-			UARTprintf("set brake start freq %f is %s\n", f_value, res_str[result]);
-			return result;
+			dbg_setQueCommand(BRK_DCI_START_FREQ_INDEX, data);
 		}
 		else if(strcmp(argv[1], "btime")==0)
 		{
-			result = PARAM_setDciBrakeBlockTime(data);
-			UARTprintf("set brake block time %f is %s\n", f_value, res_str[result]);
-			return result;
+			dbg_setQueCommand(BRK_DCI_BLOCK_TIME_INDEX, data);
 		}
 		else if(strcmp(argv[1], "rate")==0)
 		{
-			result = PARAM_setDciBrakeRate(data);
-			UARTprintf("set brake rate %f for brake is %s\n", f_value, res_str[result]);
-			return result;
+			dbg_setQueCommand(BRK_DCI_BRAKING_RATE_INDEX, data);
 		}
 		else if(strcmp(argv[1], "time")==0)
 		{
-			result = PARAM_setDciBrakeTime(data);
-			UARTprintf("set brake time %f for brake is %s\n", f_value, res_str[result]);
-			return result;
+			dbg_setQueCommand(BRK_DCI_BRAKING_TIME_INDEX, data);
 		}
 		else
 			goto dcib_err;
@@ -1209,7 +1220,7 @@ STATIC int dbg_setFanControl(int argc, char *argv[])
 	if(on_off != 0 && on_off != 1) goto fan_err;
 
 	data.l = (uint32_t)on_off;
-	result = PARAM_setFanControl(data);
+	dbg_setQueCommand(FAN_COMMAND_INDEX, data);
 	if(on_off == 0) // fan off
 	{
 		UTIL_setFanOff();
@@ -1231,7 +1242,7 @@ fan_err:
 
 STATIC int dbg_setOverload(int argc, char *argv[])
 {
-	int value, result;
+	int value;
 	union32_st data;
 
 	if(argc < 2 && argc > 3) goto ovl_err;
@@ -1255,28 +1266,23 @@ STATIC int dbg_setOverload(int argc, char *argv[])
 		{
 			if(value != 0 && value != 1) goto ovl_err;
 
-			PARAM_setOvlEnableTrip(data);
-			return 0;
+			dbg_setQueCommand(OVL_ENABLE_INDEX, data);
 		}
 		else if(strcmp(argv[1], "wlevel")==0)
 		{
-			result = PARAM_setOvlWarnLevel(data);
-			return result;
+			dbg_setQueCommand(OVL_WARN_LIMIT_INDEX, data);
 		}
 		else if(strcmp(argv[1], "w_dur")==0)
 		{
-			result = PARAM_setOvlWarnTime(data);
-			return result;
+			dbg_setQueCommand(OVL_WR_DURATION_INDEX, data);
 		}
 		else if(strcmp(argv[1], "tlevel")==0)
 		{
-			result = PARAM_setOvlTripLevel(data);
-			return result;
+			dbg_setQueCommand(OVL_TR_LIMIT_INDEX, data);
 		}
 		else if(strcmp(argv[1], "t_dur")==0)
 		{
-			result = PARAM_setOvlTripTime(data);
-			return result;
+			dbg_setQueCommand(OVL_TR_DURATION_INDEX, data);
 		}
 		else
 			goto ovl_err;
@@ -1291,7 +1297,6 @@ ovl_err:
 
 STATIC int dbg_setRegen(int argc, char *argv[])
 {
-	int result;
 	uint16_t value, power;
 	union32_st data;
 
@@ -1317,24 +1322,24 @@ STATIC int dbg_setRegen(int argc, char *argv[])
 		if(strcmp(argv[1], "res")==0)
 		{
 			data.f = (float_t)value;
-			result = PARAM_setRegenResistance(data);
+			dbg_setQueCommand(REGEN_RESISTANCE_INDEX, data);
 
 			data.l = (uint32_t)power;
-			result = PARAM_setRegenResistPower(data);
+			dbg_setQueCommand(REGEN_POWER_INDEX, data);
 		}
 		else if(strcmp(argv[1], "thml")==0)
 		{
 			data.f = (float_t)value;
-			result = PARAM_setRegenResistThermal(data);
+			dbg_setQueCommand(REGEN_THERMAL_INDEX, data);
 
 			data.l = (uint32_t)power;
-			result = PARAM_setRegenBand(data);
+			dbg_setQueCommand(REGEN_BAND_INDEX, data);
 		}
 		else
 			goto regen_err;
 	}
 
-	return result;
+	return 0;
 
 regen_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_PROT_REGEN].pcHelp);
@@ -1343,14 +1348,15 @@ regen_err:
 
 STATIC int dbg_stepUpFreq(int argc, char *argv[])
 {
-	int result;
+	union32_st data;
 	float_t f_value = iparam[FREQ_VALUE_INDEX].value.f;
 
     if(argc > 2) goto up_err;
 
     f_value = f_value + (float_t)freq_step;
-    result = FREQ_setFreqValue(f_value);
-    UARTprintf("set frequency=%f rpm=%d at index=%d, result=%s\n", f_value, 30*(int)f_value, 0, res_str[result]);
+    data.f = f_value;
+    dbg_setQueCommand(FREQ_VALUE_INDEX, data);
+    UARTprintf("set frequency=%f rpm=%d \n", f_value, 30*(int)f_value);
     UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
 
     return 0;
@@ -1362,7 +1368,7 @@ up_err:
 
 STATIC int dbg_stepDownFreq(int argc, char *argv[])
 {
-	int result;
+	union32_st data;
 	float_t f_value = iparam[FREQ_VALUE_INDEX].value.f;
 
     if(argc > 2) goto down_err;
@@ -1373,8 +1379,9 @@ STATIC int dbg_stepDownFreq(int argc, char *argv[])
     	UARTprintf("no more step down freq=%f step=%d\n", f_value, freq_step);
     	goto down_err;
     }
-    result = FREQ_setFreqValue(f_value);
-    UARTprintf("set frequency=%f rpm=%d at index=%d, result=%s\n", f_value, 30*(int)f_value, 0, res_str[result]);
+    data.f = f_value;
+    dbg_setQueCommand(FREQ_VALUE_INDEX, data);
+    UARTprintf("set frequency=%f rpm=%d \n", f_value, 30*(int)f_value);
     UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
 
     return 0;
@@ -1782,6 +1789,8 @@ STATIC int dbg_UnitTest(int argc, char *argv[])
     UARTprintf("--Unit Test Running\n");
 
 	UNITY_BEGIN();
+
+	unit_test_running = 1;
 
 	// for speed setting, not used
 	//RUN_TEST(test_setSpeedParam);

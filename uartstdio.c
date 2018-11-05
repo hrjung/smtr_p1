@@ -70,8 +70,8 @@ static unsigned char g_pcUARTRxBuffer[UART_RX_BUFFER_SIZE];
 static volatile unsigned long g_ulUARTRxWriteIndex = 0;
 static volatile unsigned long g_ulUARTRxReadIndex = 0;
 
-unsigned char waveData[24];
-bool printWaveFlag = false;
+//unsigned char waveData[24];
+//bool printWaveFlag = false;
 
 //*****************************************************************************
 //

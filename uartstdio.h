@@ -41,7 +41,8 @@ extern "C"
 #endif
 #ifndef UART_TX_BUFFER_SIZE
 //#define UART_TX_BUFFER_SIZE     12800
-#define UART_TX_BUFFER_SIZE     8192
+//#define UART_TX_BUFFER_SIZE     8192
+#define UART_TX_BUFFER_SIZE     4096
 #endif
 
 //typedef unsigned char tBoolean;

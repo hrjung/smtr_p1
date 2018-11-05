@@ -70,11 +70,12 @@ void test_genErrInfo(int err_code, int state)
 
 void test_errorTrip(void)
 {
+#if 0
 	int result=0;
 	int exp=0;
 	int err=0;
 
-#if 0
+
 	ERR_clearTripData();
 
 	// first error;

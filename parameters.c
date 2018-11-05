@@ -274,6 +274,7 @@ int PARAM_setAccel(union32_st value)
 	int result;
 
 	result = DRV_setAccelTime(acc_rate);
+	UARTprintf("set accel time=%f, result=%s\n", acc_rate, res_str[result]);
 
 	return result;
 }
@@ -284,6 +285,7 @@ int PARAM_setDecel(union32_st value)
 	int result;
 
 	result = DRV_setDecelTime(dec_rate);
+	UARTprintf("set decel time=%f, result=%s\n", dec_rate, res_str[result]);
 
 	return result;
 }
@@ -450,6 +452,7 @@ int PARAM_setVoltageBoost(union32_st value)
 
 	//TODO : need implementation
 	result = DRV_setVoltageBoost(fdata);
+	UARTprintf("set voltage boost %f is %s\n", fdata, res_str[result]);
 
 	return result;
 }
@@ -490,6 +493,7 @@ int PARAM_setDciBrakeStartFreq(union32_st value)
 	int result;
 
 	result = DCIB_setStartFreq(fdata);
+	UARTprintf("set brake start freq %f is %s\n", fdata, res_str[result]);
 
 	return result;
 }
@@ -500,6 +504,7 @@ int PARAM_setDciBrakeBlockTime(union32_st value)
 	int result;
 
 	result = DCIB_setBlockTime(fdata);
+	UARTprintf("set brake block time %f is %s\n", fdata, res_str[result]);
 
 	return result;
 }
@@ -510,6 +515,7 @@ int PARAM_setDciBrakeTime(union32_st value)
 	int result;
 
 	result = DCIB_setBrakeTime(fdata);
+	UARTprintf("set brake time %f for brake is %s\n", fdata, res_str[result]);
 
 	return result;
 }
@@ -520,6 +526,7 @@ int PARAM_setDciBrakeRate(union32_st value)
 	int result;
 
 	result = DCIB_setBrakeRate(fdata);
+	UARTprintf("set brake rate %f for brake is %s\n", fdata, res_str[result]);
 
 	return result;
 }
@@ -617,7 +624,7 @@ int PARAM_setRegenBand(union32_st value)
 	uint32_t ldata = value.l;
 	int result;
 
-	result = REGEN_setRegenVoltReduction((uint16_t)ldata);
+	result = REGEN_setRegenBand((uint16_t)ldata);
 	UARTprintf("set regen reduce %d is %s\n", (int)ldata, res_str[result]);
 
 	return result;
@@ -662,7 +669,7 @@ int PARAM_process(uint16_t index, union32_st data)
 	if(index >= INV_PARAM_INDEX_MAX) return result;
 
 	result = iparam_func[index](data);
-	UARTprintf("process error! index=%d, fdata=%f, ldata=%d\n", index, data.f, (int)data.l);
+	UARTprintf("PARAM_process index=%d, fdata=%f, ldata=%d\n", index, data.f, (int)data.l);
 
 	return result;
 #else

@@ -65,7 +65,7 @@
 #define REGEN_V_MARGIN			(0.9)
 #define MAX_REGEN_CURRENT		(10.0)
 
-// OVL wanrning state
+// OVL warning state
 enum
 {
 	OVL_WARN_NOMAL = 0,
@@ -95,8 +95,6 @@ static int regen_duty=0;
 
 protect_dc_st protect_dc;
 
-//static float_t overload_warn_level, overload_trip_level;
-
 /*******************************************************************************
  * LOCAL FUNCTIONS
  */
@@ -118,6 +116,7 @@ extern uint32_t secCnt;
 extern float_t MAIN_getIave(void);
 extern void MAIN_readCurrent(void);
 extern int MAIN_isOverCurrent(void);
+extern void MAIN_setRegenDuty(float_t resist, uint32_t power);
 
 /*
  *  ======== local function ========
@@ -144,7 +143,6 @@ int OVL_setWarningLevel(uint16_t level)
 
 	iparam[OVL_WARN_LIMIT_INDEX].value.l = level;
 
-	//dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
 	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
 
 	return 0;
@@ -155,7 +153,7 @@ int OVL_setTripLevel(uint16_t level)
 	if(level < TRIP_LEVEL_MIN || level > TRIP_LEVEL_TRIP) return 1;
 
 	iparam[OVL_TR_LIMIT_INDEX].value.l = level;
-	//dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
+
 	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
 
 	return 0;
@@ -218,6 +216,7 @@ int OVL_processOverloadWarning(float_t cur_val)
 		{
 			TMR_disableTimerSig(OVERLOAD_WARN_START_TSIG);
 			ovl_state = OVL_WARN_WARNING;
+
 			if(ovl_alarm_enable == 0)
 			{
 				UARTprintf("OVL ALARM set at %d\n", (int)(secCnt/10));
@@ -356,6 +355,8 @@ int REGEN_setRegenResistance(float_t resist)
 
 	iparam[REGEN_RESISTANCE_INDEX].value.f = resist;
 
+	MAIN_setRegenDuty(resist, iparam[REGEN_POWER_INDEX].value.l);
+
 	return 0;
 }
 
@@ -363,7 +364,9 @@ int REGEN_setRegenResistancePower(uint16_t power)
 {
 	if(power < 10) return 1;
 
-	iparam[REGEN_POWER_INDEX].value.l = power;
+	iparam[REGEN_POWER_INDEX].value.l = (uint32_t)power;
+
+	MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, power);
 
 	return 0;
 }
@@ -375,7 +378,7 @@ int REGEN_setRegenThermal(float_t value)
 	return 0;
 }
 
-int REGEN_setRegenVoltReduction(uint16_t value)
+int REGEN_setRegenBand(uint16_t value)
 {
 	if(value > 150) return 1;
 

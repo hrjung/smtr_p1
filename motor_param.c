@@ -104,7 +104,6 @@ void MPARAM_init(uint16_t type)
 	}
 }
 
-
 void MPARAM_setDciPwmRate(float_t rate)
 {
 	dev_const.dci_pwm_rate = rate/100.0 * mtr_param.max_current*mtr_param.Rs;
