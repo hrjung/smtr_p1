@@ -126,28 +126,28 @@ void PARAM_init(void)
 	iparam[JUMP_ENABLE0_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW0_INDEX].value.f = 0.0;
+	iparam[JUMP_LOW0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH0_INDEX].value.f = 0.0;
+	iparam[JUMP_HIGH0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE1_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE1_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW1_INDEX].value.f = 0.0;
+	iparam[JUMP_LOW1_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH1_INDEX].value.f = 0.0;
+	iparam[JUMP_HIGH1_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE2_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE2_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW2_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW2_INDEX].value.f = 0.0;
+	iparam[JUMP_LOW2_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH2_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH2_INDEX].value.f = 0.0;
+	iparam[JUMP_HIGH2_INDEX].value.f = 1.0;
 
 	iparam[V_BOOST_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[V_BOOST_INDEX].value.f = 0.0;
@@ -159,7 +159,7 @@ void PARAM_init(void)
 	iparam[BRK_TYPE_INDEX].value.l = REDUCE_SPEED_BRAKE;
 
 	iparam[BRK_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[BRK_FREQ_INDEX].value.f = 3.0;
+	iparam[BRK_FREQ_INDEX].value.f = 1.0;
 
 	iparam[BRK_DCI_START_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[BRK_DCI_START_FREQ_INDEX].value.f = 3.0;
@@ -192,13 +192,13 @@ void PARAM_init(void)
 	iparam[REGEN_RESISTANCE_INDEX].value.f = 200.0;
 
 	iparam[REGEN_THERMAL_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[REGEN_THERMAL_INDEX].value.f = 5.0;
+	iparam[REGEN_THERMAL_INDEX].value.f = 1000.0;
 
 	iparam[REGEN_POWER_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[REGEN_POWER_INDEX].value.l = 400;
 
 	iparam[REGEN_BAND_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[REGEN_BAND_INDEX].value.l = 0;
+	iparam[REGEN_BAND_INDEX].value.l = 12;
 
 	iparam[FAN_COMMAND_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[FAN_COMMAND_INDEX].value.l = 0;

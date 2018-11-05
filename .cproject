@@ -102,7 +102,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="out" artifactName="${ProjName}" buildProperties="" cleanCommand="${CG_CLEAN_CMD}" description="Optimization Level 2, Flash build" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.1818092712.28866385" name="Flash" parent="com.ti.ccstudio.buildDefinitions.C2000.Debug">
+				<configuration artifactExtension="out" artifactName="${ProjName}" buildProperties="" cleanCommand="${CG_CLEAN_CMD}" description="Optimization Level 2, Flash build" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.1818092712.28866385" name="Flash" parent="com.ti.ccstudio.buildDefinitions.C2000.Debug" postbuildStep="">
 					<folderInfo id="com.ti.ccstudio.buildDefinitions.C2000.Debug.1818092712.28866385." name="/" resourcePath="">
 						<toolChain id="com.ti.ccstudio.buildDefinitions.C2000_18.1.exe.DebugToolchain.322008784" name="TI Build Tools" superClass="com.ti.ccstudio.buildDefinitions.C2000_18.1.exe.DebugToolchain" targetTool="com.ti.ccstudio.buildDefinitions.C2000_18.1.exe.linkerDebug.1603413624">
 							<option id="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS.914407570" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS" valueType="stringList">
