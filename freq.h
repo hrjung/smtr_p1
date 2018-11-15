@@ -30,6 +30,7 @@ extern int Freq_isInWorkingFreqRange(float_t value);
 
 extern int FREQ_setFreqValue(float_t value);
 
+extern void FREQ_updateJumpSpeed(void);
 extern int FREQ_setJumpFreqEnable(uint16_t index, uint16_t enable);
 extern int FREQ_setJumpFreqLow(uint16_t index, float_t low);
 extern int FREQ_setJumpFreqHigh(uint16_t index, float_t high);

@@ -289,6 +289,7 @@ extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
 extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
+_iq traj_spd = _IQ(0.0);
 
 void SetGpioInterrupt(void);
 
@@ -820,6 +821,8 @@ void MAIN_setDeviceConstant(void)
 	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
 	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
 	dev_const.ovc_level = mtr_param.max_current*3.0;
+
+	FREQ_updateJumpSpeed();
 
 	MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
 	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection

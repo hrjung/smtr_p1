@@ -58,7 +58,7 @@
  *  ======== local function ========
  */
 
-STATIC int FREQ_isJumpFreqUsed(int index)
+int FREQ_isJumpFreqUsed(int index)
 {
 	return (int)iparam[JMP_ENABLE_BASE + index].value.l;
 }
@@ -210,6 +210,19 @@ int FREQ_setJumpFreqRange(int index, float_t low, float_t high)
 	MAIN_setJumpSpeed(index, low, high);
 
 	return 0;
+}
+
+void FREQ_updateJumpSpeed(void)
+{
+	int i;
+
+	for(i=0; i<MAX_JUMP_FREQ_NUM; i++)
+	{
+		if(FREQ_isJumpFreqUsed(i))
+		{
+			MAIN_setJumpSpeed(i, iparam[JMP_LOW_BASE+i].value.f, iparam[JMP_HIGH_BASE+i].value.f);
+		}
+	}
 }
 
 float_t FREQ_getVarifiedFreq(float_t current, float_t target)
