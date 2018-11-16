@@ -1512,7 +1512,7 @@ void main(void)
 
   // debug command print
   //UARTprintf("Please, type help for command list \n");
-  //dbg_logo();
+  dbg_logo();
   UARTprintf("debug>");
 
   for(;;)

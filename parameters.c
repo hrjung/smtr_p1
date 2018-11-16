@@ -123,13 +123,13 @@ void PARAM_init(void)
 	iparam[PWM_FREQ_INDEX].value.l = PWM_4KHz;
 
 	iparam[JUMP_ENABLE0_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[JUMP_ENABLE0_INDEX].value.l = 1;//NOT_USED;
+	iparam[JUMP_ENABLE0_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW0_INDEX].value.f = 20.0;
+	iparam[JUMP_LOW0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH0_INDEX].value.f = 25.0;
+	iparam[JUMP_HIGH0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE1_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE1_INDEX].value.l = NOT_USED;
@@ -387,7 +387,7 @@ int PARAM_setEnableJump2(union32_st value)
 
 int PARAM_setJumpFreqLow0(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqLow(0, fdata);
@@ -397,7 +397,7 @@ int PARAM_setJumpFreqLow0(union32_st value)
 
 int PARAM_setJumpFreqLow1(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqLow(1, fdata);
@@ -407,7 +407,7 @@ int PARAM_setJumpFreqLow1(union32_st value)
 
 int PARAM_setJumpFreqLow2(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqLow(2, fdata);
@@ -417,7 +417,7 @@ int PARAM_setJumpFreqLow2(union32_st value)
 
 int PARAM_setJumpFreqHigh0(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqHigh(0, fdata);
@@ -427,7 +427,7 @@ int PARAM_setJumpFreqHigh0(union32_st value)
 
 int PARAM_setJumpFreqHigh1(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqHigh(1, fdata);
@@ -437,7 +437,7 @@ int PARAM_setJumpFreqHigh1(union32_st value)
 
 int PARAM_setJumpFreqHigh2(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = FREQ_setJumpFreqHigh(2, fdata);
@@ -447,7 +447,7 @@ int PARAM_setJumpFreqHigh2(union32_st value)
 
 int PARAM_setVoltageBoost(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	//TODO : need implementation
@@ -459,7 +459,7 @@ int PARAM_setVoltageBoost(union32_st value)
 
 int PARAM_setTorqueLimit(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = DRV_setTorqueLimit(fdata);
@@ -479,7 +479,7 @@ int PARAM_setBrakeType(union32_st value)
 
 int PARAM_setBrakeFreq(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = BRK_setBrakeFreq(fdata);
@@ -489,7 +489,7 @@ int PARAM_setBrakeFreq(union32_st value)
 
 int PARAM_setDciBrakeStartFreq(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = DCIB_setStartFreq(fdata);
@@ -500,7 +500,7 @@ int PARAM_setDciBrakeStartFreq(union32_st value)
 
 int PARAM_setDciBrakeBlockTime(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = DCIB_setBlockTime(fdata);
@@ -511,7 +511,7 @@ int PARAM_setDciBrakeBlockTime(union32_st value)
 
 int PARAM_setDciBrakeTime(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = DCIB_setBrakeTime(fdata);
@@ -522,7 +522,7 @@ int PARAM_setDciBrakeTime(union32_st value)
 
 int PARAM_setDciBrakeRate(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = DCIB_setBrakeRate(fdata);
@@ -588,7 +588,7 @@ int PARAM_setOvlTripTime(union32_st value)
 
 int PARAM_setRegenResistance(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = REGEN_setRegenResistance(fdata);
@@ -599,7 +599,7 @@ int PARAM_setRegenResistance(union32_st value)
 
 int PARAM_setRegenResistThermal(union32_st value)
 {
-	uint32_t fdata = value.f;
+	float_t fdata = value.f;
 	int result;
 
 	result = REGEN_setRegenThermal(fdata);

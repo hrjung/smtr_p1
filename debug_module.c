@@ -155,7 +155,7 @@ extern tBoolean g_bNewCmd;
 extern uint32_t secCnt;
 extern MOTOR_working_st m_status;
 extern float_t sf4pu_rpm;
-//extern USER_Params gUserParams;
+extern USER_Params gUserParams;
 extern int for_rev_flag;
 extern int ovl_alarm_enable;
 extern uint16_t Vinst[];
@@ -2176,10 +2176,12 @@ void ProcessDebugCommand(void)
 
 void dbg_logo(void)
 {
-	UARTprintf("\n*****************************************************************");
-	UARTprintf("\n**%14sCompiled :    %4d/%02d/%02d   %10s %9s**", " ", BUILD_YEAR, BUILD_MONTH, BUILD_DAY, __TIME__, " ");
-	UARTprintf("\n**%15sCopyright(C) Nara Control Co., Ltd.%11s**", " ", " ");
-	UARTprintf("\n**        Motor control debug program for TMS320F28069M        **\n");
+	//UARTprintf("\n*****************************************************************");
+	//UARTprintf("\n**%14sCompiled :    %4d/%02d/%02d   %10s %9s**", " ", BUILD_YEAR, BUILD_MONTH, BUILD_DAY, __TIME__, " ");
+	//UARTprintf("\n**%15sCopyright(C) Nara Control Co., Ltd.%11s**", " ", " ");
+	//UARTprintf("\n**        Motor control debug program for TMS320F28069M        **\n");
+	UARTprintf("\n** %s Compiled :    %4d/%02d/%02d   %10s **", " ", BUILD_YEAR, BUILD_MONTH, BUILD_DAY, __TIME__);
+	UARTprintf("\n");
 }
 
 int EchoSetting(int argc, char *argv[])
