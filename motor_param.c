@@ -13,6 +13,7 @@
 
 #include "main.h"
 #include "inv_param.h"
+#include "parameters.h"
 #include "motor_param.h"
 
 
@@ -22,6 +23,10 @@
 //! @{
 //
 //*****************************************************************************
+
+#define PWM_DEADBAND_LIMITATION  (0.93)
+
+
 const motor_param_st TEST_0_25k = {
 	2,		//pole_pairs;
 	60, 	//rated_freq;
@@ -89,6 +94,21 @@ motor_param_st mtr_param;
 //
 //*****************************************************************************
 
+STATIC void MPARAM_setDciPwmRate(float_t rate)
+{
+	dev_const.dci_pwm_rate = rate/100.0 * mtr_param.max_current*mtr_param.Rs;
+}
+
+STATIC void MPARAM_setOvlTripLevel(uint32_t level)
+{
+	dev_const.trip_level = mtr_param.max_current*(float_t)level/100.0;
+}
+
+STATIC void MPARAM_setOvlWarnLevel(uint32_t level)
+{
+	dev_const.warn_level = mtr_param.max_current*(float_t)level/100.0;
+}
+
 void MPARAM_init(uint16_t type)
 {
 	switch(type)
@@ -104,21 +124,32 @@ void MPARAM_init(uint16_t type)
 	}
 }
 
-void MPARAM_setDciPwmRate(float_t rate)
+void MPARAM_setMotorParam(USER_Params *pUserParams)
 {
-	dev_const.dci_pwm_rate = rate/100.0 * mtr_param.max_current*mtr_param.Rs;
+	pUserParams->motor_type = USER_MOTOR_TYPE;
+	pUserParams->motor_numPolePairs = mtr_param.pole_pairs;
+	pUserParams->motor_ratedFlux = mtr_param.rated_flux;
+	pUserParams->motor_Rr = mtr_param.Rr;
+	pUserParams->motor_Rs = mtr_param.Rs;
+	pUserParams->motor_Ls_d = mtr_param.Ls;
+	pUserParams->motor_Ls_q = mtr_param.Ls;
+
+	pUserParams->maxCurrent = mtr_param.max_current;
+	pUserParams->IdRated = mtr_param.noload_current;
+
+	pUserParams->maxNegativeIdCurrent_a = (-0.5 * pUserParams->maxCurrent);
+
+	pUserParams->VF_volt_max = ((mtr_param.voltage_in*1.414)/1.732051)*PWM_DEADBAND_LIMITATION;
+	pUserParams->VF_volt_min = (pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH));
 }
 
-void MPARAM_setOvlTripLevel(uint32_t level)
+void MPARAM_updateDevConst(void)
 {
-	dev_const.trip_level = mtr_param.max_current*(float_t)level/100.0;
+	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
+	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
+	dev_const.ovc_level = mtr_param.max_current*3.0;
+	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 }
-
-void MPARAM_setOvlWarnLevel(uint32_t level)
-{
-	dev_const.warn_level = mtr_param.max_current*(float_t)level/100.0;
-}
-
 
 float_t FREQ_convertToSpeed(float_t freq)
 {

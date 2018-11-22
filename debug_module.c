@@ -267,6 +267,7 @@ STATIC int dbg_getAdcSample(int argc, char *argv[]);
 #endif
 
 STATIC int dbg_testCmdQueue(int argc, char *argv[]);
+STATIC int dbg_testMotorParam(int argc, char *argv[]);
 #ifdef UNIT_TEST_ENABLED
 STATIC int dbg_UnitTest(int argc, char *argv[]);
 #endif
@@ -480,6 +481,8 @@ STATIC void dbg_showMotorParam(void)
 	//UARTprintf("\t slip freq: %f, effectiveness: %f\n", mtr.slip_rate, mtr.effectiveness);
 	UARTprintf("\t no load current: %f, max_current: %f\n", mtr_param.noload_current, mtr_param.max_current);
 	UARTprintf("\t Rs: %f, Rr: %f, Ls: %f\n", mtr_param.Rs, mtr_param.Rr, mtr_param.Ls);
+
+	UARTprintf("\t gUser.max_current: %f\n", gUserParams.maxCurrent);
 }
 
 STATIC void dbg_showTripData(void)
@@ -1045,14 +1048,27 @@ dcib_err:
 #if 1
 STATIC int dbg_processMotorParam(int argc, char *argv[])
 {
+	uint16_t mtr_set;
+
 	if(argc == 1)
 	{
 		dbg_showMotorParam();
-		return 0;
+	}
+	else if(argc == 2)
+	{
+		mtr_set = (uint16_t)atoi(argv[1]);
+		if(mtr_set >= MOTOR_TYPE_MAX) goto mtr_err;
+
+		MPARAM_init(MOTOR_SY_1_5K_TYPE);
+		MPARAM_setMotorParam(&gUserParams);
+
+		CTRL_setParams(ctrlHandle,&gUserParams);
+		CTRL_setUserMotorParams(ctrlHandle);
 	}
 	else
 		goto mtr_err;
 
+	return 0;
 
 mtr_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SHOW_MTR_PARAM].pcHelp);

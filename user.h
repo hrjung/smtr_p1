@@ -441,7 +441,7 @@ extern "C" {
 
 #define USER_MOTOR_TYPE                 MOTOR_Type_Induction
 #define USER_MOTOR_NUM_POLE_PAIRS       (2)
-#if 1 // 1.5kW
+#if 0 // 1.5kW
 #define USER_MOTOR_Rr                   (2.14568)
 #define USER_MOTOR_Rs                   (2.5)
 //#define USER_MOTOR_Ls_d                 (0.02791)

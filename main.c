@@ -101,7 +101,7 @@
 // the extern function
 extern void dbg_logo(void);
 extern void ProcessDebugCommand(void);
-extern void init_test_param(void);
+//extern void init_test_param(void);
 #ifdef SAMPLE_ADC_VALUE
 extern void dbg_getSample(float_t val1, float_t val2, float_t val3);
 #endif
@@ -815,19 +815,11 @@ void MAIN_setDeviceConstant(void)
 
 //	dev_const.spd_rpm_min = (mtr.rpm_min/dev_param.gear_ratio);
 //	dev_const.spd_rpm_max = (mtr.rpm_max/dev_param.gear_ratio);
-//	dev_const.regen_limit = DC_VOLTAGE_END_REGEN_LEVEL;
-	//dev_const.trip_level = mtr.max_current*(float_t)iparam[OVL_TR_LIMIT_INDEX].value.l/100.0;
-	//dev_const.warn_level = mtr.max_current*(float_t)iparam[OVL_WARN_LIMIT_INDEX].value.l/100.0;
-	MPARAM_setOvlTripLevel(iparam[OVL_TR_LIMIT_INDEX].value.l);
-	MPARAM_setOvlWarnLevel(iparam[OVL_WARN_LIMIT_INDEX].value.l);
-	dev_const.ovc_level = mtr_param.max_current*3.0;
+	MPARAM_updateDevConst();
 
 	FREQ_updateJumpSpeed();
 
 	MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
-	//dev_const.dci_pwm_rate = iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f/100.0 * mtr.max_current*mtr.Rs*2.0; // use 2*Rs for Y connection
-	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
-
 
 	// variable setting from parameter
 	if(iparam[DIRECTION_INDEX].value.l == 0)
@@ -1247,6 +1239,7 @@ void main(void)
 
   // initialize the user parameters
   USER_setParams(&gUserParams);
+  MPARAM_setMotorParam(&gUserParams);
 
   // check for errors in user parameters
   USER_checkForErrors(&gUserParams);
@@ -1278,11 +1271,11 @@ void main(void)
   //init_test_param(); // NV data initialize, will be removed after NV enabled
   //initParam();
   MPARAM_init(MOTOR_SY_1_5K_TYPE);
+  MPARAM_setMotorParam(&gUserParams);
   PARAM_init();
 
   MAIN_setDeviceConstant();
   UTIL_setRegenPwmDuty(0);
-  PROT_init(mtr_param.voltage_in);
   //DRV_setPwmFrequency(PWM_4KHz); //test
 
   QUE_init();
@@ -1290,7 +1283,8 @@ void main(void)
 #ifdef SUPPORT_USER_VARIABLE
 
   // initialize the user parameters
-  USER_setParams(&gUserParams, &mtr);
+  USER_setParams(&gUserParams);
+  MPARAM_setMotorParam(&gUserParams);
 
   // check for errors in user parameters
   USER_checkForErrors(&gUserParams);
@@ -1382,6 +1376,8 @@ void main(void)
 
   //initialize timer variable
   TMR_init();
+
+  PROT_init((int)mtr_param.voltage_in);
 
 #ifdef SUPPORT_SPI_INTERRUPT
   SPI_enableInterrupt();

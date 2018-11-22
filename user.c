@@ -168,15 +168,6 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->estKappa = USER_EST_KAPPAQ;
 
-#ifdef SUPPORT_USER_VARIABLE
-  pUserParams->motor_type = USER_MOTOR_TYPE;
-  pUserParams->motor_numPolePairs = pmtr->poles;
-  pUserParams->motor_ratedFlux = (0.8165*(float_t)mtr.input_voltage)/(float_t)mtr.rated_freq;;
-  pUserParams->motor_Rr = pmtr->Rr;
-  pUserParams->motor_Rs = pmtr->Rs;
-  pUserParams->motor_Ls_d = pmtr->Ls;
-  pUserParams->motor_Ls_q = pmtr->Ls;
-#else
   pUserParams->motor_type = USER_MOTOR_TYPE;
   pUserParams->motor_numPolePairs = USER_MOTOR_NUM_POLE_PAIRS;
   pUserParams->motor_ratedFlux = USER_MOTOR_RATED_FLUX;
@@ -184,7 +175,6 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->motor_Rs = USER_MOTOR_Rs;
   pUserParams->motor_Ls_d = USER_MOTOR_Ls_d;
   pUserParams->motor_Ls_q = USER_MOTOR_Ls_q;
-#endif
 
 /*  if((pUserParams->motor_Rr > (float_t)0.0) && (pUserParams->motor_Rs > (float_t)0.0))
     {
@@ -197,17 +187,15 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->maxCurrent_resEst = USER_MOTOR_RES_EST_CURRENT;
   pUserParams->maxCurrent_indEst = USER_MOTOR_IND_EST_CURRENT;
+  pUserParams->maxCurrent = USER_MOTOR_MAX_CURRENT;
 #ifdef SUPPORT_USER_VARIABLE
-  pUserParams->maxCurrent = pmtr->max_current;
   pUserParams->maxCurrentSlope = (USER_MOTOR_RES_EST_CURRENT/USER_IQ_FULL_SCALE_CURRENT_A/pUserParams->trajFreq_Hz);
   pUserParams->maxCurrentSlope_powerWarp = (0.3*pUserParams->maxCurrentSlope);
-  pUserParams->IdRated = (1.4142*pmtr->noload_current);
 #else
-  pUserParams->maxCurrent = USER_MOTOR_MAX_CURRENT;
   pUserParams->maxCurrentSlope = USER_MAX_CURRENT_SLOPE;
   pUserParams->maxCurrentSlope_powerWarp = USER_MAX_CURRENT_SLOPE_POWERWARP;
-  pUserParams->IdRated = USER_MOTOR_MAGNETIZING_CURRENT;
 #endif
+  pUserParams->IdRated = USER_MOTOR_MAGNETIZING_CURRENT;
   pUserParams->IdRatedFraction_ratedFlux = USER_IDRATED_FRACTION_FOR_RATED_FLUX;
   pUserParams->IdRatedFraction_indEst = USER_IDRATED_FRACTION_FOR_L_IDENT;
   pUserParams->IdRated_delta = USER_IDRATED_DELTA;
@@ -313,11 +301,7 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->ctrlPeriod_sec = USER_CTRL_PERIOD_sec;
 #endif  
 
-#ifdef SUPPORT_USER_VARIABLE
-  pUserParams->maxNegativeIdCurrent_a = (-0.5 * pUserParams->maxCurrent);
-#else
   pUserParams->maxNegativeIdCurrent_a = USER_MAX_NEGATIVE_ID_REF_CURRENT_A;
-#endif
 
 #ifdef SUPPORT_USER_VARIABLE
   pUserParams->I_A_Offset = I_A_offset;
@@ -328,47 +312,6 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->V_B_Offset = V_B_offset;
   pUserParams->V_C_Offset = V_C_offset;
 #endif  
-
-//  pUserParams->VF_freq_low = (float_t)USER_MOTOR_FREQ_LOW;
-//  pUserParams->VF_freq_high = (float_t)USER_MOTOR_FREQ_HIGH;
-
-//#define PWM_DEADBAND_LIMITATION  (0.95)
-#define PWM_DEADBAND_LIMITATION  (0.93) // for 1.5kW
-//#define PWM_DEADBAND_LIMITATION  (0.93) // deadband 1.8us, PWM 4kHz, adjust for no haunting(?)
-//#define PWM_DEADBAND_LIMITATION  (1.08)
-//#define PWM_DEADBAND_LIMITATION  (1.06) // deadband 1.8us, PWM 12kHz, adjust for no haunting(?)
-//#define PWM_DEADBAND_LIMITATION  (1.02) // deadband 1.8us, PWM 8kHz, adjust for no haunting(?)
-//#define PWM_DEADBAND_LIMITATION  (0.965) // deadband 1.8us, PWM 4kHz, adjust for no haunting(?)
-//#define PWM_DEADBAND_LIMITATION  (0.93) // deadband 2us, PWM 4kHz
-//#define PWM_DEADBAND_LIMITATION  (0.91) // deadband 2us, PWM 8kHz
-//#define PWM_DEADBAND_LIMITATION  (0.89) // deadband 2us, PWM 12kHz
-//#define PWM_DEADBAND_LIMITATION  (0.87)  // deadband 2us, PWM 16kHz
-
-#if 1
-#ifdef SUPPORT_USER_VARIABLE
-  pUserParams->VF_volt_max = ((pmtr->input_voltage*1.35)/1.732051)*PWM_DEADBAND_LIMITATION;
-#else
-  pUserParams->VF_volt_max = ((USER_INPUT_VOLTAGE*1.414)/1.732051)*PWM_DEADBAND_LIMITATION;
-  //pUserParams->VF_volt_max = ((USER_INPUT_VOLTAGE*1.35)/1.732051)*PWM_DEADBAND_LIMITATION;
-#endif
-  //pUserParams->VF_volt_min = 20.0;
-  pUserParams->VF_volt_min = (pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH));
-#else
-  if(pmtr->input_voltage == 220) // standard x1.35+10.0
-  {
-	  pUserParams->VF_volt_max = ((pmtr->input_voltage*1.35)/1.732051 + 10.0);//USER_MOTOR_VOLT_MAX;
-	  pUserParams->VF_volt_min = (10.0 + pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH));//USER_MOTOR_VOLT_MIN; //pmtr->input_voltage*0.1;
-  }
-  else if(pmtr->input_voltage == 380)
-  {
-	  pUserParams->VF_volt_max = ((pmtr->input_voltage*1.5)/1.732051 + 10.0);//USER_MOTOR_VOLT_MAX;
-	  pUserParams->VF_volt_min = (10.0 + pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH));//USER_MOTOR_VOLT_MIN; //pmtr->input_voltage*0.1;
-  }
-  else
-	  internal_status.trip_happened = TRIP_REASON_INPUT_VOLT_ERR;
-#endif
-  //pUserParams->VF_volt_min = (80.0/1.732051);//USER_MOTOR_VOLT_MIN;
-  //pUserParams->VF_volt_min = (10.0/1.732051) + pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH);//USER_MOTOR_VOLT_MIN; //pmtr->input_voltage*0.1;
 
   return;
 } // end of USER_setParams() function

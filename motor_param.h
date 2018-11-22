@@ -9,7 +9,7 @@
 #define MOTOR_PARAM_H
 
 #include "stdint.h"
-
+#include "userParams.h"
 
 /*******************************************************************************
  * CONSTANTS
@@ -20,6 +20,8 @@
 #define MOTOR_SY_1_5K_TYPE        	1
 #define MOTOR_SY_1_5K_IE3_TYPE     	2
 #define MOTOR_SY_2_2K_TYPE        	3
+
+#define MOTOR_TYPE_MAX				4
 
 
 typedef struct
@@ -40,9 +42,12 @@ typedef struct
 
 
 extern void MPARAM_init(uint16_t type);
-extern void MPARAM_setDciPwmRate(float_t rate);
-extern void MPARAM_setOvlTripLevel(uint32_t level);
-extern void MPARAM_setOvlWarnLevel(uint32_t level);
+extern void MPARAM_setMotorParam(USER_Params *pUserParams);
+extern void MPARAM_updateDevConst(void);
+
+//extern void MPARAM_setDciPwmRate(float_t rate);
+//extern void MPARAM_setOvlTripLevel(uint32_t level);
+//extern void MPARAM_setOvlWarnLevel(uint32_t level);
 
 extern float_t FREQ_convertToSpeed(float_t freq);
 
