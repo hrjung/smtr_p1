@@ -316,6 +316,7 @@ typedef struct
 	uint16_t	relay_enabled;
 	uint16_t	regen_enabled;
 	uint16_t 	trip_happened;
+	uint16_t 	fan_enabled;
 	uint16_t 	shaft_brake_enabled;
 
 	uint16_t 	oc_count; // over current count

@@ -16,6 +16,7 @@
 #include "timer_handler.h"
 #include "protect.h"
 #include "err_trip.h"
+#include "common_tools.h"
 
 /*******************************************************************************
  * MACROS
@@ -35,6 +36,7 @@
 #define TRIP_TIME_WARN_MAX	30
 #define TRIP_TIME_TRIP_MAX	60
 
+#define IPM_TEMPERATURE_FAN_ON	(60.0)
 #define IPM_TEMPERATURE_LIMIT	(100.0)
 #define MOTOR_TEMPERATURE_LIMIT	(50.0)
 
@@ -433,6 +435,7 @@ int REGEN_process(float_t dc_volt)
 		if(dc_volt > protect_dc.dc_volt_init_relay_on)
 		{
 			UTIL_setInitRelay();
+			//UTIL_setFanOn();
 //			UARTprintf("Relay on at Vdc %f\n", dc_volt);
 			under_flag=0; //initialize
 			//off_flag=0; //initialize
@@ -445,6 +448,7 @@ int REGEN_process(float_t dc_volt)
 			// DC under voltage trip
 			if(under_flag==0)
 			{
+				//UTIL_setFanOff();
 				UARTprintf("DC under voltage %f trip event happened at %d\n", dc_volt, (int)(secCnt/10));
 				under_flag=1;
 			}
@@ -521,12 +525,38 @@ int REGEN_process(float_t dc_volt)
 //	return 0;
 //}
 
+int TEMP_isFanOn(float_t ipm_temp)
+{
+	if(internal_status.fan_enabled == 1) return 0; // already on
+
+	if(ipm_temp > IPM_TEMPERATURE_FAN_ON) return 1;
+	else 	return 0;
+
+}
+
+int TEMP_isFanOff(float_t ipm_temp)
+{
+	if(internal_status.fan_enabled == 0) return 0; // already off
+
+	if(ipm_temp > IPM_TEMPERATURE_FAN_ON) return 0;
+	else 	return 1;
+
+}
+
 int TEMP_monitorTemperature(void)
 {
 	float_t ipm_temp, mtr_temp;
 	static int ipm_status=0, mtr_status=0;
 
 	ipm_temp = UTIL_readIpmTemperature();
+
+	if(iparam[FAN_COMMAND_INDEX].value.l == 1) // conditional FAN control
+	{
+		if(TEMP_isFanOn(ipm_temp)) UTIL_setFanOn();
+
+		if(TEMP_isFanOff(ipm_temp)) UTIL_setFanOff();
+	}
+
 	if(ipm_temp > IPM_TEMPERATURE_LIMIT)
 	{
 		ERR_setTripFlag(TRIP_REASON_IPM_OVER_TEMP);

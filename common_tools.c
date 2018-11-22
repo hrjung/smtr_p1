@@ -43,11 +43,13 @@ void UTIL_releaseShaftBrake(void)
 
 void UTIL_setFanOn(void)
 {
+	internal_status.fan_enabled = 1;
 	HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
 }
 
 void UTIL_setFanOff(void)
 {
+	internal_status.fan_enabled = 0;
 	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
 }
 

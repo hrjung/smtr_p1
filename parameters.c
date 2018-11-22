@@ -603,7 +603,7 @@ int PARAM_setRegenResistThermal(union32_st value)
 	int result;
 
 	result = REGEN_setRegenThermal(fdata);
-	UARTprintf("set regen thermal %d is %s\n", fdata, res_str[result]);
+	UARTprintf("set regen thermal %f is %s\n", fdata, res_str[result]);
 
 	return result;
 }

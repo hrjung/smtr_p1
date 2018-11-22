@@ -1221,16 +1221,7 @@ STATIC int dbg_setFanControl(int argc, char *argv[])
 
 	data.l = (uint32_t)on_off;
 	dbg_setQueCommand(FAN_COMMAND_INDEX, data);
-	if(on_off == 0) // fan off
-	{
-		UTIL_setFanOff();
-		UARTprintf("fan off\n");
-    }
-    else
-    {
-    	UTIL_setFanOn();
-		UARTprintf("fan on\n");
-    }
+	UARTprintf("set fan control %d\n", on_off);
 
     return result;
 
@@ -1933,12 +1924,6 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     }
     else if(index == 6)
     {
-
-    	//UTIL_controlLed(HAL_Gpio_LED_R2, 1);
-    	UTIL_controlLed(HAL_Gpio_LED_G, 1);
-    }
-    else if(index == 7)
-    {
     	uint16_t size;
 
     	size = PARAM_getInvStatus(&invbuf[0]);
@@ -1951,9 +1936,8 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	size = PARAM_getValue(0x100, (uint16_t *)&rparam[0]);
     	UARTprintf(" Err Status : 0x%x, 0x%x\n", rparam[0], rparam[1]);
-
     }
-    else if(index == 8)
+    else if(index == 7)
     {
     	uint16_t   pwm_4k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/4.0)) >> 1;
     	uint16_t   pwm_8k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/8.0)) >> 1;
@@ -1962,6 +1946,18 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)USER_PWM_FREQ_kHz);
     	UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
+    }
+    else if(index == 8)
+    {
+    	//UTIL_controlLed(HAL_Gpio_LED_R2, 1);
+    	//UTIL_controlLed(HAL_Gpio_LED_G, 1);
+    	UTIL_setFanOff();
+    	UARTprintf(" Fan off %d, %d\n", internal_status.fan_enabled, (int)iparam[FAN_COMMAND_INDEX].value.l);
+    }
+    else if(index == 9)
+    {
+    	UTIL_setFanOn();
+    	UARTprintf(" Fan on %d, %d\n", internal_status.fan_enabled, (int)iparam[FAN_COMMAND_INDEX].value.l);
     }
     else if(index == 'g')
     {
