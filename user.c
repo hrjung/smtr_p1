@@ -43,8 +43,8 @@
 #include "sw/modules/ctrl/src/32b/ctrl.h"
 //#include "ctrl.h"
 
-#ifdef SUPPORT_USER_VARIABLE
-#include "inv_param.h"
+#ifdef SUPPORT_VAR_PWM_FREQ
+//#include "inv_param.h"
 
 
 extern float_t DRV_getPwmFrequency(void);
@@ -56,32 +56,20 @@ extern float_t DRV_getPwmFrequency(void);
 //! \brief ADC current offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
-//#define   I_A_offset    (0.9966602325)
-//#define   I_B_offset    (0.9960474968)
-//#define   I_C_offset    (0.997712791)
 
-#define   I_A_offset    (0.0)
-#define   I_B_offset    (0.0)
-#define   I_C_offset    (0.0)
+//#define   I_A_offset    (0.8333) //(1.36)	// V
+//#define   I_B_offset    (0.8333) //(1.325)  // W
+//#define   I_C_offset    (0.0)  // U
 
 //! \brief ADC voltage offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
-//#define   V_A_offset    (0.3384106159)
-//#define   V_B_offset    (0.3370528817)
-//#define   V_C_offset    (0.3377450705)
 
-#define   V_A_offset    (0.32325)  // PU value of 278V
-#define   V_B_offset    (0.324419)
-#define   V_C_offset    (0.32325)
+//#define   V_A_offset    (0.269)  // V
+//#define   V_B_offset    (0.267)  // W
+//#define   V_C_offset    (0.269)  // U
 
-//#define USER_MOTOR_FREQ_LOW				(5.0)			// Hz - suggested to set to 10% of rated motor frequency
-//#define USER_MOTOR_FREQ_HIGH			(60.0)			// Hz - suggested to set to 100% of rated motor frequency
-//#define USER_MOTOR_FREQ_MAX				(60.0)			// Hz - suggested to set to 120% of rated motor frequency
-//#define USER_MOTOR_VOLT_MIN				(10.0)			// Volt - suggested to set to ~20% of rated motor voltage
-//#define USER_MOTOR_VOLT_MAX				(240.0/1.732051)// Volt - suggested to set to 100% of rated motor voltage
-
-#define USER_MOTOR_TYPE                 MOTOR_Type_Induction
+//#define USER_MOTOR_TYPE                 MOTOR_Type_Induction
 
 
 // **************************************************************************
@@ -90,12 +78,16 @@ extern float_t DRV_getPwmFrequency(void);
 extern USER_Params gUserParams;
 #endif
 
-#define USER_INPUT_VOLTAGE	(380)
+//#define USER_INPUT_VOLTAGE	(380)
 // **************************************************************************
 // the functions
 
 void USER_setParams(USER_Params *pUserParams)
 {
+#ifdef SUPPORT_VAR_PWM_FREQ
+  float_t pwm_freq = DRV_getPwmFrequency();
+#endif
+
   pUserParams->iqFullScaleCurrent_A = USER_IQ_FULL_SCALE_CURRENT_A;
   pUserParams->iqFullScaleVoltage_V = USER_IQ_FULL_SCALE_VOLTAGE_V;
 
@@ -104,9 +96,15 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->numIsrTicksPerCtrlTick = USER_NUM_ISR_TICKS_PER_CTRL_TICK;
   pUserParams->numCtrlTicksPerCurrentTick = USER_NUM_CTRL_TICKS_PER_CURRENT_TICK;
   pUserParams->numCtrlTicksPerEstTick = USER_NUM_CTRL_TICKS_PER_EST_TICK;
-#ifdef SUPPORT_USER_VARIABLE
-  pUserParams->numCtrlTicksPerSpeedTick = 4; //(uint_least16_t)DRV_getPwmFrequency(); //USER_NUM_CTRL_TICKS_PER_SPEED_TICK;
-  pUserParams->numCtrlTicksPerTrajTick = 4; //(uint_least16_t)DRV_getPwmFrequency(); //USER_NUM_CTRL_TICKS_PER_TRAJ_TICK;
+#ifdef SUPPORT_VAR_PWM_FREQ
+  pUserParams->numCtrlTicksPerSpeedTick = (uint_least16_t)pwm_freq; //USER_NUM_CTRL_TICKS_PER_SPEED_TICK;
+  pUserParams->numCtrlTicksPerTrajTick = (uint_least16_t)pwm_freq; //USER_NUM_CTRL_TICKS_PER_TRAJ_TICK;
+  if(pUserParams->numCtrlTicksPerSpeedTick == 12)
+	  pUserParams->numIsrTicksPerCtrlTick = 2;
+  else if(pUserParams->numCtrlTicksPerSpeedTick == 16)
+	  pUserParams->numIsrTicksPerCtrlTick = 3;
+  else
+	  pUserParams->numIsrTicksPerCtrlTick = 1;
 #else
   pUserParams->numCtrlTicksPerSpeedTick = USER_NUM_CTRL_TICKS_PER_SPEED_TICK;
   pUserParams->numCtrlTicksPerTrajTick = USER_NUM_CTRL_TICKS_PER_TRAJ_TICK;
@@ -138,20 +136,20 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->systemFreq_MHz = USER_SYSTEM_FREQ_MHz;
 
-#ifdef SUPPORT_USER_VARIABLE
-  pUserParams->pwmPeriod_kHz = (4.0); //USER_PWM_FREQ_kHz;
-  //pUserParams->pwmPeriod_kHz = DRV_getPwmFrequency();
+#ifdef SUPPORT_VAR_PWM_FREQ
+  //pUserParams->pwmPeriod_kHz = (4.0); //USER_PWM_FREQ_kHz;
+  pUserParams->pwmPeriod_kHz = pwm_freq;
   pUserParams->pwmPeriod_usec = (1000.0/pUserParams->pwmPeriod_kHz);
 
-  pUserParams->isrFreq_Hz = (uint_least32_t)(pUserParams->pwmPeriod_kHz * 1000.0 / USER_NUM_PWM_TICKS_PER_ISR_TICK);
+  pUserParams->isrFreq_Hz = (uint_least32_t)(pUserParams->pwmPeriod_kHz * 1000.0 / (float_t)USER_NUM_PWM_TICKS_PER_ISR_TICK);
   pUserParams->isrPeriod_usec = (pUserParams->pwmPeriod_usec * (float_t)USER_NUM_PWM_TICKS_PER_ISR_TICK);
 
-  pUserParams->ctrlFreq_Hz = (uint_least32_t)(pUserParams->isrFreq_Hz/USER_NUM_ISR_TICKS_PER_CTRL_TICK);
-  pUserParams->ctrlPeriod_usec = (pUserParams->isrPeriod_usec * USER_NUM_ISR_TICKS_PER_CTRL_TICK);
+  pUserParams->ctrlFreq_Hz = (uint_least32_t)(pUserParams->isrFreq_Hz/(float_t)pUserParams->numIsrTicksPerCtrlTick);
+  pUserParams->ctrlPeriod_usec = (pUserParams->isrPeriod_usec * (float_t)pUserParams->numIsrTicksPerCtrlTick);
 
-  pUserParams->estFreq_Hz = (uint_least32_t)(pUserParams->ctrlFreq_Hz/USER_NUM_CTRL_TICKS_PER_EST_TICK);
+  pUserParams->estFreq_Hz = (uint_least32_t)(pUserParams->ctrlFreq_Hz/(float_t)USER_NUM_CTRL_TICKS_PER_EST_TICK);
 
-  pUserParams->trajFreq_Hz = (uint_least32_t)(pUserParams->ctrlFreq_Hz/pUserParams->numCtrlTicksPerTrajTick);
+  pUserParams->trajFreq_Hz = (uint_least32_t)(pUserParams->ctrlFreq_Hz/(float_t)pUserParams->numCtrlTicksPerTrajTick);
 
   pUserParams->ctrlPeriod_sec = (pUserParams->ctrlPeriod_usec/(float_t)1000000.0);
 #else
@@ -188,7 +186,7 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->maxCurrent_resEst = USER_MOTOR_RES_EST_CURRENT;
   pUserParams->maxCurrent_indEst = USER_MOTOR_IND_EST_CURRENT;
   pUserParams->maxCurrent = USER_MOTOR_MAX_CURRENT;
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   pUserParams->maxCurrentSlope = (USER_MOTOR_RES_EST_CURRENT/USER_IQ_FULL_SCALE_CURRENT_A/pUserParams->trajFreq_Hz);
   pUserParams->maxCurrentSlope_powerWarp = (0.3*pUserParams->maxCurrentSlope);
 #else
@@ -202,7 +200,7 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->fluxEstFreq_Hz = USER_MOTOR_FLUX_EST_FREQ_Hz;
 
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   pUserParams->ctrlWaitTime[CTRL_State_Error]         = 0;
   pUserParams->ctrlWaitTime[CTRL_State_Idle]          = 0;
   pUserParams->ctrlWaitTime[CTRL_State_OffLine]       = (uint_least32_t)( 5.0 * pUserParams->ctrlFreq_Hz);
@@ -303,7 +301,7 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->maxNegativeIdCurrent_a = USER_MAX_NEGATIVE_ID_REF_CURRENT_A;
 
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   pUserParams->I_A_Offset = I_A_offset;
   pUserParams->I_B_Offset = I_B_offset;
   pUserParams->I_C_Offset = I_C_offset;
@@ -316,7 +314,7 @@ void USER_setParams(USER_Params *pUserParams)
   return;
 } // end of USER_setParams() function
 
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
 void USER_checkForErrors(USER_Params *pUserParams)
 {
   USER_setErrorCode(pUserParams, USER_ErrorCode_NoError);
@@ -855,7 +853,11 @@ void USER_checkForErrors(USER_Params *pUserParams)
 
   if(USER_MOTOR_TYPE == MOTOR_Type_Induction)
     {
-      if(USER_IDRATED_DELTA > (USER_IQ_FULL_SCALE_CURRENT_A / ((float_t)USER_NUM_ISR_TICKS_PER_CTRL_TICK * pUserParams->maxCurrent)))
+#ifdef SUPPORT_VAR_PWM_FREQ
+      if(USER_IDRATED_DELTA > (USER_IQ_FULL_SCALE_CURRENT_A / ((float_t)pUserParams->numIsrTicksPerCtrlTick * pUserParams->maxCurrent)))
+#else
+   	  if(USER_IDRATED_DELTA > (USER_IQ_FULL_SCALE_CURRENT_A / ((float_t)USER_NUM_ISR_TICKS_PER_CTRL_TICK * pUserParams->maxCurrent)))
+#endif
         {
           USER_setErrorCode(pUserParams, USER_ErrorCode_IdRated_delta_High);
         }
@@ -1689,7 +1691,7 @@ _iq USER_computeTorque_Ls_Id_Iq_pu_to_Nm_sf(void)
 {
   float_t FullScaleInductance = (USER_IQ_FULL_SCALE_VOLTAGE_V/(USER_IQ_FULL_SCALE_CURRENT_A*USER_VOLTAGE_FILTER_POLE_rps));
   float_t FullScaleCurrent = (USER_IQ_FULL_SCALE_CURRENT_A);
-#ifdef SUPPORT_USER_VARIABLE 
+#ifdef SUPPORT_VAR_PWM_FREQ
   float_t lShift = ceil(log(gUserParams.motor_Ls_d/(0.7*FullScaleInductance))/log(2.0));
 
   return(_IQ(FullScaleInductance*FullScaleCurrent*FullScaleCurrent*gUserParams.motor_numPolePairs*1.5*pow(2.0,lShift)));
@@ -1705,7 +1707,7 @@ _iq USER_computeTorque_Ls_Id_Iq_pu_to_Nm_sf(void)
 //!
 _iq USER_computeTorque_Flux_Iq_pu_to_Nm_sf(void)
 {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
   float_t FullScaleCurrent = (USER_IQ_FULL_SCALE_CURRENT_A);
   float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
@@ -1727,7 +1729,7 @@ _iq USER_computeTorque_Flux_Iq_pu_to_Nm_sf(void)
 //!
 _iq USER_computeFlux_pu_to_Wb_sf(void)
 {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
   float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
 #else
@@ -1744,7 +1746,7 @@ _iq USER_computeFlux_pu_to_Wb_sf(void)
 //!
 _iq USER_computeFlux_pu_to_VpHz_sf(void)
 {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
   float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
 #else

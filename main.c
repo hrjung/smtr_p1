@@ -281,6 +281,10 @@ _iq Id_in = _IQ(0.0);
 _iq Iq_in = _IQ(0.0);
 #endif
 
+#ifdef SUPPORT_VAR_PWM_FREQ
+uint16_t pwm_freq_updated=0;
+#endif
+
 extern uint32_t secCnt;
 
 uint16_t ret_status=1;
@@ -494,11 +498,14 @@ int MAIN_getSampleCountLimit(void)
 	float_t freq=0.0;
 	//float_t pwm_freq[] = {4000.0, 8000.0, 12000.0, 16000.0};
 
-#ifdef SUPPORT_USER_VARIABLE
-	return (int)(gUserParams.pwmPeriod_kHz*1000.0/(STA_getCurFreq()*(float_t)I_RMS_SAMPLE_COUNT));
-#else
-
 	freq = STA_getCurFreq();
+
+#ifdef SUPPORT_VAR_PWM_FREQ
+	if(freq < 1.0)
+		return (int)(gUserParams.pwmPeriod_kHz*1000.0/(60.0*(float_t)I_RMS_SAMPLE_COUNT));
+	else
+		return (int)(gUserParams.pwmPeriod_kHz*1000.0/(freq*(float_t)I_RMS_SAMPLE_COUNT));
+#else
 	if(freq < 1.0)
 		return (int)(USER_PWM_FREQ_kHz*1000.0/(60.0*(float_t)I_RMS_SAMPLE_COUNT));
 	else
@@ -648,7 +655,7 @@ void MAIN_resetOffsetV(void)
 
 void MAIN_setOffset(void)
 {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
 	// set the current bias from setting
 	HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(gUserParams.I_A_Offset));
 	HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(gUserParams.I_B_Offset));
@@ -827,6 +834,8 @@ void MAIN_setDeviceConstant(void)
 	else
 		direction = -1.0;
 
+	// update MotorVars
+	gMotorVars.RsOnLineCurrent_A = _IQ(0.05 * gUserParams.maxCurrent);
 
 	//set additional flag
 
@@ -943,7 +952,7 @@ int MAIN_processDCBrake(void)
 int processMcuCommand(void)
 {
 	int result=0;
-#if 1
+
 	if(!QUE_isEmpty())
 	{
 		union32_st data;
@@ -980,102 +989,7 @@ int processMcuCommand(void)
 	}
 
 	return result;
-
-#else
-    	if(SPI_isPacketReceived())
-    	{
-    		if(spi_chk_ok == 0)
-    		{
-    			spi_err++;
-    			UARTprintf("NAK response\n");
-    		}
-    		else
-    		{
-    			switch(spi_rcv_cmd)
-    			{
-    			case SPICMD_CTRL_RUN:
-    				UARTprintf("RUN received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_STOP:
-    				UARTprintf("STOP received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_DIR_F:
-    				UARTprintf("DIR_F received seq=%d\n", rx_seq_no);
-    				break;
-    			case SPICMD_CTRL_DIR_R:
-    				UARTprintf("DIR_R received seq=%d\n", rx_seq_no);
-    				break;
-
-    			case SPICMD_PARAM_W:
-    				UARTprintf("PARAM_W received seq=%d\n", rx_seq_no);
-    				break;
-
-    			case SPICMD_PARAM_R:
-    				UARTprintf("PARAM_R received seq=%d\n", rx_seq_no);
-    				break;
-    			}
-    		}
-    		prev_seqNo = rx_seq_no;
-    		SPI_clearPacketReceived();
-    	}
-#endif
 }
-
-#if 0
-void initParam(void)
-{
-	UTIL_setScaleFactor();
-
-	memset(&param, 0, sizeof(param));
-
-	// default ctrl setting
-	param.ctrl.value = 30.0;
-
-//	FREQ_setJumpFreqRange(0, 20.0, 50.0);
-//	FREQ_setJumpFreqRange(1, 40.0, 50.0);
-
-	DRV_setAccelTime(5.0); // 10.0 sec
-	DRV_setDecelTime(5.0);
-
-	DRV_enableVfControl(); //default
-	param.ctrl.foc_torque_limit = 180.0;
-	param.ctrl.spd_P_gain = 1000.0;
-	param.ctrl.spd_I_gain = 100.0;
-
-	DRV_setEnergySave(0); //off
-	DRV_setVoltageBoost(0); //off
-
-	//DRV_setPwmFrequency(PWM_6KHz);
-
-	// default brake setting
-	BRK_setBrakeMethod(REDUCE_SPEED_BRAKE);
-	BRK_setBrakeFreq(5.0);
-
-	//BRK_setBrakeMethod(DC_INJECT_BRAKE);
-	//default Dci brake
-	param.brk.dci_start_freq = 5.0; // start at 5Hz
-	param.brk.dci_block_time = 0.5;  // 0.5 sec
-	param.brk.dci_braking_rate = 50.0; // 50% rate
-	param.brk.dci_braking_time = 2.0; // 1 sec brake
-
-	// default err_info setting
-	//ERR_clearTripData();
-
-	// default protect setting
-	OVL_setWarningLevel(150); // Samyang motor's SF=1.15
-	param.protect.ovl.wr_duration = 10;
-	param.protect.ovl.enable = 1;
-	OVL_setTripLevel(180);
-	param.protect.ovl.tr_duration = 3;
-
-	param.protect.regen.resistance = 200.0;
-	param.protect.regen.power = 200;
-	param.protect.regen.thermal = 0.0;
-	param.protect.regen.band = 0;
-
-	param.gear_ratio = 1; //test
-}
-#endif
 
 void init_global(void)
 {
@@ -1233,13 +1147,9 @@ void main(void)
 
   init_global();
 
-  //hrjung read initial parameter from NVM
-  //init_test_param(); // NV data initialize, will be removed after NV enabled
-
-
   // initialize the user parameters
   USER_setParams(&gUserParams);
-  MPARAM_setMotorParam(&gUserParams);
+  //MPARAM_setMotorParam(&gUserParams);
 
   // check for errors in user parameters
   USER_checkForErrors(&gUserParams);
@@ -1268,23 +1178,22 @@ void main(void)
 //  spi_init(halHandle->spiBHandle);
 #endif
 
-  //init_test_param(); // NV data initialize, will be removed after NV enabled
-  //initParam();
   MPARAM_init(MOTOR_SY_1_5K_TYPE);
-  MPARAM_setMotorParam(&gUserParams);
+  //MPARAM_setMotorParam(&gUserParams);
   PARAM_init();
 
-  MAIN_setDeviceConstant();
+
   UTIL_setRegenPwmDuty(0);
   //DRV_setPwmFrequency(PWM_4KHz); //test
 
   QUE_init();
 
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
 
   // initialize the user parameters
   USER_setParams(&gUserParams);
   MPARAM_setMotorParam(&gUserParams);
+  MAIN_setDeviceConstant();
 
   // check for errors in user parameters
   USER_checkForErrors(&gUserParams);
@@ -1400,7 +1309,7 @@ void main(void)
 	  MAIN_applyBoost();
 
   {
-#if 0
+#ifdef SUPPORT_VAR_PWM_FREQ
 	  float_t	voltage_filter_beta = (USER_DCBUS_POLE_rps/(float_t)gUserParams.ctrlFreq_Hz);
 	 _iq a1 = _IQ((voltage_filter_beta - 2.0)/(voltage_filter_beta + 2.0));
 	 _iq a2 = _IQ(0.0);
@@ -1520,6 +1429,13 @@ void main(void)
         processProtection();
 
         processMcuCommand();
+
+#ifdef SUPPORT_VAR_PWM_FREQ
+        if(pwm_freq_updated)
+        {
+        	pwm_freq_updated=0;
+        }
+#endif
 
         //TODO : should find correct location
         state_param.inv = STA_control();
@@ -1739,7 +1655,7 @@ void main(void)
 
             // set the speed acceleration
             {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
 				_iq accel_krpm_sf = _IQ(gUserParams.motor_numPolePairs*1000.0/gUserParams.trajFreq_Hz/USER_IQ_FULL_SCALE_FREQ_Hz/60.0);
 				CTRL_setMaxAccel_pu(ctrlHandle,_IQmpy(accel_krpm_sf,gMotorVars.MaxAccel_krpmps));
 #else
@@ -1885,12 +1801,11 @@ interrupt void mainISR(void)
 	MATH_vec2 phasor, Vab_pu;
 	_iq vf_speed_pu;
 #endif
-	//static float_t prev_val=0.0;
 
   // toggle status LED
-	//UTIL_testbit(1);
+  //UTIL_testbit(1);
 #if 1
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   if(++gLEDcnt >= (uint_least32_t)(gUserParams.isrFreq_Hz / LED_BLINK_FREQ_Hz))
 #else
   if(++gLEDcnt >= (uint_least32_t)(USER_ISR_FREQ_Hz / LED_BLINK_FREQ_Hz))
@@ -2639,7 +2554,7 @@ int MAIN_applyBoost(void)
 
 float_t MAIN_getPwmFrequency(void)
 {
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
 	return gUserParams.pwmPeriod_kHz;
 #else
 	return USER_PWM_FREQ_kHz;

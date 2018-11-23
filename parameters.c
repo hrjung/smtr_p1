@@ -81,6 +81,7 @@ inv_parameter_st iparam[INV_PARAM_INDEX_MAX];
 inv_parameter_st err_info[ERR_CODE_MAX];
 inv_parameter_st inv_status[INV_STATUS_MAX];
 
+extern USER_Params gUserParams;
 extern MOTOR_working_st m_status;
 extern motor_param_st mtr_param;
 extern const char *res_str[2];
@@ -347,7 +348,7 @@ int PARAM_setPwmFreq(union32_st value)
 {
 	uint32_t pwm_freq = value.l;
 	int result;
-	const char *pwm_str[] = {"6kHz", "9kHz", "12kHz", "15kHz" };
+	const char *pwm_str[] = {"4kHz", "8kHz", "12kHz", "16kHz" };
 
 	result = DRV_setPwmFrequency((int)pwm_freq);
 	UARTprintf("set pwm freq=%s, result=%s\n", pwm_str[pwm_freq], res_str[result]);

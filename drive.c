@@ -40,7 +40,7 @@
  * LOCAL VARIABLES
  */
 
-const float_t pwm_tbl[4] = { 6.0, 9.0, 12.0, 15.0 };
+const float_t pwm_tbl[4] = { 4.0, 8.0, 12.0, 16.0 };
 
 
 /*******************************************************************************
@@ -57,7 +57,9 @@ const float_t pwm_tbl[4] = { 6.0, 9.0, 12.0, 15.0 };
 /*******************************************************************************
  * EXTERNS
  */
-
+#ifdef SUPPORT_VAR_PWM_FREQ
+extern uint16_t pwm_freq_updated;
+#endif
 
 /*
  *  ======== local function ========
@@ -165,6 +167,11 @@ int DRV_setPwmFrequency(int value)
 	if(value < PWM_4KHz || value > PWM_16KHz) return 1;
 
 	if(MAIN_isSystemEnabled()) return 1;
+
+#ifdef SUPPORT_VAR_PWM_FREQ
+	if(iparam[PWM_FREQ_INDEX].value.l != value)
+		pwm_freq_updated = 1;
+#endif
 
 	iparam[PWM_FREQ_INDEX].value.l = (uint32_t)value; //
 

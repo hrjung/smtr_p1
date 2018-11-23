@@ -175,6 +175,7 @@ extern void MAIN_showPidGain(void);
 extern void REGEN_start(void);
 extern void REGEN_end(void);
 
+extern float_t DRV_getPwmFrequency(void);
 extern void STA_printInvState(void);
 extern void DCIB_setFlag(void);
 extern void UTIL_clearInitRelay(void);
@@ -1960,7 +1961,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	uint16_t   pwm_12k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/12.0)) >> 1;
     	uint16_t   pwm_16k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/16.0)) >> 1;
 
-    	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)USER_PWM_FREQ_kHz);
+    	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)DRV_getPwmFrequency());
     	UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
     }
     else if(index == 8)

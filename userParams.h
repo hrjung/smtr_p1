@@ -261,7 +261,7 @@ typedef struct _USER_Params_
 
   USER_ErrorCode_e  errorCode;
 
-#ifdef SUPPORT_USER_VARIABLE
+#ifdef SUPPORT_VAR_PWM_FREQ
   float_t       	pwmPeriod_kHz;
   uint_least32_t 	isrFreq_Hz;
   float_t 			isrPeriod_usec;

@@ -72,8 +72,8 @@ extern "C" {
 // **************************************************************************
 // the defines
 
-//hrjung enable when SUPPORT_USER_VARIABLE is defined
-//#define USE_SUPPORT_USER_VARIABLE
+//hrjung enable when SUPPORT_VAR_PWM_FREQ is defined
+#define USE_SUPPORT_USER_VARIABLE
 
 //! \brief CURRENTS AND VOLTAGES
 // **************************************************************************
@@ -114,22 +114,15 @@ extern "C" {
 //! \brief WARNING: this value MUST be larger than the maximum current readings that you are expecting from the motor or the reading will roll over to 0, creating a control issue
 //#define USER_IQ_FULL_SCALE_CURRENT_A          (10.0)   // 10.0 Example for hvkit_rev1p1 typical usage
 //#define USER_IQ_FULL_SCALE_CURRENT_A          (14.9058)   // 10.0 Example for hvkit_rev1p1 typical usage
-#ifdef SUPPORT_I_SENSOR_10A
-#define USER_IQ_FULL_SCALE_CURRENT_A          (10.0)
-#else
 #define USER_IQ_FULL_SCALE_CURRENT_A          (30.0) //(18.75)   // 10.0 Example for hvkit_rev1p1 typical usage
-#endif
+
 
 //! \brief Defines the maximum current at the AD converter
 //! \brief The value that will be represented by the maximum ADC input (3.3V) and conversion (0FFFh)
 //! \brief Hardware dependent, this should be based on the current sensing and scaling to the ADC input
 //#define USER_ADC_FULL_SCALE_CURRENT_A        (19.89)     // 19.89 hvkit_rev1p1 current scaling
 //#define USER_ADC_FULL_SCALE_CURRENT_A        (39.66)
-#ifdef SUPPORT_I_SENSOR_10A
-#define USER_ADC_FULL_SCALE_CURRENT_A        (24.85)
-#else
 #define USER_ADC_FULL_SCALE_CURRENT_A        (49.7)
-#endif
 
 //! \brief Defines the current scale factor for the system
 //! \brief Compile time calculation for scale factor (ratio) used throughout the system
@@ -149,7 +142,6 @@ extern "C" {
 //! \brief Must be (3)
 #define USER_NUM_VOLTAGE_SENSORS            (3) // 3 Required
 
-#ifndef USE_SUPPORT_USER_VARIABLE
 //! \brief ADC current offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
@@ -164,11 +156,6 @@ extern "C" {
 //#define   I_C_offset    (0.002903)
 
 //for V0.8
-#ifdef SUPPORT_I_SENSOR_10A //for half capacity current sensor
-#define   I_A_offset    (1.15)
-#define   I_B_offset    (1.28)
-#define   I_C_offset    (0.0)
-#else
 #define   I_A_offset    (0.8333) //(1.36)	// V
 #define   I_B_offset    (0.8333) //(1.325)  // W
 #define   I_C_offset    (0.0)  // U
@@ -176,7 +163,7 @@ extern "C" {
 //#define   I_A_offset    (0.8333) //(1.36)	// V
 //#define   I_B_offset    (0.8333) //(1.325)  // W
 //#define   I_C_offset    (0.0)  // U
-#endif
+
 
 //! \brief ADC voltage offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
@@ -204,7 +191,7 @@ extern "C" {
 #define   V_A_offset    (0.269)  // V
 #define   V_B_offset    (0.267)  // W
 #define   V_C_offset    (0.269)  // U
-#endif
+
 
 //! \brief CLOCKS & TIMERS
 // **************************************************************************
@@ -257,7 +244,7 @@ extern "C" {
 //!  15*1
 #define USER_ISR_PERIOD_usec       (USER_PWM_PERIOD_usec * (float_t)USER_NUM_PWM_TICKS_PER_ISR_TICK)
 
-#endif //SUPPORT_USER_VARIABLE
+#endif //SUPPORT_VAR_PWM_FREQ
 
 //! \brief DECIMATION
 // **************************************************************************
@@ -315,15 +302,14 @@ extern "C" {
 //! \brief Compile time calculation
 #define USER_CTRL_PERIOD_sec       ((float_t)USER_CTRL_PERIOD_usec/(float_t)1000000.0)
 
-#endif //SUPPORT_USER_VARIABLE
+#endif //SUPPORT_VAR_PWM_FREQ
 //! \brief LIMITS
 // **************************************************************************
-#ifndef USE_SUPPORT_USER_VARIABLE
+
 //! \brief Defines the maximum negative current to be applied in Id reference
 //! \brief Used in field weakening only, this is a safety setting (e.g. to protect against demagnetization)
 //! \brief User must also be aware that overall current magnitude [sqrt(Id^2 + Iq^2)] should be kept below any machine design specifications
 #define USER_MAX_NEGATIVE_ID_REF_CURRENT_A     (-0.5 * USER_MOTOR_MAX_CURRENT)   // -0.5 * USER_MOTOR_MAX_CURRENT Example, adjust to meet safety needs of your motor
-#endif
 
 //! \brief Defines the low speed limit for the flux integrator, pu 
 //! \brief This is the speed range (CW/CCW) at which the ForceAngle object is active, but only if Enabled
@@ -430,7 +416,7 @@ extern "C" {
 //#define USER_MOTOR_VOLT_MAX				(220.0*1.1/1.732051) // Volt - suggested to set to 100% of rated motor voltage
 //#define USER_MOTOR_VOLT_MAX				(380.0*1.1/1.732051) // Volt - suggested to set to 100% of rated motor voltage
 
-#ifndef USE_SUPPORT_USER_VARIABLE
+
 //! \brief USER MOTOR & ID SETTINGS
 // **************************************************************************
 #define My_Motor                    310
@@ -525,12 +511,6 @@ extern "C" {
 #error The flux estimation frequency is not defined in user.h
 #endif
 
-#else
-#define USER_MOTOR_RES_EST_CURRENT      (1.0)
-#define USER_MOTOR_IND_EST_CURRENT      (NULL)
-#define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
-
-#endif // USE_SUPPORT_USER_VARIABLE
 // **************************************************************************
 // the functions
 
