@@ -45,9 +45,9 @@ extern void MPARAM_init(uint16_t type);
 extern void MPARAM_setMotorParam(USER_Params *pUserParams);
 extern void MPARAM_updateDevConst(void);
 
-//extern void MPARAM_setDciPwmRate(float_t rate);
-//extern void MPARAM_setOvlTripLevel(uint32_t level);
-//extern void MPARAM_setOvlWarnLevel(uint32_t level);
+extern void MPARAM_setDciPwmRate(float_t rate);
+extern void MPARAM_setOvlTripLevel(uint32_t level);
+extern void MPARAM_setOvlWarnLevel(uint32_t level);
 
 extern float_t FREQ_convertToSpeed(float_t freq);
 

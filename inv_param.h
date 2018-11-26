@@ -203,6 +203,11 @@ typedef struct
 	uint16_t	enable;
 	_iq			low;
 	_iq 		high;
+
+#ifdef SUPPORT_JUMP_FREQ_FOC_
+	_iq			low_Hz;
+	_iq			high_Hz;
+#endif
 //	float_t 	low_pu;
 //	float_t 	high_pu;
 //	float_t 	low_spd;

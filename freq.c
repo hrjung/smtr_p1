@@ -151,6 +151,8 @@ int FREQ_clearJumpFreq(uint16_t index)
 	iparam[JMP_LOW_BASE+index].value.f = NOT_INITIALIZED;
 	iparam[JMP_HIGH_BASE+index].value.f = NOT_INITIALIZED;
 
+	dev_const.spd_jmp[index].enable = 0;
+
 	return 0;
 }
 

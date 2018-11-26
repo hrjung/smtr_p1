@@ -94,17 +94,17 @@ motor_param_st mtr_param;
 //
 //*****************************************************************************
 
-STATIC void MPARAM_setDciPwmRate(float_t rate)
+void MPARAM_setDciPwmRate(float_t rate)
 {
 	dev_const.dci_pwm_rate = rate/100.0 * mtr_param.max_current*mtr_param.Rs;
 }
 
-STATIC void MPARAM_setOvlTripLevel(uint32_t level)
+void MPARAM_setOvlTripLevel(uint32_t level)
 {
 	dev_const.trip_level = mtr_param.max_current*(float_t)level/100.0;
 }
 
-STATIC void MPARAM_setOvlWarnLevel(uint32_t level)
+void MPARAM_setOvlWarnLevel(uint32_t level)
 {
 	dev_const.warn_level = mtr_param.max_current*(float_t)level/100.0;
 }

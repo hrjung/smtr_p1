@@ -52,7 +52,6 @@ extern uint32_t secCnt;
  * EXTERNS
  */
 
-
 /*
  *  ======== local function ========
  */

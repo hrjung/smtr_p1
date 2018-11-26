@@ -44,6 +44,7 @@
 /*******************************************************************************
  * GLOBAL VARIABLES
  */
+extern dev_const_st	dev_const;
 
 /*******************************************************************************
  * EXTERNS
@@ -131,6 +132,10 @@ void test_setFreqParam(void)
 	TEST_ASSERT_EQUAL_INT(iparam[JUMP_ENABLE0_INDEX].value.l, 1);
 	TEST_ASSERT_EQUAL_FLOAT(iparam[JUMP_LOW0_INDEX].value.f, low);
 	TEST_ASSERT_EQUAL_FLOAT(iparam[JUMP_HIGH0_INDEX].value.f, high);
+
+	TEST_ASSERT_EQUAL_INT(dev_const.spd_jmp[0].enable, 1);
+	TEST_ASSERT_EQUAL_FLOAT(dev_const.spd_jmp[0].low, low/USER_IQ_FULL_SCALE_FREQ_Hz);
+	TEST_ASSERT_EQUAL_FLOAT(dev_const.spd_jmp[0].high, high/USER_IQ_FULL_SCALE_FREQ_Hz);
 
 	cur = 150.0;
 	result = FREQ_setFreqValue(cur);

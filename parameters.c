@@ -121,7 +121,7 @@ void PARAM_init(void)
 	iparam[ENERGY_SAVE_INDEX].value.l = ESAVE_UNUSED; //  ESAVE_BOTH;
 
 	iparam[PWM_FREQ_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[PWM_FREQ_INDEX].value.l = PWM_4KHz;
+	iparam[PWM_FREQ_INDEX].value.l = PWM_12KHz; //PWM_4KHz;
 
 	iparam[JUMP_ENABLE0_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE0_INDEX].value.l = NOT_USED;
@@ -133,13 +133,13 @@ void PARAM_init(void)
 	iparam[JUMP_HIGH0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE1_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[JUMP_ENABLE1_INDEX].value.l = NOT_USED;
+	iparam[JUMP_ENABLE1_INDEX].value.l = 1;//NOT_USED;
 
 	iparam[JUMP_LOW1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW1_INDEX].value.f = 1.0;
+	iparam[JUMP_LOW1_INDEX].value.f = 30.0;
 
 	iparam[JUMP_HIGH1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH1_INDEX].value.f = 1.0;
+	iparam[JUMP_HIGH1_INDEX].value.f = 35.0;
 
 	iparam[JUMP_ENABLE2_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE2_INDEX].value.l = NOT_USED;
@@ -318,13 +318,17 @@ int PARAM_setVfFoc(union32_st value)
 
 	if(ctrl_type == VF_CONTROL)
 	{
-		DRV_enableVfControl();
-		UARTprintf("set VF control\n");
+		if(DRV_enableVfControl() == 0)
+			UARTprintf("set VF control\n");
+		else
+			result = 1;
 	}
 	else if(ctrl_type == FOC_CONTROL)
 	{
-		DRV_enableFocControl();
-		UARTprintf("set FOC control\n");
+		if(DRV_enableFocControl())
+			UARTprintf("set FOC control\n");
+		else
+			result = 1;
 	}
 	else
 		result = 1;

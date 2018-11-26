@@ -293,7 +293,11 @@ extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
 extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
+
+#ifdef SUPPORT_JUMP_FREQ_FOC
+_iq temp_traj = _IQ(0.0);
 _iq traj_spd = _IQ(0.0);
+#endif
 
 void SetGpioInterrupt(void);
 
@@ -765,27 +769,13 @@ void MAIN_setCurrentFreq(void)
 
 void MAIN_setJumpSpeed(int index, float_t low, float_t high)
 {
-	float_t low_spd, high_spd;
-
 	if(low != 0.0)
-	{
-		low_spd = FREQ_convertToSpeed(low)/1000.0;
-		dev_const.spd_jmp[index].low = _IQ(low_spd*sf4krpm_pu);
-	}
+		dev_const.spd_jmp[index].low = _IQ(low/USER_IQ_FULL_SCALE_FREQ_Hz); // Hz_pu
 
 	if(high != 0.0)
-	{
-		high_spd = FREQ_convertToSpeed(high)/1000.0;
-		dev_const.spd_jmp[index].high = _IQ(high_spd*sf4krpm_pu);
-	}
+		dev_const.spd_jmp[index].high = _IQ(high/USER_IQ_FULL_SCALE_FREQ_Hz); // Hz_pu
 
 	dev_const.spd_jmp[index].enable = 1;
-
-//	dev_const.spd_jmp[index].low_pu = low_spd*sf4krpm_pu;
-//	dev_const.spd_jmp[index].high_pu = high_spd*sf4krpm_pu;
-//
-//	dev_const.spd_jmp[index].low_spd = low_spd;
-//	dev_const.spd_jmp[index].high_spd = high_spd;
 }
 
 _iq MAIN_avoidJumpSpeed(_iq spd_pu)
@@ -1146,6 +1136,7 @@ void main(void)
   halHandle = HAL_init(&hal,sizeof(hal));
 
   init_global();
+  PARAM_init();
 
   // initialize the user parameters
   USER_setParams(&gUserParams);
@@ -1181,7 +1172,6 @@ void main(void)
   MPARAM_init(MOTOR_SY_1_5K_TYPE);
   //MPARAM_setMotorParam(&gUserParams);
   PARAM_init();
-
 
   UTIL_setRegenPwmDuty(0);
   //DRV_setPwmFrequency(PWM_4KHz); //test
@@ -1261,7 +1251,9 @@ void main(void)
   FW_setOutput(fwHandle, _IQ(0.0));
 
   // Set the field weakening controller limits
-  FW_setMinMax(fwHandle,_IQ(USER_MAX_NEGATIVE_ID_REF_CURRENT_A/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
+
+  //FW_setMinMax(fwHandle,_IQ(USER_MAX_NEGATIVE_ID_REF_CURRENT_A/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
+  FW_setMinMax(fwHandle,_IQ(gUserParams.maxNegativeIdCurrent_a/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
 #endif
 
   // setup faults

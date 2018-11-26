@@ -37,6 +37,8 @@
 
 #define SUPPORT_JUMP_FREQ
 
+#define SUPPORT_JUMP_FREQ_FOC
+
 // measure Irms for checking overload
 #define SUPPORT_I_RMS_MEASURE
 
