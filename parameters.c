@@ -121,7 +121,7 @@ void PARAM_init(void)
 	iparam[ENERGY_SAVE_INDEX].value.l = ESAVE_UNUSED; //  ESAVE_BOTH;
 
 	iparam[PWM_FREQ_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[PWM_FREQ_INDEX].value.l = PWM_12KHz; //PWM_4KHz;
+	iparam[PWM_FREQ_INDEX].value.l = PWM_4KHz;
 
 	iparam[JUMP_ENABLE0_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE0_INDEX].value.l = NOT_USED;
@@ -133,13 +133,13 @@ void PARAM_init(void)
 	iparam[JUMP_HIGH0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE1_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[JUMP_ENABLE1_INDEX].value.l = 1;//NOT_USED;
+	iparam[JUMP_ENABLE1_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW1_INDEX].value.f = 30.0;
+	iparam[JUMP_LOW1_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH1_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH1_INDEX].value.f = 35.0;
+	iparam[JUMP_HIGH1_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE2_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE2_INDEX].value.l = NOT_USED;
@@ -316,19 +316,17 @@ int PARAM_setVfFoc(union32_st value)
 	uint16_t ctrl_type = (uint16_t)value.l;
 	int result=0;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	if(ctrl_type == VF_CONTROL)
 	{
-		if(DRV_enableVfControl() == 0)
-			UARTprintf("set VF control\n");
-		else
-			result = 1;
+		DRV_enableVfControl();
+		UARTprintf("set VF control\n");
 	}
 	else if(ctrl_type == FOC_CONTROL)
 	{
-		if(DRV_enableFocControl())
-			UARTprintf("set FOC control\n");
-		else
-			result = 1;
+		DRV_enableFocControl();
+		UARTprintf("set FOC control\n");
 	}
 	else
 		result = 1;
@@ -340,6 +338,8 @@ int PARAM_setEnergySave(union32_st value)
 {
 	uint32_t on_off = value.l;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	//TODO : only work on FOC running
 	result = DRV_setEnergySave((int)on_off);
@@ -354,6 +354,8 @@ int PARAM_setPwmFreq(union32_st value)
 	int result;
 	const char *pwm_str[] = {"4kHz", "8kHz", "12kHz", "16kHz" };
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = DRV_setPwmFrequency((int)pwm_freq);
 	UARTprintf("set pwm freq=%s, result=%s\n", pwm_str[pwm_freq], res_str[result]);
 
@@ -365,6 +367,8 @@ int PARAM_setEnableJump0(union32_st value)
 	uint32_t ldata = value.l;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = FREQ_setJumpFreqEnable(0, (uint16_t)ldata);
 
 	return result;
@@ -374,6 +378,8 @@ int PARAM_setEnableJump1(union32_st value)
 {
 	uint32_t ldata = value.l;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = FREQ_setJumpFreqEnable(1, (uint16_t)ldata);
 
@@ -385,6 +391,8 @@ int PARAM_setEnableJump2(union32_st value)
 	uint32_t ldata = value.l;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = FREQ_setJumpFreqEnable(2, (uint16_t)ldata);
 
 	return result;
@@ -394,6 +402,8 @@ int PARAM_setJumpFreqLow0(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = FREQ_setJumpFreqLow(0, fdata);
 
@@ -405,6 +415,8 @@ int PARAM_setJumpFreqLow1(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = FREQ_setJumpFreqLow(1, fdata);
 
 	return result;
@@ -414,6 +426,8 @@ int PARAM_setJumpFreqLow2(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = FREQ_setJumpFreqLow(2, fdata);
 
@@ -425,6 +439,8 @@ int PARAM_setJumpFreqHigh0(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = FREQ_setJumpFreqHigh(0, fdata);
 
 	return result;
@@ -434,6 +450,8 @@ int PARAM_setJumpFreqHigh1(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = FREQ_setJumpFreqHigh(1, fdata);
 
@@ -445,6 +463,8 @@ int PARAM_setJumpFreqHigh2(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = FREQ_setJumpFreqHigh(2, fdata);
 
 	return result;
@@ -454,6 +474,8 @@ int PARAM_setVoltageBoost(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	//TODO : need implementation
 	result = DRV_setVoltageBoost(fdata);
@@ -477,6 +499,8 @@ int PARAM_setBrakeType(union32_st value)
 	uint32_t ldata = value.l;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = BRK_setBrakeMethod((uint16_t)ldata);
 
 	return result;
@@ -487,6 +511,8 @@ int PARAM_setBrakeFreq(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = BRK_setBrakeFreq(fdata);
 
 	return result;
@@ -496,6 +522,8 @@ int PARAM_setDciBrakeStartFreq(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = DCIB_setStartFreq(fdata);
 	UARTprintf("set brake start freq %f is %s\n", fdata, res_str[result]);
@@ -508,6 +536,8 @@ int PARAM_setDciBrakeBlockTime(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = DCIB_setBlockTime(fdata);
 	UARTprintf("set brake block time %f is %s\n", fdata, res_str[result]);
 
@@ -519,6 +549,8 @@ int PARAM_setDciBrakeTime(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = DCIB_setBrakeTime(fdata);
 	UARTprintf("set brake time %f for brake is %s\n", fdata, res_str[result]);
 
@@ -529,6 +561,8 @@ int PARAM_setDciBrakeRate(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = DCIB_setBrakeRate(fdata);
 	UARTprintf("set brake rate %f for brake is %s\n", fdata, res_str[result]);
@@ -596,6 +630,8 @@ int PARAM_setRegenResistance(union32_st value)
 	float_t fdata = value.f;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = REGEN_setRegenResistance(fdata);
 	UARTprintf("set regen resistance %f ohm is %s\n", fdata, res_str[result]);
 
@@ -606,6 +642,8 @@ int PARAM_setRegenResistThermal(union32_st value)
 {
 	float_t fdata = value.f;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = REGEN_setRegenThermal(fdata);
 	UARTprintf("set regen thermal %f is %s\n", fdata, res_str[result]);
@@ -618,6 +656,8 @@ int PARAM_setRegenResistPower(union32_st value)
 	uint32_t ldata = value.l;
 	int result;
 
+	if(MAIN_isSystemEnabled()) return 1;
+
 	result = REGEN_setRegenResistancePower((uint16_t)ldata);
 	UARTprintf("set regen power %d W is %s\n", (int)ldata, res_str[result]);
 
@@ -628,6 +668,8 @@ int PARAM_setRegenBand(union32_st value)
 {
 	uint32_t ldata = value.l;
 	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
 
 	result = REGEN_setRegenBand((uint16_t)ldata);
 	UARTprintf("set regen reduce %d is %s\n", (int)ldata, res_str[result]);
@@ -670,58 +712,13 @@ void PARAM_stopRun(void)
 int PARAM_process(uint16_t index, union32_st data)
 {
 	int result=1;
-#if 1
+
 	if(index >= INV_PARAM_INDEX_MAX) return result;
 
 	result = iparam_func[index](data);
 	UARTprintf("PARAM_process index=%d, fdata=%f, ldata=%d\n", index, data.f, (int)data.l);
 
 	return result;
-#else
-	uint32_t ldata;
-	float_t fdata;
-
-	if(iparam[index].type == PARAMETER_TYPE_LONG)
-		ldata = data.l;
-	else
-		fdata = data.f;
-
-	switch(index)
-	{
-	case FREQ_VALUE_INDEX:
-		result = FREQ_setFreqValue(fdata);
-		UARTprintf("set frequency=%f, result=%s\n", fdata, res_str[result]);
-		UARTprintf("resolution acc_res=%f, dec_res=%f\n", m_status.acc_res, m_status.dec_res);
-		break;
-
-	case ACCEL_TIME_INDEX:
-		result = DRV_setAccelTime(fdata);
-		UARTprintf("set accel time=%f, result=%s\n", fdata, res_str[result]);
-		break;
-
-	case DECEL_TIME_INDEX:
-		result = DRV_setDecelTime(fdata);
-		UARTprintf("set decel time=%f, result=%s\n", fdata, res_str[result]);
-		break;
-
-	case DIRECTION_INDEX:
-		PARAM_setDirection(data);
-		break;
-
-	case VF_FOC_SEL_INDEX:
-		if(ldata == 0)
-		{
-			DRV_enableVfControl();
-			UARTprintf("set VF control\n");
-		}
-		else
-		{
-			DRV_enableFocControl();
-			UARTprintf("set FOC control\n");
-		}
-		break;
-	}
-#endif
 }
 
 void PARAM_initErrInfo(void)
