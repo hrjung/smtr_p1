@@ -93,7 +93,8 @@ extern float_t MAIN_getIave(void);
 extern float_t STA_getCurFreq(void);
 extern float_t MAIN_getVdcBus(void);
 extern float_t UTIL_readIpmTemperature(void);
-extern float_t UTIL_readMotorTemperature(void);
+//extern float_t UTIL_readMotorTemperature(void);
+extern uint16_t UTIL_readMotorTemperatureStatus(void);
 //*****************************************************************************
 //
 // Function implementation
@@ -776,8 +777,8 @@ void PARAM_initInvStatus(void)
 	inv_status[INV_IPM_TEMP_INDEX].type = PARAMETER_TYPE_FLOAT;
 	inv_status[INV_IPM_TEMP_INDEX].value.f = 0.0;
 
-	inv_status[INV_MOTOR_TEMP_INDEX].type = PARAMETER_TYPE_FLOAT;
-	inv_status[INV_MOTOR_TEMP_INDEX].value.f = 0.0;
+	inv_status[INV_MOTOR_TEMP_INDEX].type = PARAMETER_TYPE_LONG;
+	inv_status[INV_MOTOR_TEMP_INDEX].value.f = 0;
 }
 
 
@@ -790,7 +791,7 @@ void PARAM_setInvStatus(void)
 	inv_status[INV_RUN_FREQ_INDEX].value.f = STA_getCurFreq();
 	inv_status[INV_DC_VOLTAGE_INDEX].value.f = MAIN_getVdcBus();
 	inv_status[INV_IPM_TEMP_INDEX].value.f = UTIL_readIpmTemperature();
-	inv_status[INV_MOTOR_TEMP_INDEX].value.f = UTIL_readMotorTemperature();
+	inv_status[INV_MOTOR_TEMP_INDEX].value.l = UTIL_readMotorTemperatureStatus();
 }
 
 uint16_t PARAM_getInvStatus(uint16_t *buf)
@@ -802,7 +803,7 @@ uint16_t PARAM_getInvStatus(uint16_t *buf)
 	inv_status[INV_RUN_FREQ_INDEX].value.f = 30.2;
 	inv_status[INV_DC_VOLTAGE_INDEX].value.f = 531.3;
 	inv_status[INV_IPM_TEMP_INDEX].value.f = 63.4;
-	inv_status[INV_MOTOR_TEMP_INDEX].value.f = 54.1;
+	inv_status[INV_MOTOR_TEMP_INDEX].value.l = 0;
 #endif
 	buf[0] = inv_status[INV_STATUS_INDEX].value.arr[0];
 	buf[1] = inv_status[INV_STATUS_INDEX].value.arr[1];

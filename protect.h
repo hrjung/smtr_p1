@@ -26,6 +26,9 @@
 //#define DC_VOLTAGE_END_REGEN_LEVEL 		(618.0)
 //#endif
 
+#define MOTOR_TEMP_WARN_LEVEL	100.0
+#define MOTOR_TEMP_TRIP_LEVEL	140.0
+
 ////////////////////////////////////////////////
 
 extern int OVL_isOverloadTripEnabled(void);

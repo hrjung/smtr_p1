@@ -181,6 +181,7 @@ extern void DCIB_setFlag(void);
 extern void UTIL_clearInitRelay(void);
 extern float_t UTIL_readIpmTemperature(void);
 extern float_t UTIL_readMotorTemperature(void);
+extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
 #ifdef SUPPORT_OFFSET_MEASURE
 uint16_t gOffsetMeasureFlag = 0;
@@ -1216,7 +1217,7 @@ STATIC int dbg_showTempStatus(int argc, char *argv[])
 
 	ipm_temp = UTIL_readIpmTemperature();
 	mtr_temp = UTIL_readMotorTemperature();
-	UARTprintf("IPM temp = %f, %d, Motor Temp = %f\n", ipm_temp, internal_status.ipm_temp, mtr_temp);
+	UARTprintf("IPM temp = %f, %d, Motor Temp = %f, %d\n", ipm_temp, internal_status.ipm_temp, mtr_temp, internal_status.mtr_temp);
 
 	return 0;
 

@@ -2598,6 +2598,16 @@ float_t UTIL_readMotorTemperature(void)
 	return (float_t)40.0;
 }
 
+uint16_t UTIL_readMotorTemperatureStatus(void)
+{
+	float_t motor_temp = UTIL_readMotorTemperature();
+	if(motor_temp < MOTOR_TEMP_WARN_LEVEL)
+		return 0;
+	else if(motor_temp >= MOTOR_TEMP_WARN_LEVEL && motor_temp < MOTOR_TEMP_TRIP_LEVEL)
+		return 1;
+	else
+		return 2;
+}
 
 #ifdef SUPPORT_AUTO_LOAD_TEST
 bool UTIL_readSwGpio(void)
