@@ -23,7 +23,7 @@
 //! @{
 //
 //*****************************************************************************
-
+#ifdef SUPPORT_MOTOR_PARAM
 #define PWM_DEADBAND_LIMITATION  (0.93)
 
 
@@ -87,7 +87,7 @@ const motor_param_st SY_2_2k = {
 	4.857245, 	//rated_flux;
 };
 
-#ifdef SUPPORT_MOTOR_PARAM
+
 motor_param_st mtr_param;
 #endif
 //*****************************************************************************

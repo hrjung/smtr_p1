@@ -46,6 +46,7 @@
 #ifdef SUPPORT_VAR_PWM_FREQ
 //#include "inv_param.h"
 
+#define PWM_DEADBAND_LIMITATION  (0.93)
 
 extern float_t DRV_getPwmFrequency(void);
 
@@ -310,6 +311,11 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->V_B_Offset = V_B_offset;
   pUserParams->V_C_Offset = V_C_offset;
 #endif  
+
+#ifndef SUPPORT_MOTOR_PARAM
+  pUserParams->VF_volt_max = ((USER_MOTOR_VOLTAGE_IN*1.414)/1.732051)*PWM_DEADBAND_LIMITATION;
+  pUserParams->VF_volt_min = (pUserParams->VF_volt_max*(USER_MOTOR_FREQ_LOW/USER_MOTOR_FREQ_HIGH));
+#endif
 
   return;
 } // end of USER_setParams() function

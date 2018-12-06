@@ -1053,7 +1053,8 @@ void init_global(void)
 	gMotorVars.Vd = _IQ(0.0);
 	gMotorVars.Vq = _IQ(0.0);
 	gMotorVars.Vs = _IQ(0.0);
-	gMotorVars.VsRef = _IQ(0.8 * USER_MAX_VS_MAG_PU);
+	//gMotorVars.VsRef = _IQ(0.8 * USER_MAX_VS_MAG_PU);
+	gMotorVars.VsRef = _IQ(0.89 * USER_MAX_VS_MAG_PU);
 	gMotorVars.VdcBus_kV = _IQ(0.0);
 
 	gMotorVars.Id_A = _IQ(0.0);
@@ -1247,10 +1248,13 @@ void main(void)
   // Clear field weakening counter
   FW_clearCounter(fwHandle);
 
-
   // Set the number of ISR per field weakening ticks
+#ifdef SUPPORT_VAR_PWM_FREQ
+  // hrjung set same value as Speed tick
+  FW_setNumIsrTicksPerFwTick(fwHandle, gUserParams.numCtrlTicksPerSpeedTick);
+#else
   FW_setNumIsrTicksPerFwTick(fwHandle, FW_NUM_ISR_TICKS_PER_CTRL_TICK);
-
+#endif
 
   // Set the deltas of field weakening
   FW_setDeltas(fwHandle, FW_INC_DELTA, FW_DEC_DELTA);
@@ -1480,7 +1484,7 @@ void main(void)
 //	gMotorVars.Ki_Idq = _IQ(0.044786);
 
 #ifdef SUPPORT_FIELD_WEAKENING
-    gMotorVars.Flag_enableFieldWeakening = true;
+    gMotorVars.Flag_enableFieldWeakening = false;
 #endif
 
     // Enable the Library internal PI.  Iq is referenced by the speed PI now
