@@ -427,7 +427,10 @@ extern "C" {
 
 #define USER_MOTOR_TYPE                 MOTOR_Type_Induction
 #define USER_MOTOR_NUM_POLE_PAIRS       (2)
-#if 0 // 1.5kW
+#define USER_MOTOR_RATED_FREQUENCY		(60)
+#define USER_MOTOR_VOLTAGE_IN			(380)
+
+#if 1 // 1.5kW
 #define USER_MOTOR_Rr                   (2.14568)
 #define USER_MOTOR_Rs                   (2.5)
 //#define USER_MOTOR_Ls_d                 (0.02791)
@@ -441,6 +444,8 @@ extern "C" {
 #define USER_MOTOR_IND_EST_CURRENT      (NULL)
 #define USER_MOTOR_MAX_CURRENT          (3.4) //(4.0)
 #define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
+
+#define USER_MOTOR_NO_LOAD_CURRENT		(2.0)
 #else // 2.2kW motor
 #define USER_MOTOR_Rr                   (1.14793)
 #define USER_MOTOR_Rs                   (2.86)
@@ -453,6 +458,8 @@ extern "C" {
 #define USER_MOTOR_IND_EST_CURRENT      (NULL)
 #define USER_MOTOR_MAX_CURRENT          (5.3) //(4.0)
 #define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
+
+#define USER_MOTOR_NO_LOAD_CURRENT		(3.235)
 #endif
 
 #else

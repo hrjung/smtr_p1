@@ -207,7 +207,9 @@ dev_const_st	dev_const;
 //inverter_param_st param;
 internal_status_st internal_status;
 
+#ifdef SUPPORT_MOTOR_PARAM
 extern motor_param_st mtr_param;
+#endif
 
 //monitor_param_st mnt;
 inv_state_st state_param = {STATE_STOP, 0, STOP};
@@ -414,8 +416,11 @@ float_t MAIN_convert2Freq(float_t spd_krpm)
 				speed_rpm *= (-1.0);
 		}
 	}
-
-	return (speed_rpm*mtr_param.pole_pairs/60.0);
+#ifdef SUPPORT_MOTOR_PARAM
+	return (speed_rpm*(float_t)mtr_param.pole_pairs/60.0);
+#else
+	return (speed_rpm*(float_t)USER_MOTOR_NUM_POLE_PAIRS/60.0);
+#endif
 }
 
 int MAIN_isDirectionReversed(void)
@@ -1169,8 +1174,10 @@ void main(void)
 //  spi_init(halHandle->spiBHandle);
 #endif
 
-  MPARAM_init(MOTOR_SY_1_5K_TYPE);
+#ifdef SUPPORT_MOTOR_PARAM
+  MPARAM_init(MOTOR_SY_2_2K_TYPE);
   //MPARAM_setMotorParam(&gUserParams);
+#endif
   PARAM_init();
 
   UTIL_setRegenPwmDuty(0);
@@ -1182,7 +1189,9 @@ void main(void)
 
   // initialize the user parameters
   USER_setParams(&gUserParams);
+#ifdef SUPPORT_MOTOR_PARAM
   MPARAM_setMotorParam(&gUserParams);
+#endif
   MAIN_setDeviceConstant();
 
   // check for errors in user parameters
@@ -1278,7 +1287,11 @@ void main(void)
   //initialize timer variable
   TMR_init();
 
+#ifdef SUPPORT_MOTOR_PARAM
   PROT_init((int)mtr_param.voltage_in);
+#else
+  PROT_init((int)USER_MOTOR_VOLTAGE_IN);
+#endif
 
 #ifdef SUPPORT_SPI_INTERRUPT
   SPI_enableInterrupt();
@@ -2570,8 +2583,13 @@ void UTIL_clearInitRelay(void)
 void UTIL_setScaleFactor(void)
 {
 	// scale factor for pu -> krpm
+#ifdef SUPPORT_MOTOR_PARAM
 	sf4pu_krpm = (60.0*USER_IQ_FULL_SCALE_FREQ_Hz) / (mtr_param.pole_pairs*1000.0); // 15
 	sf4krpm_pu = (mtr_param.pole_pairs*1000.0) / (60.0*USER_IQ_FULL_SCALE_FREQ_Hz);
+#else
+	sf4pu_krpm = (60.0*USER_IQ_FULL_SCALE_FREQ_Hz) / ((float_t)USER_MOTOR_NUM_POLE_PAIRS*1000.0); // 15
+	sf4krpm_pu = ((float_t)USER_MOTOR_NUM_POLE_PAIRS*1000.0) / (60.0*USER_IQ_FULL_SCALE_FREQ_Hz);
+#endif
 }
 
 uint16_t UTIL_setRegenPwmDuty(int duty)

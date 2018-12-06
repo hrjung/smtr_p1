@@ -148,7 +148,9 @@ uint16_t invbuf[15], errbuf[10], rparam[5];
  * EXTERNS
  */
 extern CTRL_Handle ctrlHandle;
+#ifdef SUPPORT_MOTOR_PARAM
 extern motor_param_st mtr_param;
+#endif
 
 extern tBoolean g_bNewCmd;
 //extern monitor_param_st mnt;
@@ -478,11 +480,15 @@ STATIC void dbg_showDciBrakeParam(void)
 STATIC void dbg_showMotorParam(void)
 {
 	UARTprintf(" Motor Parameter Settings\n");
-	//UARTprintf("\t capacity: %d, poles: %d\n", mtr.capacity, mtr_param.pole_pairs);
+#ifdef SUPPORT_MOTOR_PARAM
 	UARTprintf("\t input_volt: %d, poles %d, rated_freq: %d\n", mtr_param.voltage_in, mtr_param.pole_pairs, mtr_param.rated_freq);
-	//UARTprintf("\t slip freq: %f, effectiveness: %f\n", mtr.slip_rate, mtr.effectiveness);
 	UARTprintf("\t no load current: %f, max_current: %f\n", mtr_param.noload_current, mtr_param.max_current);
 	UARTprintf("\t Rs: %f, Rr: %f, Ls: %f\n", mtr_param.Rs, mtr_param.Rr, mtr_param.Ls);
+#else
+	UARTprintf("\t input_volt: %d, poles %d, rated_freq: %d\n", USER_MOTOR_VOLTAGE_IN, USER_MOTOR_NUM_POLE_PAIRS, USER_MOTOR_RATED_FREQUENCY);
+	UARTprintf("\t no load current: %f, max_current: %f\n", USER_MOTOR_NO_LOAD_CURRENT, USER_MOTOR_MAX_CURRENT);
+	UARTprintf("\t Rs: %f, Rr: %f, Ls: %f\n", USER_MOTOR_Rs, USER_MOTOR_Rr, USER_MOTOR_Ls_d);
+#endif
 
 	UARTprintf("\t gUser.max_current: %f\n", gUserParams.maxCurrent);
 }
@@ -1058,6 +1064,7 @@ STATIC int dbg_processMotorParam(int argc, char *argv[])
 	}
 	else if(argc == 2)
 	{
+#ifdef SUPPORT_MOTOR_PARAM
 		mtr_set = (uint16_t)atoi(argv[1]);
 		if(mtr_set >= MOTOR_TYPE_MAX) goto mtr_err;
 
@@ -1066,6 +1073,10 @@ STATIC int dbg_processMotorParam(int argc, char *argv[])
 
 		CTRL_setParams(ctrlHandle,&gUserParams);
 		CTRL_setUserMotorParams(ctrlHandle);
+		UARTprintf(" update motor param in running %d\n");
+#else
+		UARTprintf(" not supported\n");
+#endif
 	}
 	else
 		goto mtr_err;
@@ -1938,7 +1949,11 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 //    	UARTprintf("sizeof(long)=%d sizeof(int)=%d, sizeof(char)=%d\n", (int)sizeof(long), (int)sizeof(int), (int)sizeof(char));
 //    	uint16_t period_cycles = (uint16_t)(90.0*1000.0); // overflow
 //    	UARTprintf("period = %d\n", period_cycles);
+#ifdef SUPPORT_MOTOR_PARAM
     	UARTprintf("input_voltage = %d, trip=%d\n", mtr_param.voltage_in, internal_status.trip_happened);
+#else
+    	UARTprintf("input_voltage = %d, trip=%d\n", USER_MOTOR_VOLTAGE_IN, internal_status.trip_happened);
+#endif
     }
     else if(index == 6)
     {
@@ -2140,7 +2155,11 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	cur_rate = atoi(argv[2]);
     	if(cur_rate >= 0 && cur_rate <= 200) // input duty as 0 ~ 200%
     	{
+#ifdef SUPPORT_MOTOR_PARAM
     		pwm_f = (float_t)(cur_rate)/100.0 * mtr_param.max_current*mtr_param.Rs*2.0;// 2*Rs for Y connection
+#else
+    		pwm_f = (float_t)(cur_rate)/100.0 * USER_MOTOR_MAX_CURRENT*USER_MOTOR_Rs*2.0;// 2*Rs for Y connection
+#endif
     		V_duty = pwm_f*100.0 / MAIN_getVdcBus();
     		gPwmData_Value = _IQ(V_duty/100.0);
     		UARTprintf(" DCI Pwm data %d -> V=%f, V_percent=%f\n", cur_rate, (pwm_f/100.0), V_duty);
