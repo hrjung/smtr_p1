@@ -158,6 +158,7 @@ extern uint32_t secCnt;
 extern MOTOR_working_st m_status;
 extern float_t sf4pu_rpm;
 extern USER_Params gUserParams;
+extern volatile MOTOR_Vars_t gMotorVars;
 extern int for_rev_flag;
 extern int ovl_alarm_enable;
 extern uint16_t Vinst[];
@@ -1979,6 +1980,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)DRV_getPwmFrequency());
     	UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
+    	UARTprintf(" Vs %f A, VsRef=%f A \n", _IQtoF(gMotorVars.Vs), _IQtoF(gMotorVars.VsRef));
     }
     else if(index == 8)
     {

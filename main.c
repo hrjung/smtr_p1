@@ -301,6 +301,12 @@ _iq temp_traj = _IQ(0.0);
 _iq traj_spd = _IQ(0.0);
 #endif
 
+#if (USER_MOTOR == SAMYANG_1_5K_MOTOR)
+_iq foc_end_rpm = _IQ(0.01);
+#elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)
+_iq foc_end_rpm = _IQ(0.03);
+#endif
+
 void SetGpioInterrupt(void);
 
 #ifdef SUPPORT_OFFSET_MEASURE
@@ -321,10 +327,11 @@ enum {
 #define AL_TEST_RUNNING_TIME        (100)
 #define AL_TEST_REVERSE_TIME        (400)
 
-int load_test_type=0;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
+int load_test_type=1;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
+int AL_test_stop_flag=0, AL_test_start_flag=0;
 
 void processAutoLoadTest(void);
-void processFullLoadTest(void);
+//void processFullLoadTest(void);
 #endif
 // **************************************************************************
 // the functions
@@ -960,10 +967,16 @@ int processMcuCommand(void)
 		{
 		case SPICMD_CTRL_RUN:
 			PARAM_startRun();
+#ifdef SUPPORT_AUTO_LOAD_TEST
+			{AL_test_stop_flag=0; AL_test_start_flag=1;}
+#endif
 			break;
 
 		case SPICMD_CTRL_STOP:
 			PARAM_stopRun();
+#ifdef SUPPORT_AUTO_LOAD_TEST
+			{AL_test_stop_flag=1; AL_test_start_flag=0;}
+#endif
 			break;
 
 		case SPICMD_CTRL_DIR_F:
@@ -1464,8 +1477,8 @@ void main(void)
 #ifdef SUPPORT_AUTO_LOAD_TEST
   	    if(load_test_type)
   	    	processAutoLoadTest();
-  	    else
-  	    	processFullLoadTest();
+//  	    else
+//  	    	processFullLoadTest();
 #endif
 
 #ifdef SAMPLE_ADC_VALUE
@@ -1484,7 +1497,7 @@ void main(void)
 //	gMotorVars.Ki_Idq = _IQ(0.044786);
 
 #ifdef SUPPORT_FIELD_WEAKENING
-    gMotorVars.Flag_enableFieldWeakening = false;
+    gMotorVars.Flag_enableFieldWeakening = true;
 #endif
 
     // Enable the Library internal PI.  Iq is referenced by the speed PI now
@@ -1780,8 +1793,8 @@ void main(void)
 #ifdef SUPPORT_AUTO_LOAD_TEST
   	    if(load_test_type)
   	    	processAutoLoadTest();
-  	    else
-  	    	processFullLoadTest();
+//  	    else
+//  	    	processFullLoadTest();
 #endif
 
       } // end of while(gFlag_enableSys) loop
@@ -2058,7 +2071,7 @@ interrupt void mainISR(void)
   //TODO : just temp stop for haunting at low speed of FOC
   if(DRV_isFocControl()
 	 && STA_getTargetFreq() == 0.0
-	 && _IQabs(gMotorVars.Speed_krpm) <= _IQ(0.03)) // about 3Hz for 2.2k, 1Hz for 1.5k
+	 && _IQabs(gMotorVars.Speed_krpm) <= foc_end_rpm) // about 3Hz for 2.2k, 1Hz for 1.5k
   {
 	  gFlag_PwmTest=0;
 	  MAIN_disableSystem();
@@ -2657,17 +2670,18 @@ int TEST_readSwitch(void)
 		return 2; // ignore
 }
 
-
 void processAutoLoadTest(void)
 {
 	static int test_state=AL_TEST_READY, prev_test_state=AL_TEST_READY;
-	static int prev_btn_state=0;
-	int btn_state;
+//	static int prev_btn_state=0;
+//	int btn_state;
 	static uint32_t start_time=0;
-	static int dir_flag=0, stop_flag=0, start_flag=0, first_in=1, state_print=1, first_dir_in=1;
+	//static int dir_flag=0, stop_flag=0, start_flag=0, first_in=1, state_print=1, first_dir_in=1;
+	static int dir_flag=0, first_in=1, state_print=1, first_dir_in=1;
 
 	if(internal_status.relay_enabled == 0) return;
 
+#if 0
 	btn_state = TEST_readSwitch();
 
 	if(btn_state == 2) return; //do nothing
@@ -2677,12 +2691,13 @@ void processAutoLoadTest(void)
 	if(prev_btn_state == 0 && btn_state == 1) {start_flag=1; stop_flag=0;}
 
 	prev_btn_state = btn_state;
+#endif
 
 	if(test_state != prev_test_state)
 	{
 		if(state_print)
 		{
-			UARTprintf("Test State %d start=%d, stop=%d, %f\n", test_state, start_flag, stop_flag, (float_t)(secCnt/10.0));
+			UARTprintf("Test State %d start=%d, stop=%d, %f\n", test_state, AL_test_start_flag, AL_test_stop_flag, (float_t)(secCnt/10.0));
 			state_print=0;
 		}
 	}
@@ -2695,12 +2710,12 @@ void processAutoLoadTest(void)
 	{
 	case AL_TEST_READY:
 		// start : Accel to 60Hz
-		if(start_flag)
+		if(AL_test_start_flag)
 		{
 			iparam[ACCEL_TIME_INDEX].value.f = AL_TEST_ACCEL_TIME;
 			iparam[DECEL_TIME_INDEX].value.f = AL_TEST_DECEL_TIME;
 		    FREQ_setFreqValue(AL_TEST_WORKING_FREQ);
-			MAIN_enableSystem(0);
+			MAIN_enableSystem();
 			//STA_calcResolution();
 			UARTprintf("start running motor\n");
 			test_state = AL_TEST_CHECKING;
@@ -2712,8 +2727,8 @@ void processAutoLoadTest(void)
 			dir_flag=0;
 			first_in=1;
 			first_dir_in=1;
-			start_flag=0;
-			stop_flag=0;
+			AL_test_start_flag=0;
+			AL_test_stop_flag=0;
 			if(!MAIN_isTripHappened())
 				HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_LED_R);
 		}
@@ -2771,19 +2786,20 @@ void processAutoLoadTest(void)
 		        first_in = 1;
 			}
 
-			if(stop_flag)
+			if(AL_test_stop_flag)
 			{
 				STA_setNextFreq(0.0);
 				STA_calcResolution();
 				test_state = AL_TEST_CHECKING;
 				first_in = 1;
-				start_flag=0;
+				AL_test_start_flag=0;
 			}
 		}
 		break;
 	}
 }
 
+#if 0
 void processFullLoadTest(void)
 {
     int btn_state;
@@ -2843,7 +2859,7 @@ void processFullLoadTest(void)
             break;
     }
 }
-
+#endif
 #endif
 
 void MAIN_showPidGain(void)

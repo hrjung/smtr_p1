@@ -86,6 +86,10 @@ extern MOTOR_working_st m_status;
 extern motor_param_st mtr_param;
 extern const char *res_str[2];
 
+#ifdef SUPPORT_AUTO_LOAD_TEST
+extern int load_test_type;
+#endif
+
 extern void STA_printInvState(void);
 extern uint16_t MAIN_isRunState(void);
 extern uint16_t MAIN_getDirection(void);
@@ -103,8 +107,18 @@ extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
 void PARAM_init(void)
 {
+#ifdef SUPPORT_AUTO_LOAD_TEST
+	if(load_test_type == 0)
+	{
+		iparam[FREQ_VALUE_INDEX].type = PARAMETER_TYPE_FLOAT;
+		iparam[FREQ_VALUE_INDEX].value.f = 50.0;
+	}
+	else
+#endif
+	{
 	iparam[FREQ_VALUE_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[FREQ_VALUE_INDEX].value.f = 20.0;
+	}
 
 	iparam[ACCEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[ACCEL_TIME_INDEX].value.f = 10.0;
@@ -116,7 +130,7 @@ void PARAM_init(void)
 	iparam[DIRECTION_INDEX].value.l = 0;
 
 	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL; //FOC_CONTROL
+	iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL; //VF_CONTROL;
 
 	iparam[ENERGY_SAVE_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[ENERGY_SAVE_INDEX].value.l = ESAVE_UNUSED; //  ESAVE_BOTH;
