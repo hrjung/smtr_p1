@@ -296,6 +296,9 @@ extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
 
+_iq Id_pid_max = _IQ(0.0);
+_iq Iq_pid_max = _IQ(0.0);
+
 #ifdef SUPPORT_JUMP_FREQ_FOC
 _iq temp_traj = _IQ(0.0);
 _iq traj_spd = _IQ(0.0);
@@ -1497,7 +1500,7 @@ void main(void)
 //	gMotorVars.Ki_Idq = _IQ(0.044786);
 
 #ifdef SUPPORT_FIELD_WEAKENING
-    gMotorVars.Flag_enableFieldWeakening = true;
+    gMotorVars.Flag_enableFieldWeakening = false;
 #endif
 
     // Enable the Library internal PI.  Iq is referenced by the speed PI now
