@@ -515,7 +515,7 @@ STATIC void dbg_showMonitorParam(void)
 	UARTprintf("\t Iu: %f, Iv: %f, Iw: %f, DC voltage: %f\n", MAIN_getIu(), MAIN_getIv(), MAIN_getIw(), MAIN_getVdcBus());
 	UARTprintf("\t RMS Iu: %f, Iv: %f, Iw: %f\n", internal_status.Irms[0], internal_status.Irms[1], internal_status.Irms[2]);
 	UARTprintf("\t RMS Vu: %f, Vv: %f, Vw: %f\n", internal_status.Vrms[0], internal_status.Vrms[1], internal_status.Vrms[2]);
-	UARTprintf("\t RMS Vppu: %f, Vppv: %f, Vppw: %f\n", internal_status.Vpprms[0], internal_status.Vpprms[1], internal_status.Vpprms[2]);
+	UARTprintf("\t RMS Vppu: %f, Vppv: %f, Vppw: %f\n", (float)internal_status.Vpprms[0], (float)internal_status.Vpprms[1], (float)internal_status.Vpprms[2]);
 //	UARTprintf("\t Volt: Vu: %f, Vv: %f, Vw: %f \n", internal_status.Vu_inst, internal_status.Vv_inst, internal_status.Vw_inst); //, MAIN_getDC_lfp());
 //	UARTprintf("\t Volt: U-V: %f, V-W: %f, W-U: %f \n", (internal_status.Vu_inst - internal_status.Vv_inst), (internal_status.Vv_inst-internal_status.Vw_inst), (internal_status.Vw_inst-internal_status.Vu_inst));
 //	UARTprintf("\t input status: 0x%x, out status: 0x%x\n", (int)((mnt.dio_status>>16)&0x0F), (int)(mnt.dio_status&0x0F));
@@ -1057,8 +1057,6 @@ dcib_err:
 #if 1
 STATIC int dbg_processMotorParam(int argc, char *argv[])
 {
-	uint16_t mtr_set;
-
 	if(argc == 1)
 	{
 		dbg_showMotorParam();
@@ -1066,6 +1064,8 @@ STATIC int dbg_processMotorParam(int argc, char *argv[])
 	else if(argc == 2)
 	{
 #ifdef SUPPORT_MOTOR_PARAM
+		uint16_t mtr_set;
+
 		mtr_set = (uint16_t)atoi(argv[1]);
 		if(mtr_set >= MOTOR_TYPE_MAX) goto mtr_err;
 

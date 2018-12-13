@@ -296,8 +296,12 @@ extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
 
+_iq Spd_pid_max = _IQ(0.0);
 _iq Id_pid_max = _IQ(0.0);
 _iq Iq_pid_max = _IQ(0.0);
+_iq Iq_refValue = _IQ(0.0);
+_iq Iq_fbackValue = _IQ(0.0);
+_iq angle_pu = _IQ(0.0);
 
 #ifdef SUPPORT_JUMP_FREQ_FOC
 _iq temp_traj = _IQ(0.0);
@@ -330,7 +334,7 @@ enum {
 #define AL_TEST_RUNNING_TIME        (100)
 #define AL_TEST_REVERSE_TIME        (400)
 
-int load_test_type=1;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
+int load_test_type=0;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
 int AL_test_stop_flag=0, AL_test_start_flag=0;
 
 void processAutoLoadTest(void);
@@ -1281,8 +1285,7 @@ void main(void)
 
   // Set the field weakening controller limits
 
-  //FW_setMinMax(fwHandle,_IQ(USER_MAX_NEGATIVE_ID_REF_CURRENT_A/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
-  FW_setMinMax(fwHandle,_IQ(gUserParams.maxNegativeIdCurrent_a/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
+  FW_setMinMax(fwHandle,_IQ(USER_MAX_NEGATIVE_ID_REF_CURRENT_A/USER_IQ_FULL_SCALE_CURRENT_A),_IQ(0.0));
 #endif
 
   // setup faults
@@ -1326,8 +1329,7 @@ void main(void)
 	// initialize the Vs per Freq module
   vs_freqHandle = VS_FREQ_init(&vs_freq,sizeof(vs_freq));
   VS_FREQ_setParams(vs_freqHandle,  gUserParams.iqFullScaleFreq_Hz, gUserParams.iqFullScaleVoltage_V, gUserParams.maxVsMag_pu);
-  //gUserParams.VF_freq_low = mtr.input_voltage*param.ctrl.v_boost/100.0;
-  //VS_FREQ_setProfile(vs_freqHandle, gUserParams.VF_freq_low, gUserParams.VF_freq_high, gUserParams.VF_volt_min, gUserParams.VF_volt_max);
+
   if(iparam[V_BOOST_INDEX].value.f == 0.0)
 	  VS_FREQ_setProfile(vs_freqHandle, USER_MOTOR_FREQ_LOW, USER_MOTOR_FREQ_HIGH, gUserParams.VF_volt_min, gUserParams.VF_volt_max);
   else
@@ -1387,9 +1389,9 @@ void main(void)
   datalog.iptr[0] = &Id_in;//&pwm_set[0];	// &gAdcData.V.value[0];
   datalog.iptr[1] = &Iq_in; //&pwm_set[1];	//&gAdcData.I.value[0];
 #endif
-  datalog.iptr[0] = &gAdcData.V.value[0];  // V
-  datalog.iptr[1] = &gAdcData.V.value[1];  // W
-  datalog.iptr[2] = &gAdcData.V.value[2];  // U
+  datalog.iptr[0] = &gAdcData.I.value[0];  // V
+  datalog.iptr[1] = &gAdcData.I.value[1];  // Wangle_pu
+  datalog.iptr[2] = &angle_pu; //&gAdcData.V.value[2];  // U
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -1500,7 +1502,7 @@ void main(void)
 //	gMotorVars.Ki_Idq = _IQ(0.044786);
 
 #ifdef SUPPORT_FIELD_WEAKENING
-    gMotorVars.Flag_enableFieldWeakening = false;
+    gMotorVars.Flag_enableFieldWeakening = true;
 #endif
 
     // Enable the Library internal PI.  Iq is referenced by the speed PI now
@@ -1767,17 +1769,6 @@ void main(void)
 
         	CTRL_setFlag_enablePowerWarp(ctrlHandle,gMotorVars.Flag_enablePowerWarp);
         }
-#if 0
-    	if(SPI_isPacketReceived())
-    	{
-    		{
-				if(spi_chk_ok == 0) spi_err++;
-				UARTprintf("SPI seq=%d recv ok=%d err_cnt=%d\n", rx_seq_no, spi_chk_ok, spi_err);
-    		}
-    		prev_seqNo = rx_seq_no;
-    		SPI_clearPacketReceived();
-    	}
-#endif
 
         // protection
         processProtection();
@@ -1910,8 +1901,8 @@ interrupt void mainISR(void)
 			CLARKE_run(controller_obj->clarkeHandle_V,&gAdcData.V, CTRL_getVab_in_addr(ctrlHandle));
 
 			//hrjung add for EST
-//			EST_run(controller_obj->estHandle,CTRL_getIab_in_addr(ctrlHandle),CTRL_getVab_in_addr(ctrlHandle),
-//									gAdcData.dcBus,TRAJ_getIntValue(controller_obj->trajHandle_spd));
+			EST_run(controller_obj->estHandle,CTRL_getIab_in_addr(ctrlHandle),CTRL_getVab_in_addr(ctrlHandle),
+									gAdcData.dcBus,TRAJ_getIntValue(controller_obj->trajHandle_spd));
 
 			if(!BRK_isDCIBrakeEnabled() || (DCIB_getState() == DCI_NONE_STATE))
 			{
@@ -1944,35 +1935,7 @@ interrupt void mainISR(void)
 			// compute the sin/cos phasor
 			CTRL_computePhasor(controller_obj->angle_pu,&phasor);
 
-#ifdef SUPPORT_MODIFIED_VF // hrjung to check Id, Iq
-			 // set the phasor in the Park transform
-			 PARK_setPhasor(controller_obj->parkHandle,&phasor);
-
-			 // run the Park transform
-			 PARK_run(controller_obj->parkHandle,CTRL_getIab_in_addr(ctrlHandle),CTRL_getIdq_in_addr(ctrlHandle));
-
-			 Id_in = CTRL_getId_in_pu(ctrlHandle);
-
-	         // get the Iq reference value
-	         Iq_refValue = CTRL_getIq_ref_pu(ctrlHandle);
-
-		     // get the feedback value
-		     Iq_fbackValue = CTRL_getIq_in_pu(ctrlHandle);
-
-		     // set minimum and maximum for Id controller output
-		     outMax = _IQsqrt(_IQmpy(maxVsMag,maxVsMag) - _IQmpy(CTRL_getVd_out_pu(ctrlHandle),CTRL_getVd_out_pu(ctrlHandle)));
-		     outMin = -outMax;
-
-		     // set the minimum and maximum values
-		     PID_setMinMax(controller_obj->pidHandle_Iq,outMin,outMax);
-
-		     // run the Iq PID controller
-		     PID_run(controller_obj->pidHandle_Iq,Iq_refValue,Iq_fbackValue,CTRL_getVq_out_addr(ctrlHandle));
-#endif
-
 			// compute Valpha, Vbeta with angle and Vout
-			//vs_freq.Vs_out = _IQmpy(vs_freq.Vs_out,c_factor);
-			//vs_freq.Vs_out += _IQ(0.01); //offset
 			Vab_pu.value[0] = _IQmpy(vs_freq.Vs_out,phasor.value[0]);
 			Vab_pu.value[1] = _IQmpy(vs_freq.Vs_out,phasor.value[1]);
 
@@ -2127,31 +2090,6 @@ interrupt void mainISR(void)
   // setup the controller
   CTRL_setup(ctrlHandle);
 
-
-#if 0
-  if(STA_isStopState()) temp_spd_ref=0.0;
-  else if( (STA_getTargetFreq() == 0.0) && STA_isDecelState())
-  {
-	  if(DRV_isVfControl())
-	  {
-		  if(fabsf(temp_spd_ref) < 0.03) // 1Hz
-		  {
-			  //UARTprintf("STOP condition spd_ref %f \n", fabsf(temp_spd_ref));
-			  temp_spd_ref=0.0;
-			  MAIN_disableSystem();
-		  }
-	  }
-	  else
-	  {
-		  if(STA_getCurSpeed() < 50.0) // 2Hz
-		  {
-			  //UARTprintf("STOP FOC  %f\n", STA_getCurSpeed());
-			  MAIN_disableSystem();
-		  }
-	  }
-  }
-#endif
-
   // Irms
   //UTIL_testbit(1);
   if(MAIN_isSampleRequired())
@@ -2199,14 +2137,16 @@ interrupt void mainISR(void)
 #endif
 #endif
 
-
 #if 0
 	internal_status.Vab_pu[0] = _IQtoF(Vab_pu.value[0]);
 	internal_status.Vab_pu[1] = _IQtoF(Vab_pu.value[1]);
 
 	internal_status.phasor[0] = _IQtoF(phasor.value[0]);
 	internal_status.phasor[1] = _IQtoF(phasor.value[1]);
-	internal_status.angle_pu = _IQtoF(controller_obj->angle_pu);
+	if(DRV_isVfControl())
+		internal_status.angle_pu = _IQtoF(controller_obj->angle_pu);
+	else
+		internal_status.angle_pu = _IQtoF(angle_pu);
 
 #ifdef SAMPLE_ADC_VALUE
 	if(sample_type == V_AB_SAMPLE_TYPE)
@@ -2500,7 +2440,7 @@ void motor_RunCtrl(CTRL_Handle handle)
 
 int MAIN_isSystemEnabled(void)
 {
-	return (gMotorVars.Flag_enableSys == true);
+	return (gMotorVars.Flag_enableSys == true && gMotorVars.Flag_Run_Identify == true);
 }
 
 int MAIN_isTripHappened(void)

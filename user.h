@@ -443,7 +443,7 @@ extern "C" {
     #define USER_MOTOR_RES_EST_CURRENT      (1.0)
     #define USER_MOTOR_IND_EST_CURRENT      (NULL)
     #define USER_MOTOR_MAX_CURRENT          (3.4) //(4.0)
-    //#define USER_MOTOR_MAX_CURRENT          (3.8) //(4.0)
+    //#define USER_MOTOR_MAX_CURRENT          (4.5)
     #define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
 
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)

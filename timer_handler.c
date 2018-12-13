@@ -275,20 +275,18 @@ interrupt void timer0ISR(void)
 	if(gTimerCount%100 == 0) secCnt++; // 100ms
 
 #if 1
-#ifdef SUPPORT_AUTO_LOAD_TEST
 	if(MAIN_isTripHappened())
-#endif
 	{
-	if(gTimerCount%1000 == 0)
-	{
+		if(gTimerCount%1000 == 0)
+		{
 #ifdef SUPPORT_HW_COMMON
-		HAL_toggleLed(halHandle,(GPIO_Number_e)HAL_Gpio_LED_R);
+			HAL_toggleLed(halHandle,(GPIO_Number_e)HAL_Gpio_LED_R);
 #else
-		HAL_toggleLed(halHandle,(GPIO_Number_e)HAL_Gpio_LED3);
+			HAL_toggleLed(halHandle,(GPIO_Number_e)HAL_Gpio_LED3);
 #endif
-//    	ADC_readCurrentControl(&adc_data);
-    	//UARTprintf(" %d, %d\n", (int)gTimerCount, (int)secCnt);
-	}
+	//    	ADC_readCurrentControl(&adc_data);
+			//UARTprintf(" %d, %d\n", (int)gTimerCount, (int)secCnt);
+		}
 	}
 #endif
 

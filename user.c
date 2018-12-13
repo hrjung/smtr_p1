@@ -1697,15 +1697,9 @@ _iq USER_computeTorque_Ls_Id_Iq_pu_to_Nm_sf(void)
 {
   float_t FullScaleInductance = (USER_IQ_FULL_SCALE_VOLTAGE_V/(USER_IQ_FULL_SCALE_CURRENT_A*USER_VOLTAGE_FILTER_POLE_rps));
   float_t FullScaleCurrent = (USER_IQ_FULL_SCALE_CURRENT_A);
-#ifdef SUPPORT_VAR_PWM_FREQ
-  float_t lShift = ceil(log(gUserParams.motor_Ls_d/(0.7*FullScaleInductance))/log(2.0));
-
-  return(_IQ(FullScaleInductance*FullScaleCurrent*FullScaleCurrent*gUserParams.motor_numPolePairs*1.5*pow(2.0,lShift)));
-#else
   float_t lShift = ceil(log(USER_MOTOR_Ls_d/(0.7*FullScaleInductance))/log(2.0));
 
   return(_IQ(FullScaleInductance*FullScaleCurrent*FullScaleCurrent*USER_MOTOR_NUM_POLE_PAIRS*1.5*pow(2.0,lShift)));
-#endif  
 } // end of USER_computeTorque_Ls_Id_Iq_pu_to_Nm_sf() function
 
 
@@ -1716,10 +1710,10 @@ _iq USER_computeTorque_Flux_Iq_pu_to_Nm_sf(void)
 #ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
   float_t FullScaleCurrent = (USER_IQ_FULL_SCALE_CURRENT_A);
-  float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
+  float_t maxFlux = (USER_MOTOR_RATED_FLUX*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
   float_t lShift = -ceil(log(FullScaleFlux/maxFlux)/log(2.0));
 
-  return(_IQ(FullScaleFlux/(2.0*MATH_PI)*FullScaleCurrent*gUserParams.motor_numPolePairs*1.5*pow(2.0,lShift)));
+  return(_IQ(FullScaleFlux/(2.0*MATH_PI)*FullScaleCurrent*USER_MOTOR_NUM_POLE_PAIRS*1.5*pow(2.0,lShift)));
 #else
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)USER_EST_FREQ_Hz);
   float_t FullScaleCurrent = (USER_IQ_FULL_SCALE_CURRENT_A);
@@ -1737,7 +1731,7 @@ _iq USER_computeFlux_pu_to_Wb_sf(void)
 {
 #ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
-  float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
+  float_t maxFlux = (USER_MOTOR_RATED_FLUX*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
 #else
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)USER_EST_FREQ_Hz);
   float_t maxFlux = (USER_MOTOR_RATED_FLUX*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
@@ -1754,7 +1748,7 @@ _iq USER_computeFlux_pu_to_VpHz_sf(void)
 {
 #ifdef SUPPORT_VAR_PWM_FREQ
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)gUserParams.estFreq_Hz);
-  float_t maxFlux = (gUserParams.motor_ratedFlux*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
+  float_t maxFlux = (USER_MOTOR_RATED_FLUX*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
 #else
   float_t FullScaleFlux = (USER_IQ_FULL_SCALE_VOLTAGE_V/(float_t)USER_EST_FREQ_Hz);
   float_t maxFlux = (USER_MOTOR_RATED_FLUX*((USER_MOTOR_TYPE==MOTOR_Type_Induction)?0.05:0.7));
