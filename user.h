@@ -432,18 +432,25 @@ extern "C" {
 #if (USER_MOTOR == SAMYANG_1_5K_MOTOR)
 
     #define USER_MOTOR_NO_LOAD_CURRENT      (2.0)
-
+    #define USER_MOTOR_RATED_CURRENT        (3.4)
+#if 1// test value
+    #define USER_MOTOR_Rr                   (1.79456)
+    #define USER_MOTOR_Rs                   (2.15)
+    #define USER_MOTOR_Ls_d                 (0.016746)
+    #define USER_MOTOR_Ls_q                 USER_MOTOR_Ls_d
+    #define USER_MOTOR_RATED_FLUX           (4.873543)
+#else
     #define USER_MOTOR_Rr                   (2.14568)
     #define USER_MOTOR_Rs                   (2.5)
-    //#define USER_MOTOR_Ls_d                 (0.02791)
     #define USER_MOTOR_Ls_d                 (0.013955)
     #define USER_MOTOR_Ls_q                 USER_MOTOR_Ls_d
-    #define USER_MOTOR_RATED_FLUX           (4.923143) //(0.8*0.8165*380.0/60.0)
+    #define USER_MOTOR_RATED_FLUX           (4.923143)
+#endif
     #define USER_MOTOR_MAGNETIZING_CURRENT  (USER_MOTOR_NO_LOAD_CURRENT*1.4142) // 2.0*sqrt(2)
     #define USER_MOTOR_RES_EST_CURRENT      (1.0)
     #define USER_MOTOR_IND_EST_CURRENT      (NULL)
-    #define USER_MOTOR_MAX_CURRENT          (3.4) //(4.0)
-    //#define USER_MOTOR_MAX_CURRENT          (4.5)
+    //#define USER_MOTOR_MAX_CURRENT          (3.4) //(4.0)
+    #define USER_MOTOR_MAX_CURRENT          (0.96*4.8) // max 4.8 = sqrt(2) * 3.4
     #define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
 
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)

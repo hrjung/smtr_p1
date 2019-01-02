@@ -302,6 +302,7 @@ _iq Iq_pid_max = _IQ(0.0);
 _iq Iq_refValue = _IQ(0.0);
 _iq Iq_fbackValue = _IQ(0.0);
 _iq angle_pu = _IQ(0.0);
+_iq Id_refValue = _IQ(0.0);
 
 #ifdef SUPPORT_JUMP_FREQ_FOC
 _iq temp_traj = _IQ(0.0);
@@ -309,7 +310,7 @@ _iq traj_spd = _IQ(0.0);
 #endif
 
 #if (USER_MOTOR == SAMYANG_1_5K_MOTOR)
-_iq foc_end_rpm = _IQ(0.01);
+_iq foc_end_rpm = _IQ(0.015);
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)
 _iq foc_end_rpm = _IQ(0.03);
 #endif
@@ -944,6 +945,7 @@ int MAIN_processDCBrake(void)
 		// PWM off
 		if(dc_pwm_off == 0)
 		{
+			HAL_disablePwm(halHandle);
 			gPwmData.Tabc.value[0] = _IQ(0.0);
 			gPwmData.Tabc.value[1] = _IQ(0.0);
 			gPwmData.Tabc.value[2] = _IQ(0.0);
@@ -1074,7 +1076,7 @@ void init_global(void)
 	gMotorVars.Vq = _IQ(0.0);
 	gMotorVars.Vs = _IQ(0.0);
 	//gMotorVars.VsRef = _IQ(0.8 * USER_MAX_VS_MAG_PU);
-	gMotorVars.VsRef = _IQ(0.89 * USER_MAX_VS_MAG_PU);
+	gMotorVars.VsRef = _IQ(0.98 * USER_MAX_VS_MAG_PU);
 	gMotorVars.VdcBus_kV = _IQ(0.0);
 
 	gMotorVars.Id_A = _IQ(0.0);
@@ -1103,26 +1105,6 @@ void init_global(void)
 	gMotorVars.IdRef_pu = _IQ(0.0);
 	gMotorVars.IqRef_pu = _IQ(0.0);
 }
-
-#if 0
-void init_test_param(void)
-{
-	//motor params
-	mtr.effectiveness = TEST_MOTOR_EFFECTIVENESS;
-	mtr.slip_rate = TEST_MOTOR_SLIP_RATE; // offset speed for VF (krpm)
-	mtr.input_voltage = TEST_MOTOR_VOLTAGE_IN;
-	mtr.rated_freq = TEST_MOTOR_RATED_FREQ;
-//	mtr.rpm_min = 300;
-//	mtr.rpm_max = 1800;
-	mtr.capacity = TEST_MOTOR_CAPACITY;
-	mtr.poles = TEST_MOTOR_NUM_POLE_PAIRS;
-	mtr.Rr = TEST_MOTOR_Rr;
-	mtr.Rs = TEST_MOTOR_Rs;
-	mtr.Ls = TEST_MOTOR_Ls;
-	mtr.noload_current = TEST_MOTOR_NOLOAD_CURRENT;
-	mtr.max_current = TEST_MOTOR_MAX_CURRENT;
-}
-#endif
 
 void main(void)
 {
@@ -2077,6 +2059,8 @@ interrupt void mainISR(void)
     	  FW_run(fwHandle, refValue, fbackValue, &output);
 
     	  CTRL_setId_ref_pu(ctrlHandle, output);
+
+    	  Id_refValue = output;
 
     	  gMotorVars.IdRef_A = _IQmpy(CTRL_getId_ref_pu(ctrlHandle), _IQ(USER_IQ_FULL_SCALE_CURRENT_A));
         }

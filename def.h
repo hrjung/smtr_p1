@@ -84,6 +84,7 @@
 
 #define SUPPORT_V08_HW
 #define SUPPORT_P1_HW // need to define SUPPORT_V08_HW as well
+#define SUPPORT_P2_HW // 2 pins added to communicate with MCU
 
 //for cycle test with load, forward <-> reverse rotation
 //#define SUPPORT_AUTO_LOAD_TEST

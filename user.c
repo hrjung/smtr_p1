@@ -101,9 +101,17 @@ void USER_setParams(USER_Params *pUserParams)
   pUserParams->numCtrlTicksPerSpeedTick = (uint_least16_t)pwm_freq; //USER_NUM_CTRL_TICKS_PER_SPEED_TICK;
   pUserParams->numCtrlTicksPerTrajTick = (uint_least16_t)pwm_freq; //USER_NUM_CTRL_TICKS_PER_TRAJ_TICK;
   if(pUserParams->numCtrlTicksPerSpeedTick == 12)
+  {
 	  pUserParams->numIsrTicksPerCtrlTick = 2;
+	  pUserParams->numCtrlTicksPerSpeedTick = 6;
+	  pUserParams->numCtrlTicksPerTrajTick = 6;
+  }
   else if(pUserParams->numCtrlTicksPerSpeedTick == 16)
+  {
 	  pUserParams->numIsrTicksPerCtrlTick = 3;
+	  pUserParams->numCtrlTicksPerSpeedTick = 5;
+	  pUserParams->numCtrlTicksPerTrajTick = 5;
+  }
   else
 	  pUserParams->numIsrTicksPerCtrlTick = 1;
 #else
