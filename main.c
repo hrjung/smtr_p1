@@ -824,6 +824,30 @@ void MAIN_setRegenDuty(float_t resist, uint32_t power)
 	dev_const.regen_max_V = 0.9*sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
 }
 
+uint16_t Kp_for_fw=0;
+void MAIN_setSpeedGain(int fw_enabled)
+{
+	if(fw_enabled)
+	{
+		//hrjung for user guide 6.5.3.5, but increase Kp cause haunting, so only change ki_spd
+		if(Kp_for_fw == 0) // for Field Weakening
+		{
+			gMotorVars.Ki_spd = _IQ(0.1*gUserParams.maxCurrent*gUserParams.iqFullScaleFreq_Hz*gUserParams.ctrlPeriod_sec/gUserParams.iqFullScaleCurrent_A);
+			Kp_for_fw = 1;
+			//UARTprintf("set Ki_spd=%f for FW\n", (float_t)_IQtoF(gMotorVars.Ki_spd));
+		}
+	}
+	else
+	{
+		if(Kp_for_fw) // for normal
+		{
+			gMotorVars.Ki_spd = _IQ(2.0*gUserParams.maxCurrent*gUserParams.iqFullScaleFreq_Hz*gUserParams.ctrlPeriod_sec/gUserParams.iqFullScaleCurrent_A);
+			Kp_for_fw = 0;
+			//UARTprintf("set Ki_spd=%f for normal\n", (float_t)_IQtoF(gMotorVars.Ki_spd));
+		}
+	}
+}
+
 void MAIN_setDeviceConstant(void)
 {
 	UTIL_setScaleFactor();
@@ -2163,10 +2187,20 @@ interrupt void mainISR(void)
 } // end of mainISR() function
 
 
+#define FW_GAIN_UPDATE_HIGH_KRPM	(63.0*60.0/(float_t)USER_MOTOR_NUM_POLE_PAIRS/1000.0)
+#define FW_GAIN_UPDATE_LOW_KRPM		(60.0*60.0/(float_t)USER_MOTOR_NUM_POLE_PAIRS/1000.0)
+
 void updateGlobalVariables_user(void)
 {
 	internal_status.ipm_temp = gAdcData.ipm_temperature;
 	internal_status.mtr_temp = gAdcData.mtr_temperature;
+
+#if 1 // to avoid haunting at FW
+	if(gMotorVars.Speed_krpm > _IQ(FW_GAIN_UPDATE_HIGH_KRPM))
+		MAIN_setSpeedGain(1);
+	else if(gMotorVars.Speed_krpm < _IQ(FW_GAIN_UPDATE_LOW_KRPM))
+		MAIN_setSpeedGain(0);
+#endif
 }
 
 void updateGlobalVariables_motor(CTRL_Handle handle)
@@ -2791,8 +2825,8 @@ void processFullLoadTest(void)
 
 void MAIN_showPidGain(void)
 {
-	UARTprintf(" SPD ki=%f, kp=%f \n", _IQtoF(gMotorVars.Ki_spd), _IQtoF(gMotorVars.Kp_spd));
-	UARTprintf(" Idq ki=%f, kp=%f \n", _IQtoF(gMotorVars.Ki_Idq), _IQtoF(gMotorVars.Kp_Idq));
+	UARTprintf(" SPD Kp=%f, Ki=%f \n", _IQtoF(gMotorVars.Kp_spd), _IQtoF(gMotorVars.Ki_spd));
+	UARTprintf(" Idq Kp=%f, Ki=%f \n", _IQtoF(gMotorVars.Kp_Idq), _IQtoF(gMotorVars.Ki_Idq));
 }
 
 __interrupt void xint1_isr(void)

@@ -18,7 +18,7 @@
  * MACROS
  */
 
-#define FREQ_isValidFreq(freq)	(freq >= 0 && freq <= MAX_FREQ_VALUE)
+#define FREQ_isValidFreq(freq)	(freq >= 0.0 && freq <= MAX_FREQ_VALUE)
 
 /*******************************************************************************
  * CONSTANTS
@@ -50,7 +50,6 @@
 /*******************************************************************************
  * EXTERNS
  */
-
 
 // TODO : add checking working state for avoid change param in running
 

@@ -174,6 +174,7 @@ extern float_t MAIN_getIave(void);
 
 extern float_t MAIN_getDC_lfp(void);
 extern void MAIN_showPidGain(void);
+extern void MAIN_setSpeedGain(int fw_enabled);
 
 extern void REGEN_start(void);
 extern void REGEN_end(void);
@@ -2044,6 +2045,15 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	TMR_startTimerSig(TIMER_TEST_TSIG, f_dur);
     	UARTprintf(" Test Timer %f sec start at %d \n", f_dur, (int)secCnt);
     }
+    else if(index == 'x')
+    {
+    	uint16_t on_off;
+
+    	on_off = (uint16_t)atoi(argv[2]);
+
+    	MAIN_setSpeedGain(on_off);
+    	UARTprintf(" set Ki_spd gain for %d\n", on_off);
+    }
 #ifdef SUPPORT_AUTO_LOAD_TEST_
     else if(index == 'l')
     {
@@ -2121,6 +2131,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     		UARTprintf(" Pwm data error %d\n", pwm_data);
 
     }
+#endif
     else if(index == 'j')
     {
     	int enable=0;
@@ -2169,7 +2180,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	else
     		UARTprintf(" DCI Pwm a error %d\n", cur_rate);
     }
-#endif
+
 #ifdef SAMPLE_ADC_VALUE
     else if(index == 'z')
     {

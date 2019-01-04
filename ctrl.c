@@ -413,10 +413,10 @@ void CTRL_setParams(CTRL_Handle handle,USER_Params *pUserParams)
 
 
   // set the default speed PID controller parameters
-//  Kp = _IQ(0.02*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz/pUserParams->iqFullScaleCurrent_A);
-//  Ki = _IQ(2.0*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz*pUserParams->ctrlPeriod_sec/pUserParams->iqFullScaleCurrent_A);
   Kp = _IQ(0.02*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz/pUserParams->iqFullScaleCurrent_A);
-  Ki = _IQ(0.1*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz*pUserParams->ctrlPeriod_sec/pUserParams->iqFullScaleCurrent_A);
+  Ki = _IQ(2.0*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz*pUserParams->ctrlPeriod_sec/pUserParams->iqFullScaleCurrent_A);
+//  Kp = _IQ(0.02*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz/pUserParams->iqFullScaleCurrent_A);
+//  Ki = _IQ(0.1*pUserParams->maxCurrent*pUserParams->iqFullScaleFreq_Hz*pUserParams->ctrlPeriod_sec/pUserParams->iqFullScaleCurrent_A);
   Kd = _IQ(0.0);
   outMin = _IQ(-1.0);
   outMax = _IQ(1.0);
