@@ -33,11 +33,13 @@ extern HAL_Handle halHandle;
 
 void UTIL_setShaftBrake(void)
 {
+	internal_status.shaft_brake_enabled = 1;
 	HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
 }
 
 void UTIL_releaseShaftBrake(void)
 {
+	internal_status.shaft_brake_enabled = 0;
 	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Brake);
 }
 

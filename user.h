@@ -217,7 +217,7 @@ extern "C" {
 //! \brief For space vector over-modulation, see lab 10 for details on system requirements that will allow the SVM generator to go all the way to trapezoidal.
 //#define USER_MAX_VS_MAG_PU        (0.5)    // Set to 0.5 if a current reconstruction technique is not used.  Look at the module svgen_current in lab10a-x for more info.
 #define USER_MAX_VS_MAG_PU        (0.6666)    // Instaspin user guide 4.2.3
-//#define USER_MAX_VS_MAG_PU        (0.85)
+//#define USER_MAX_VS_MAG_PU        (0.5774)
 
 //! \brief Defines the address of controller handle
 //!

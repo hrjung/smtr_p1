@@ -81,6 +81,7 @@ inv_parameter_st iparam[INV_PARAM_INDEX_MAX];
 inv_parameter_st err_info[ERR_CODE_MAX];
 inv_parameter_st inv_status[INV_STATUS_MAX];
 
+extern uint16_t ovl_alarm_enable;
 extern USER_Params gUserParams;
 extern MOTOR_working_st m_status;
 extern motor_param_st mtr_param;
@@ -824,8 +825,8 @@ void PARAM_initInvStatus(void)
 
 void PARAM_setInvStatus(void)
 {
-	inv_status[INV_STATUS_INDEX].value.arr[0] = MAIN_isRunState();
-	inv_status[INV_STATUS_INDEX].value.arr[1] = MAIN_getDirection();
+	inv_status[INV_STATUS_INDEX].value.arr[0] = (MAIN_getDirection()<<8) | MAIN_isRunState();
+	inv_status[INV_STATUS_INDEX].value.arr[1] = (internal_status.shaft_brake_enabled<<8) | ovl_alarm_enable;
 
 	inv_status[INV_I_RMS_INDEX].value.f = MAIN_getIave();
 	inv_status[INV_RUN_FREQ_INDEX].value.f = STA_getCurFreq();
