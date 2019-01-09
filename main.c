@@ -295,6 +295,9 @@ extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
 extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
+uint16_t offset_updated=0;
+_iq i_offset[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
+_iq v_offset[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
 
 _iq Spd_pid_max = _IQ(0.0);
 _iq Id_pid_max = _IQ(0.0);
@@ -670,6 +673,31 @@ inline void MAIN_calculateIrms(void)
 }
 #endif
 
+
+int MAIN_isValidOffset(void)
+{
+	float_t i_offset_min, i_offset_max;
+	float_t v_offset_min, v_offset_max;
+	int i, result=1;
+
+	i_offset_min = I_A_offset*0.8;
+	i_offset_max = I_A_offset*1.2;
+	for(i=0; i<USER_NUM_CURRENT_SENSORS; i++)
+	{
+		if(i_offset[i] < _IQ(i_offset_min) || i_offset[i] > _IQ(i_offset_max)) result=0;
+	}
+
+	v_offset_min = V_A_offset*0.8;
+	v_offset_max = V_A_offset*1.2;
+	for(i=0; i<USER_NUM_VOLTAGE_SENSORS; i++)
+	{
+		if(v_offset[i] < _IQ(v_offset_min) || v_offset[i] > _IQ(v_offset_max)) result=0;
+	}
+
+	return result;
+}
+
+// to make voltage level 0 for PWM off
 void MAIN_resetOffsetV(void)
 {
 	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(0.0));
@@ -679,25 +707,27 @@ void MAIN_resetOffsetV(void)
 
 void MAIN_setOffset(void)
 {
-#ifdef SUPPORT_VAR_PWM_FREQ
-	// set the current bias from setting
-	HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(gUserParams.I_A_Offset));
-	HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(gUserParams.I_B_Offset));
-	HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(gUserParams.I_C_Offset));
+	if(offset_updated)
+	{
+		HAL_setBias(halHandle,HAL_SensorType_Current,0, i_offset[0]);
+		HAL_setBias(halHandle,HAL_SensorType_Current,1, i_offset[1]);
+		HAL_setBias(halHandle,HAL_SensorType_Current,2, i_offset[2]);
 
-	// set the voltage bias
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(gUserParams.V_A_Offset));
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(gUserParams.V_B_Offset));
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(gUserParams.V_C_Offset));
-#else
-    HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(I_A_offset));
-    HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(I_B_offset));
-    HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(I_C_offset));
+		// set the voltage bias
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,0, v_offset[0]);
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,1, v_offset[1]);
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,2, v_offset[2]);
+	}
+	else
+	{
+		HAL_setBias(halHandle,HAL_SensorType_Current,0,_IQ(I_A_offset));
+		HAL_setBias(halHandle,HAL_SensorType_Current,1,_IQ(I_B_offset));
+		HAL_setBias(halHandle,HAL_SensorType_Current,2,_IQ(I_C_offset));
 
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(V_A_offset));
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(V_B_offset));
-	HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(V_C_offset));
-#endif
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,0,_IQ(V_A_offset));
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(V_B_offset));
+		HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(V_C_offset));
+	}
 }
 
 int MAIN_isOverCurrent(void)
@@ -1041,7 +1071,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1395,9 +1425,9 @@ void main(void)
   datalog.iptr[0] = &Id_in;//&pwm_set[0];	// &gAdcData.V.value[0];
   datalog.iptr[1] = &Iq_in; //&pwm_set[1];	//&gAdcData.I.value[0];
 #endif
-  datalog.iptr[0] = &gAdcData.I.value[0];  // V
-  datalog.iptr[1] = &gAdcData.I.value[1];  // Wangle_pu
-  datalog.iptr[2] = &angle_pu; //&gAdcData.V.value[2];  // U
+  datalog.iptr[0] = &gAdcData.V.value[0];  // V
+  datalog.iptr[1] = &gAdcData.V.value[1];  // W &angle_pu
+  datalog.iptr[2] = &gAdcData.V.value[2];  // U
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -1535,7 +1565,7 @@ void main(void)
         	EST_setFlag_enableRsRecalc(obj->estHandle,gMotorVars.Flag_enableRsRecalc);
 
         // enable/disable automatic calculation of bias values
-        //gMotorVars.Flag_enableOffsetcalc = false; //hrjung off
+        if(offset_updated) gMotorVars.Flag_enableOffsetcalc = false;
         CTRL_setFlag_enableOffset(ctrlHandle,gMotorVars.Flag_enableOffsetcalc);
 
 #ifdef SUPPORT_FLYING_START
@@ -1575,8 +1605,13 @@ void main(void)
                   {
                     if(gMotorVars.Flag_enableOffsetcalc == true)
                     {
-                      // update the ADC bias values
-                      HAL_updateAdcBias(halHandle);
+                        // update the ADC bias values
+                        HAL_updateAdcBias(halHandle);
+                        if(MAIN_isValidOffset())
+                        	offset_updated=1;
+                        else
+                        	ERR_setTripFlag(TRIP_REASON_OFFSET_ERR);
+
                     }
                     else
                     {

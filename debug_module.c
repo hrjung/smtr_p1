@@ -163,6 +163,8 @@ extern int for_rev_flag;
 extern int ovl_alarm_enable;
 extern uint16_t Vinst[];
 
+extern _iq i_offset[3], v_offset[3];
+
 extern uint16_t spi_rx_buf[];
 extern inv_parameter_st err_info[ERR_CODE_MAX];
 
@@ -1974,14 +1976,17 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     }
     else if(index == 7)
     {
-    	uint16_t   pwm_4k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/4.0)) >> 1;
-    	uint16_t   pwm_8k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/8.0)) >> 1;
-    	uint16_t   pwm_12k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/12.0)) >> 1;
-    	uint16_t   pwm_16k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/16.0)) >> 1;
+//    	uint16_t   pwm_4k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/4.0)) >> 1;
+//    	uint16_t   pwm_8k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/8.0)) >> 1;
+//    	uint16_t   pwm_12k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/12.0)) >> 1;
+//    	uint16_t   pwm_16k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/16.0)) >> 1;
 
     	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)DRV_getPwmFrequency());
-    	UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
+    	//UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
+    	UARTprintf(" I offset %f, %f, %f \n", _IQtoF(i_offset[0]), _IQtoF(i_offset[1]), _IQtoF(i_offset[2]));
+    	UARTprintf(" V offset %f, %f, %f \n", _IQtoF(v_offset[0]), _IQtoF(v_offset[1]), _IQtoF(v_offset[2]));
     	UARTprintf(" Vs %f A, VsRef=%f A \n", _IQtoF(gMotorVars.Vs), _IQtoF(gMotorVars.VsRef));
+
     }
     else if(index == 8)
     {

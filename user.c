@@ -310,15 +310,6 @@ void USER_setParams(USER_Params *pUserParams)
 
   pUserParams->maxNegativeIdCurrent_a = USER_MAX_NEGATIVE_ID_REF_CURRENT_A;
 
-#ifdef SUPPORT_VAR_PWM_FREQ
-  pUserParams->I_A_Offset = I_A_offset;
-  pUserParams->I_B_Offset = I_B_offset;
-  pUserParams->I_C_Offset = I_C_offset;
-
-  pUserParams->V_A_Offset = V_A_offset;
-  pUserParams->V_B_Offset = V_B_offset;
-  pUserParams->V_C_Offset = V_C_offset;
-#endif  
 
 #ifndef SUPPORT_MOTOR_PARAM
   pUserParams->VF_volt_max = ((USER_MOTOR_VOLTAGE_IN*1.414)/1.732051)*PWM_DEADBAND_LIMITATION;

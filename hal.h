@@ -1302,6 +1302,7 @@ void HAL_setupTimers(HAL_Handle handle,const float_t systemFreq_MHz);
 //! \details    This function is called before the motor is started.  It sets the voltage
 //!             and current measurement offsets.
 //! \param[in]  handle  The hardware abstraction layer (HAL) handle
+extern _iq i_offset[3], v_offset[3];
 static inline void HAL_updateAdcBias(HAL_Handle handle)
 {
   uint_least8_t cnt;
@@ -1317,6 +1318,7 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
       bias += OFFSET_getOffset(obj->offsetHandle_I[cnt]);
 
       HAL_setBias(handle,HAL_SensorType_Current,cnt,bias);
+      i_offset[cnt] = bias;
     }
 
 
@@ -1327,7 +1329,9 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
 
       bias += OFFSET_getOffset(obj->offsetHandle_V[cnt]);
 
-      HAL_setBias(handle,HAL_SensorType_Voltage,cnt,bias);
+      //hrjung HAL_setBias(handle,HAL_SensorType_Voltage,cnt,bias);
+      HAL_setBias(handle,HAL_SensorType_Voltage,cnt,-bias); // to make offset of positive value
+      v_offset[cnt] = -bias;
     }
 
   return;

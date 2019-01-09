@@ -266,14 +266,6 @@ typedef struct _USER_Params_
   uint_least32_t 	isrFreq_Hz;
   float_t 			isrPeriod_usec;
   float_t 			ctrlPeriod_usec;
-
-  float_t		I_A_Offset;
-  float_t		I_B_Offset;
-  float_t		I_C_Offset;
-
-  float_t		V_A_Offset;
-  float_t		V_B_Offset;
-  float_t		V_C_Offset;
 #endif
 
   //float_t 		VF_freq_low;
