@@ -278,11 +278,6 @@ void updateGlobalVariables_motor4Vf(CTRL_Handle handle);
 extern uint16_t unit_test_running;
 #endif
 
-#ifdef SUPPORT_MODIFIED_VF
-_iq Id_in = _IQ(0.0);
-_iq Iq_in = _IQ(0.0);
-#endif
-
 #ifdef SUPPORT_VAR_PWM_FREQ
 uint16_t pwm_freq_updated=0;
 #endif

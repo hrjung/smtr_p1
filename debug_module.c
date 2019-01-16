@@ -1858,6 +1858,8 @@ STATIC int dbg_UnitTest(int argc, char *argv[])
 #ifdef PWM_DUTY_TEST
 extern uint16_t gFlag_PwmTest;
 extern _iq gPwmData_Value;
+uint16_t gFlag_isFocPwm=0;
+uint16_t gFlag_isOffserPwm=0;
 extern uint16_t gFlagDCIBrake;
 extern void dbg_enableSystem(void);
 extern void dbg_disableSystem(void);
@@ -2104,6 +2106,16 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	if(enable == 1)
     	{
 			dbg_enableSystem();
+			if(DRV_isFocControl())
+			{
+				gFlag_isFocPwm=1;
+				DRV_enableVfControl();
+			}
+			if(gMotorVars.Flag_enableOffsetcalc)
+			{
+				gFlag_isOffserPwm=1;
+				gMotorVars.Flag_enableOffsetcalc=false;
+			}
 			gFlag_PwmTest = true;
 			UARTprintf(" enable PWM test \n");
     	}
@@ -2111,6 +2123,11 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	{
 			dbg_disableSystem();
 			gFlag_PwmTest = false;
+
+			if(gFlag_isFocPwm) { DRV_enableFocControl(); gFlag_isFocPwm=0;}
+
+			if(gFlag_isOffserPwm) {gMotorVars.Flag_enableOffsetcalc=true; gFlag_isOffserPwm=0;}
+
 			UARTprintf(" disable PWM test \n");
     	}
     }
