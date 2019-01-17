@@ -12,6 +12,7 @@
 #include "inv_param.h"
 #include "drive.h"
 #include "state_func.h"
+#include "common_tools.h"
 
 
 
@@ -65,6 +66,7 @@ void ERR_setTripFlag(int cause)
 	{
 		internal_status.trip_happened = cause;
 		PARAM_setErrInfo(cause, m_status.status, m_status.current, m_status.cur_freq);
+		UTIL_setNotifyFlagMcu(MCU_COMM_ERROR_NOTI);
 	}
 }
 

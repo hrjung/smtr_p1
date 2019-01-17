@@ -1221,6 +1221,7 @@ void main(void)
 #ifdef SUPPORT_V08_HW
   //SPI-A : slave
   setupSpiA(halHandle->spiAHandle);
+  UTIL_setNotifyFlagMcu(MCU_COMM_READY_NOTI);
   //SPI-B : master
 //  spi_fifo_init(halHandle->spiBHandle);
 //  spi_init(halHandle->spiBHandle);

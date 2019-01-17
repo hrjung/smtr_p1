@@ -2061,6 +2061,15 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	MAIN_setSpeedGain(on_off);
     	UARTprintf(" set Ki_spd gain for %d\n", on_off);
     }
+    else if(index == 'u')
+    {
+    	uint16_t value;
+
+    	value = (uint16_t)atoi(argv[2]);
+
+    	UTIL_setNotifyFlagMcu(value);
+    	UARTprintf(" set MCU notify %d\n", value);
+    }
 #ifdef SUPPORT_AUTO_LOAD_TEST_
     else if(index == 'l')
     {

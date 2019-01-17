@@ -15,13 +15,23 @@
 #include "inv_param.h"
 #include "common_tools.h"
 #include "uartstdio.h"
-//*****************************************************************************
-//
-//! \addtogroup
-//! @{
-//
-//*****************************************************************************
 
+/*******************************************************************************
+ * MACROS
+ */
+
+
+/*******************************************************************************
+ * CONSTANTS
+ */
+
+/*******************************************************************************
+ * TYPEDEFS
+ */
+
+/*******************************************************************************
+ * LOCAL VARIABLES
+ */
 
 extern HAL_Handle halHandle;
 
@@ -53,6 +63,36 @@ void UTIL_setFanOff(void)
 {
 	internal_status.fan_enabled = 0;
 	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
+}
+
+void UTIL_setNotifyFlagMcu(uint16_t value)
+{
+	switch(value)
+	{
+	case MCU_COMM_READY_NOTI:
+		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
+		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
+		break;
+
+	case MCU_COMM_IN_PROGRESS:
+		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
+		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
+		break;
+
+	case MCU_COMM_STATUS_NOTI:
+		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
+		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
+		break;
+
+	case MCU_COMM_ERROR_NOTI:
+		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
+		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
+		break;
+
+	default:
+
+		break;
+	}
 }
 
 int UTIL_controlLed(int type, int on_off)

@@ -24,11 +24,14 @@ extern "C"
 #include "hal.h"
 
 
-//*****************************************************************************
+/*******************************************************************************
+ * MACROS
+ */
 
-
-
-
+#define MCU_COMM_READY_NOTI		0
+#define MCU_COMM_IN_PROGRESS	1
+#define MCU_COMM_STATUS_NOTI	2
+#define MCU_COMM_ERROR_NOTI		3
 
 //*****************************************************************************
 
@@ -45,6 +48,8 @@ extern void UTIL_releaseShaftBrake(void);
 
 extern void UTIL_setFanOn(void);
 extern void UTIL_setFanOff(void);
+
+extern void UTIL_setNotifyFlagMcu(uint16_t value);
 
 extern int UTIL_controlLed(int type, int on_off);
 extern void UTIL_testbit(int on_off);

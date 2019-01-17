@@ -1258,8 +1258,20 @@ void HAL_setupGpios(HAL_Handle handle)
   GPIO_setDirection(obj->gpioHandle,GPIO_Number_31,GPIO_Direction_Input);
   GPIO_setQualification(obj->gpioHandle, GPIO_Number_31, GPIO_Qual_Sync); // synch to SYSCLKOUT
 
+#ifdef SUPPORT_P2_HW
+  // DTM2
+  GPIO_setMode(obj->gpioHandle,GPIO_Number_32,GPIO_32_Mode_GeneralPurpose);
+  GPIO_setLow(obj->gpioHandle,GPIO_Number_32);
+  GPIO_setDirection(obj->gpioHandle,GPIO_Number_32,GPIO_Direction_Output);
+
+  // DTM1
+  GPIO_setMode(obj->gpioHandle,GPIO_Number_33,GPIO_33_Mode_GeneralPurpose);
+  GPIO_setLow(obj->gpioHandle,GPIO_Number_33);
+  GPIO_setDirection(obj->gpioHandle,GPIO_Number_33,GPIO_Direction_Output);
+#else
   GPIO_setMode(obj->gpioHandle,GPIO_Number_32,GPIO_32_Mode_GeneralPurpose);
   GPIO_setMode(obj->gpioHandle,GPIO_Number_33,GPIO_33_Mode_GeneralPurpose);
+#endif
 
   // HIGH_FOR_BOOT
   GPIO_setMode(obj->gpioHandle,GPIO_Number_34,GPIO_34_Mode_GeneralPurpose);
@@ -1577,17 +1589,6 @@ void HAL_setupGpios(HAL_Handle handle)
   GPIO_setQualification(obj->gpioHandle, GPIO_Number_31, GPIO_Qual_Sync); // synch to SYSCLKOUT
 #endif
 
-#ifdef SUPPORT_P2_HW
-  // DTM2
-  GPIO_setMode(obj->gpioHandle,GPIO_Number_32,GPIO_32_Mode_GeneralPurpose);
-  GPIO_setLow(obj->gpioHandle,GPIO_Number_32);
-  GPIO_setDirection(obj->gpioHandle,GPIO_Number_32,GPIO_Direction_Output);
-
-  // DTM1
-  GPIO_setMode(obj->gpioHandle,GPIO_Number_33,GPIO_33_Mode_GeneralPurpose);
-  GPIO_setLow(obj->gpioHandle,GPIO_Number_33);
-  GPIO_setDirection(obj->gpioHandle,GPIO_Number_33,GPIO_Direction_Output);
-#else
   // I2C SDA
   GPIO_setPullup(obj->gpioHandle, GPIO_Number_32, GPIO_Pullup_Enable);
   GPIO_setQualification(obj->gpioHandle, GPIO_Number_32, GPIO_Qual_Sample_3);
@@ -1597,7 +1598,6 @@ void HAL_setupGpios(HAL_Handle handle)
   GPIO_setPullup(obj->gpioHandle, GPIO_Number_33, GPIO_Pullup_Enable);
   GPIO_setQualification(obj->gpioHandle, GPIO_Number_33, GPIO_Qual_Sample_3);
   GPIO_setMode(obj->gpioHandle,GPIO_Number_33,GPIO_33_Mode_SCLA);
-#endif
 
   // HIGH_FOR_BOOT
   GPIO_setMode(obj->gpioHandle,GPIO_Number_34,GPIO_34_Mode_GeneralPurpose);
