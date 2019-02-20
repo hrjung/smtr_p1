@@ -133,6 +133,7 @@ void setupSpiA(SPI_Handle spiHandle)
 	SPI_initRxBuf();
 }
 
+// TODO: need to update when ready
 void setupSpiB(SPI_Handle spiHandle)
 {
     SPI_reset(spiHandle);
@@ -326,6 +327,9 @@ interrupt void spiARxISR(void)
 		{
 			spiRx.buf[spiRx.idx++]=data;
 			spi_find_first=1;
+#ifdef SUPPORT_COMM_MCU_STATE
+			UTIL_setNotifyFlagMcu(MCU_COMM_IN_PROGRESS); // start of transmission
+#endif
 		}
 		else
 			spiRx.idx=0;
@@ -451,6 +455,10 @@ interrupt void spiATxISR(void)
 		spiTx.idx=0;
 		txLen=0;
 		for(i=0; i<15; i++) spiTx.buf[i]=0;
+
+#ifdef SUPPORT_COMM_MCU_STATE
+		UTIL_setNotifyFlagMcu(MCU_COMM_READY_NOTI); // end of transmission
+#endif
 	}
 
 	spiTx.cnt++;

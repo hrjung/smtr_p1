@@ -48,7 +48,7 @@
 #define TRIP_REASON_REGEN_CALC_ERR	25
 #define TRIP_REASON_OFFSET_ERR		26
 
-
+#define TRIP_REASON_TEST_ERR		29
 #define TRIP_REASON_MAX				30
 ////////////////////////////////////////////
 

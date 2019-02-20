@@ -50,8 +50,7 @@ expAdd("gAdcData");
 
 expAdd("state_param"); 
 expAdd("m_status");
-expAdd("param");
+expAdd("iparam");
 expAdd("internal_status");
 expAdd("gFlag_PwmTest", getDecimal());
-expAdd("gFlag_PwmStepTest", getDecimal());
 expAdd("gPwmData_Value", getDecimal());

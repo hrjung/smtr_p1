@@ -284,10 +284,14 @@ uint16_t pwm_freq_updated=0;
 
 extern uint32_t secCnt;
 
-uint16_t ret_status=1;
-uint16_t spi_seqNo=0, prev_seqNo=0, spi_err=0;
-extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
-extern uint16_t spi_rcv_cmd;
+#ifdef SUPPORT_COMM_MCU_STATE
+uint16_t comm_mcu_status;
+#endif
+
+//uint16_t ret_status=1;
+//uint16_t spi_seqNo=0, prev_seqNo=0, spi_err=0;
+//extern uint16_t spi_chk_ok, rx_seq_no, spi_checksum, pkt_cnt;
+//extern uint16_t spi_rcv_cmd;
 
 _iq V_bias[3] = {_IQ(0.0), _IQ(0.0), _IQ(0.0)};
 uint16_t offset_updated=0;
@@ -333,7 +337,7 @@ enum {
 #define AL_TEST_RUNNING_TIME        (100)
 #define AL_TEST_REVERSE_TIME        (400)
 
-int load_test_type=0;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
+int load_test_type=1;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
 int AL_test_stop_flag=0, AL_test_start_flag=0;
 
 void processAutoLoadTest(void);
@@ -1221,8 +1225,10 @@ void main(void)
 #ifdef SUPPORT_V08_HW
   //SPI-A : slave
   setupSpiA(halHandle->spiAHandle);
+#ifdef SUPPORT_COMM_MCU_STATE
   UTIL_setNotifyFlagMcu(MCU_COMM_READY_NOTI);
-  //SPI-B : master
+#endif
+  //SPI-B : master for accelerometer
 //  spi_fifo_init(halHandle->spiBHandle);
 //  spi_init(halHandle->spiBHandle);
 #endif
@@ -2709,7 +2715,7 @@ void processAutoLoadTest(void)
 		    FREQ_setFreqValue(AL_TEST_WORKING_FREQ);
 			MAIN_enableSystem();
 			//STA_calcResolution();
-			UARTprintf("start running motor\n");
+			UARTprintf("start running motor, %f Hz\n", iparam[FREQ_VALUE_INDEX].value.f);
 			test_state = AL_TEST_CHECKING;
 			if(!MAIN_isTripHappened())
 				HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_LED_R);

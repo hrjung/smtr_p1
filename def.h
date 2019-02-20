@@ -27,6 +27,8 @@
 // SPI communication for DSP <-> MCU
 #define SUPPORT_SPI_INTERRUPT
 
+#define SUPPORT_COMM_MCU_STATE
+
 #define SUPPORT_VF_CONTROL
 // for improve VF to be stable
 //#define SUPPORT_MODIFIED_VF
@@ -87,7 +89,7 @@
 #define SUPPORT_P2_HW // 2 pins added to communicate with MCU
 
 //for cycle test with load, forward <-> reverse rotation
-//#define SUPPORT_AUTO_LOAD_TEST
+#define SUPPORT_AUTO_LOAD_TEST
 
 
 #ifdef SUPPORT_V0_HW

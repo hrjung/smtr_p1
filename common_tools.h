@@ -49,7 +49,11 @@ extern void UTIL_releaseShaftBrake(void);
 extern void UTIL_setFanOn(void);
 extern void UTIL_setFanOff(void);
 
-extern void UTIL_setNotifyFlagMcu(uint16_t value);
+#ifdef SUPPORT_COMM_MCU_STATE
+extern int UTIL_isCommStatusReady(void);
+extern uint16_t UTIL_getCommStatus(void);
+extern void UTIL_setNotifyFlagMcu(uint16_t status);
+#endif
 
 extern int UTIL_controlLed(int type, int on_off);
 extern void UTIL_testbit(int on_off);

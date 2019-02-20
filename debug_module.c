@@ -91,7 +91,6 @@ typedef enum {
 
 	DBG_CMD_SHOW_MTR_PARAM,
 	DBG_CMD_SHOW_TRIP,
-	DBG_CMD_DEL_TRIP,
 	DBG_CMD_SHOW_MONITOR,
 	DBG_CMD_SHOW_TEMP,
 	DBG_CMD_SET_FAN,
@@ -250,8 +249,7 @@ STATIC int dbg_setBrakeControl(int argc, char *argv[]);
 STATIC int dbg_setDcInjBrake(int argc, char *argv[]);
 
 STATIC int dbg_processMotorParam(int argc, char *argv[]);
-STATIC int dbg_showTripInfo(int argc, char *argv[]);
-STATIC int dbg_removeTripInfo(int argc, char *argv[]);
+STATIC int dbg_processTripInfo(int argc, char *argv[]);
 STATIC int dbg_showInverterStatus(int argc, char *argv[]);
 STATIC int dbg_showTempStatus(int argc, char *argv[]);
 STATIC int dbg_setFanControl(int argc, char *argv[]);
@@ -282,6 +280,8 @@ STATIC int dbg_UnitTest(int argc, char *argv[]);
 STATIC int dbg_tmpTest(int argc, char *argv[]);
 
 STATIC int EchoSetting(int argc, char*argv[]);
+
+void dbg_logo(void);
 
 /*******************************************************************************
  * GLOBAL VARIABLES
@@ -331,8 +331,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	},
 
 	{"mtrp", dbg_processMotorParam, "  mtrp : show motor parameters"},
-	{"rtrip", dbg_showTripInfo, " rtrip : display trip error"},
-	{"rmtrip", dbg_removeTripInfo, " rmtrip : delete trip error"},
+	{"trip", dbg_processTripInfo, " trip : process trip info"},
 	{"invs", dbg_showInverterStatus, " invs : display inverter status"},
 	{"temp", dbg_showTempStatus, " temp : display temperature status"},
 	{"fan", dbg_setFanControl, " fan : fan control"},
@@ -394,8 +393,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"dcbrk", dbg_setDcInjBrake, " DCI Brake setting"},
 
 	{"mtrp", dbg_processMotorParam, "  motor show motor parameters"},
-	{"rtrip", dbg_showTripInfo, " read trip info"},
-	{"rmtrip", dbg_removeTripInfo, " remove trip info"},
+	{"trip", dbg_processTripInfo, " process trip info"},
 	{"invs", dbg_showInverterStatus, " inverter status"},
 	{"temp", dbg_showTempStatus, " temperature status"},
 	{"fan", dbg_setFanControl, " Fan control"},
@@ -452,6 +450,7 @@ STATIC int dbg_processHelp(int argc, char *argv[])
 {
     int i;
 //    UARTprintf("cmd <arg1> <arg2>\n");
+    dbg_logo();
     for(i=0;i<DBG_CMD_ENUM_MAX;i++)
     {
         UARTprintf("%s\n", g_sCmdTable[i].pcHelp);
@@ -516,13 +515,13 @@ STATIC void dbg_showMonitorParam(void)
 
 	float_t gOver = _IQtoF(_IQdiv(_IQ(1.0),gVbus_lpf));
 	UARTprintf("\t Iu: %f, Iv: %f, Iw: %f, DC voltage: %f\n", MAIN_getIu(), MAIN_getIv(), MAIN_getIw(), MAIN_getVdcBus());
-	UARTprintf("\t RMS Iu: %f, Iv: %f, Iw: %f\n", internal_status.Irms[0], internal_status.Irms[1], internal_status.Irms[2]);
+	UARTprintf("\t RMS Iu: %f, Iv: %f, Iw: %f, Iave: %f \n", internal_status.Irms[0], internal_status.Irms[1], internal_status.Irms[2], m_status.current);
 	UARTprintf("\t RMS Vu: %f, Vv: %f, Vw: %f\n", internal_status.Vrms[0], internal_status.Vrms[1], internal_status.Vrms[2]);
 	UARTprintf("\t RMS Vppu: %f, Vppv: %f, Vppw: %f\n", (float)internal_status.Vpprms[0], (float)internal_status.Vpprms[1], (float)internal_status.Vpprms[2]);
 //	UARTprintf("\t Volt: Vu: %f, Vv: %f, Vw: %f \n", internal_status.Vu_inst, internal_status.Vv_inst, internal_status.Vw_inst); //, MAIN_getDC_lfp());
 //	UARTprintf("\t Volt: U-V: %f, V-W: %f, W-U: %f \n", (internal_status.Vu_inst - internal_status.Vv_inst), (internal_status.Vv_inst-internal_status.Vw_inst), (internal_status.Vw_inst-internal_status.Vu_inst));
 //	UARTprintf("\t input status: 0x%x, out status: 0x%x\n", (int)((mnt.dio_status>>16)&0x0F), (int)(mnt.dio_status&0x0F));
-	UARTprintf("\t Motor RPM: %f  Freq: %f  target %f dir=%d \n", STA_getCurSpeed(), m_status.cur_freq, m_status.target_freq, (int)m_status.direction);
+	UARTprintf("\t Motor RPM: %f  Freq: %f,  target %f, dir=%d \n", STA_getCurSpeed(), m_status.cur_freq, m_status.target_freq, (int)m_status.direction);
 	UARTprintf("\t Motor status %d, accel: %f  decel: %f gOver=%f \n", m_status.status, m_status.acc_res, m_status.dec_res, gOver);
 }
 
@@ -1185,30 +1184,37 @@ mtr_err:
 }
 #endif
 
-STATIC int dbg_showTripInfo(int argc, char *argv[])
+STATIC int dbg_processTripInfo(int argc, char *argv[])
 {
-	if(argc > 1) goto tr_err;
+	int type;
 
-	dbg_showTripData();
+    if(argc != 2) goto tr_err;
+
+    type = argv[1][0];
+
+    if(type != 'r' && type != 'w' && type != 'd') goto tr_err;
+
+    switch(type)
+    {
+    	case 'r':
+    		dbg_showTripData();
+    		break;
+
+    	case 'd':
+    		PARAM_initErrInfo();
+    		UARTprintf("clear trip info\n");
+    		break;
+
+    	case 'w':
+    		ERR_setTripFlag(TRIP_REASON_TEST_ERR);
+    		UARTprintf("test trip %d happened\n", TRIP_REASON_TEST_ERR);
+    		break;
+    }
 
 	return 0;
 
 tr_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SHOW_TRIP].pcHelp);
-	return 1;
-}
-
-STATIC int dbg_removeTripInfo(int argc, char *argv[])
-{
-	if(argc > 1) goto rtr_err;
-
-	PARAM_initErrInfo();
-	UARTprintf("clear trip info\n");
-
-	return 0;
-
-rtr_err:
-	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_DEL_TRIP].pcHelp);
 	return 1;
 }
 
@@ -2004,7 +2010,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     }
     else if(index == 'g')
     {
-    	UARTprintf(" Trip happened %d \n", internal_status.trip_happened);
+    	UARTprintf(" Trip happened %d, Mcu_comm %d \n", internal_status.trip_happened, (int)UTIL_getCommStatus());
     }
     else if(index == 'r')
     {
@@ -2115,12 +2121,12 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	if(enable == 1)
     	{
 			dbg_enableSystem();
-			if(DRV_isFocControl())
+			if(DRV_isFocControl()) // need VF for constant PWM duty test
 			{
 				gFlag_isFocPwm=1;
 				DRV_enableVfControl();
 			}
-			if(gMotorVars.Flag_enableOffsetcalc)
+			if(gMotorVars.Flag_enableOffsetcalc) // need disable offset recalibration for PWM duty test
 			{
 				gFlag_isOffserPwm=1;
 				gMotorVars.Flag_enableOffsetcalc=false;

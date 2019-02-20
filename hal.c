@@ -930,7 +930,7 @@ void HAL_setupAdcs(HAL_Handle handle)
   // configure the interrupt sources
   ADC_disableInt(obj->adcHandle,ADC_IntNumber_1);
   ADC_setIntMode(obj->adcHandle,ADC_IntNumber_1,ADC_IntMode_ClearFlag);
-  ADC_setIntSrc(obj->adcHandle,ADC_IntNumber_1,ADC_IntSrc_EOC7);
+  ADC_setIntSrc(obj->adcHandle,ADC_IntNumber_1,ADC_IntSrc_EOC8); //hrjung ADC_IntSrc_EOC7 -> 8
 
 #ifdef SUPPORT_V08_HW
   //configure the SOCs for NARA Inverter

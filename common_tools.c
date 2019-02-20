@@ -34,6 +34,9 @@
  */
 
 extern HAL_Handle halHandle;
+#ifdef SUPPORT_COMM_MCU_STATE
+extern uint16_t comm_mcu_status;
+#endif
 
 //*****************************************************************************
 //
@@ -65,26 +68,41 @@ void UTIL_setFanOff(void)
 	HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_Fan);
 }
 
-void UTIL_setNotifyFlagMcu(uint16_t value)
+#ifdef SUPPORT_COMM_MCU_STATE
+int UTIL_isCommStatusReady(void)
 {
-	switch(value)
+	return (int)(comm_mcu_status == MCU_COMM_READY_NOTI);
+}
+
+uint16_t UTIL_getCommStatus(void)
+{
+	return comm_mcu_status;
+}
+
+void UTIL_setNotifyFlagMcu(uint16_t status)
+{
+	switch(status)
 	{
 	case MCU_COMM_READY_NOTI:
+		comm_mcu_status = MCU_COMM_READY_NOTI;
 		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
 		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
 		break;
 
 	case MCU_COMM_IN_PROGRESS:
+		comm_mcu_status = MCU_COMM_IN_PROGRESS;
 		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
 		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
 		break;
 
 	case MCU_COMM_STATUS_NOTI:
+		comm_mcu_status = MCU_COMM_STATUS_NOTI;
 		HAL_setGpioLow(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
 		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
 		break;
 
 	case MCU_COMM_ERROR_NOTI:
+		comm_mcu_status = MCU_COMM_ERROR_NOTI;
 		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI0);
 		HAL_setGpioHigh(halHandle,(GPIO_Number_e)HAL_Gpio_MCU_NOTI1);
 		break;
@@ -94,6 +112,7 @@ void UTIL_setNotifyFlagMcu(uint16_t value)
 		break;
 	}
 }
+#endif
 
 int UTIL_controlLed(int type, int on_off)
 {
