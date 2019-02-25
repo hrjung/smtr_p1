@@ -64,7 +64,11 @@ timer_handler_st time_sig[MAX_TIMER_TSIG];
  */
 extern HAL_Handle halHandle;
 
-#ifdef SUPPORT_OFFSET_MEASURE
+uint16_t gFlag_LogEnabled=0;
+uint32_t dbg_flag=0;
+extern void dbg_showMonitorParam(void);
+
+#ifdef SUPPORT_OFFSET_MEASURE_
 
 enum
 {
@@ -77,7 +81,7 @@ extern uint16_t gOffsetMeasureFlag;
 extern HAL_AdcData_t gAdcData;
 uint16_t ofs_idx=0, ofs_done=0;
 _iq I_sf=0.0, V_sf=0.0;
-float_t ofs_total[6];
+float_t ofs_total[6], ofs_value[6];
 uint16_t ofs_state = OFS_STOP;
 uint16_t vf_sel_bk;
 
@@ -89,7 +93,7 @@ extern int FREQ_setFreqValue(float_t value);
 /*
  *  ======== local function ========
  */
-#ifdef SUPPORT_OFFSET_MEASURE
+#ifdef SUPPORT_OFFSET_MEASURE_
 int OFS_isOffsetDone(void)
 {
 	return (ofs_done == 1);
@@ -122,17 +126,18 @@ void OFS_endOffset(void)
 
 void OFS_initOffset(void)
 {
+	int i;
+
 	ofs_idx = 0;
 	ofs_done = 0;
 	I_sf = HAL_getCurrentScaleFactor(halHandle);
 	V_sf = HAL_getVoltageScaleFactor(halHandle);
 
-	ofs_total[0] = 0.0;
-	ofs_total[1] = 0.0;
-	ofs_total[2] = 0.0;
-	ofs_total[3] = 0.0;
-	ofs_total[4] = 0.0;
-	ofs_total[5] = 0.0;
+	for(i=0; i<5; i++)
+	{
+		ofs_total[i] = 0.0;
+		ofs_value[i] = 0.0;
+	}
 }
 
 void OFS_state(void)
@@ -333,13 +338,28 @@ interrupt void timer0ISR(void)
 #endif
 
 
-#ifdef SUPPORT_OFFSET_MEASURE
+#ifdef SUPPORT_OFFSET_MEASURE_
 	if(gOffsetMeasureFlag)
 	{
 		OFS_state();
 	}
 
 #endif
+
+	if(gFlag_LogEnabled) // print log at every 1 sec
+	{
+		//printLog();
+		if(secCnt%10 == 0)
+		{
+			if(dbg_flag == 0)
+				dbg_showMonitorParam();
+			dbg_flag++;
+		}
+		else
+		{
+			dbg_flag=0;
+		}
+	}
 
 	if(time_sig[DCI_BRAKE_SIG_ON_TSIG].enable)
 	{

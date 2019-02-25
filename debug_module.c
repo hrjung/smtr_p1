@@ -167,6 +167,8 @@ extern _iq i_offset[3], v_offset[3];
 extern uint16_t spi_rx_buf[];
 extern inv_parameter_st err_info[ERR_CODE_MAX];
 
+extern uint16_t gFlag_LogEnabled;
+
 extern float_t MAIN_getPwmFrequency(void);
 extern float_t MAIN_getIu(void);
 extern float_t MAIN_getIv(void);
@@ -188,9 +190,6 @@ extern float_t UTIL_readIpmTemperature(void);
 extern float_t UTIL_readMotorTemperature(void);
 extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
-#ifdef SUPPORT_OFFSET_MEASURE
-uint16_t gOffsetMeasureFlag = 0;
-#endif
 
 #ifdef SUPPORT_AUTO_LOAD_TEST_
 int ipm_disp_on = 0;
@@ -1539,11 +1538,16 @@ led_err:
 }
 
 #ifdef SUPPORT_OFFSET_MEASURE
-extern int OFS_getOffsetState(void);
-extern void OFS_initOffsetState(void);
-extern int OFS_readyOffset(void);
-extern void OFS_startOffset(void);
-extern int OFS_isOffsetDone(void);
+extern uint16_t gOffsetMeasureFlag;
+extern uint16_t ofs_done;
+extern float_t ofs_total[6], ofs_value[5];
+//extern int OFS_getOffsetState(void);
+//extern void OFS_initOffsetState(void);
+//extern int OFS_readyOffset(void);
+//extern void OFS_startOffset(void);
+//extern int OFS_isOffsetDone(void);
+extern void OFS_initOffset(void);
+
 STATIC int dbg_measureOffset(int argc, char *argv[])
 {
 	uint16_t flag=0;
@@ -1552,6 +1556,28 @@ STATIC int dbg_measureOffset(int argc, char *argv[])
 
     flag = atoi(argv[1]);
 
+#if 1
+    switch(flag)
+    {
+    case 1:
+    	OFS_initOffset();
+    	gOffsetMeasureFlag = 1;
+    	ofs_done=0;
+    	UARTprintf("start offset measure\n");
+    	break;
+
+    case 2:
+		UARTprintf(" offset total V:%f, %f, %f, I: %f, %f\n", ofs_total[0],ofs_total[1],ofs_total[2],ofs_total[3],ofs_total[4]);
+		UARTprintf("V offset %f, %f, %f\n", ofs_value[0],ofs_value[1],ofs_value[2]);
+		UARTprintf("I offset %f, %f\n", ofs_value[3],ofs_value[4]);
+		break;
+
+    case 0:
+    default:
+    	UARTprintf("gOffsetMeasureFlag=%d, ofs_done=%d\n", gOffsetMeasureFlag, ofs_done);
+    	break;
+    }
+#else
     if(flag == 0) // status display
     {
     	UARTprintf("OFS status=%d, ofs_done=%d\n", OFS_getOffsetState(), OFS_isOffsetDone());
@@ -1570,14 +1596,17 @@ STATIC int dbg_measureOffset(int argc, char *argv[])
     {
     	if(OFS_isOffsetDone())
     	{
-			UARTprintf("V offset %f, %f, %f\n");
-			UARTprintf("I offset %f, %f\n");
+			UARTprintf("V offset %f, %f, %f\n", );
+			UARTprintf("I offset %f, %f\n", );
     	}
     	else
-    		goto ofs_err;
+    	{
+    		UARTprintf("OFS not done\n");
+    	}
     }
     else
     	goto ofs_err;
+#endif
 
 
     return 0;
@@ -2075,6 +2104,28 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UTIL_setNotifyFlagMcu(value);
     	UARTprintf(" set MCU notify %d\n", value);
+    }
+    else if(index == 'l') // enable/disable log
+    {
+    	int enable=0;
+
+    	if(argc != 3)
+    	{
+    		UARTprintf(" enable/disable log %d\n", gFlag_LogEnabled);
+    		return 0;
+    	}
+
+    	enable = atoi(argv[2]);
+    	if(enable == 1)
+    	{
+    		UARTprintf(" enable log\n");
+    		gFlag_LogEnabled = 1;
+    	}
+    	else
+    	{
+    		UARTprintf(" disable log\n");
+    		gFlag_LogEnabled = 0;
+    	}
     }
 #ifdef SUPPORT_AUTO_LOAD_TEST_
     else if(index == 'l')

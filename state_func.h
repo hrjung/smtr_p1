@@ -56,6 +56,13 @@ extern int STA_isStopState(void);
 extern int STA_isAccelState(void);
 extern int STA_isDecelState(void);
 
+#ifdef SUPPORT_DIRECTION_STATUS
+extern int STA_isDirChanged(void);
+extern void STA_setDirChanged(void);
+extern int STA_isDirFreqSet(void);
+extern void STA_setDirFreqSet(void);
+#endif
+
 extern float_t STA_getCurrent(void);
 extern void STA_setCurrent(float_t current);
 

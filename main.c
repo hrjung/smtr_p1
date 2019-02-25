@@ -323,6 +323,10 @@ void SetGpioInterrupt(void);
 extern uint16_t gOffsetMeasureFlag;
 #endif
 
+#ifdef SUPPORT_DIRECTION_STATUS
+extern float_t dir_freq;
+#endif
+
 #ifdef SUPPORT_AUTO_LOAD_TEST
 enum {
     AL_TEST_READY=0,
@@ -1070,7 +1074,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1427,9 +1431,9 @@ void main(void)
   datalog.iptr[0] = &Id_in;//&pwm_set[0];	// &gAdcData.V.value[0];
   datalog.iptr[1] = &Iq_in; //&pwm_set[1];	//&gAdcData.I.value[0];
 #endif
-  datalog.iptr[0] = &gAdcData.V.value[0];  // V
-  datalog.iptr[1] = &gAdcData.V.value[1];  // W &angle_pu
-  datalog.iptr[2] = &gAdcData.V.value[2];  // U
+  datalog.iptr[0] = &gAdcData.I.value[0];  // V
+  datalog.iptr[1] = &gAdcData.I.value[1];  // W &angle_pu
+  datalog.iptr[2] = &gAdcData.I.value[2];  // U
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -1853,6 +1857,27 @@ void main(void)
 
 } // end of main() function
 
+#ifdef SUPPORT_OFFSET_MEASURE
+uint16_t gOffsetMeasureFlag = 0;
+uint16_t ofs_idx=0, ofs_done=0;
+float_t ofs_total[5], ofs_value[5];
+_iq I_sf=0.0, V_sf=0.0;
+void OFS_initOffset(void)
+{
+	int i;
+
+	ofs_idx = 0;
+	ofs_done = 0;
+	I_sf = HAL_getCurrentScaleFactor(halHandle);
+	V_sf = HAL_getVoltageScaleFactor(halHandle);
+
+	for(i=0; i<5; i++)
+	{
+		ofs_total[i] = 0.0;
+		ofs_value[i] = 0.0;
+	}
+}
+#endif
 
 interrupt void mainISR(void)
 {
@@ -1895,6 +1920,42 @@ interrupt void mainISR(void)
 		  return;
 	  }
   }
+#endif
+
+
+#ifdef SUPPORT_OFFSET_MEASURE
+	if(gOffsetMeasureFlag && ofs_done==0)
+	{
+		_iq value;
+		int i;
+
+		if(ofs_idx < 1000)
+		{
+			for(i=0; i<3; i++)
+			{
+				value = (_iq)(gAdcData.v_adc[i]);
+				value = _IQ12mpy(value,V_sf);
+				ofs_total[i] += _IQtoF(value);
+			}
+
+			for(i=0; i<2; i++)
+			{
+				value = (_iq)(gAdcData.i_adc[i]);
+				value = _IQ12mpy(value,I_sf);
+				ofs_total[i+3] += _IQtoF(value);
+			}
+
+			ofs_idx++;
+		}
+		else
+		{
+			ofs_done = 1;
+			gOffsetMeasureFlag=0;
+			for(i=0; i<5; i++)
+				ofs_value[i] = ofs_total[i]/1000.0;
+
+		}
+	}
 #endif
 
 #ifdef SUPPORT_VF_CONTROL
@@ -2036,12 +2097,18 @@ interrupt void mainISR(void)
   }
 #endif
 
-#ifdef PWM_DUTY_TEST
-  if(gFlag_PwmTest
 #ifdef SUPPORT_OFFSET_MEASURE
-	|| gOffsetMeasureFlag
+	if(gOffsetMeasureFlag)
+	{
+		  _iq OffsetValue = _IQ(0.0); //fix 50% duty
+		  gPwmData.Tabc.value[0] = OffsetValue;
+		  gPwmData.Tabc.value[1] = OffsetValue;
+		  gPwmData.Tabc.value[2] = OffsetValue;
+	}
 #endif
-	)
+
+#ifdef PWM_DUTY_TEST
+  if(gFlag_PwmTest)
   {
 	  if(gFlagDCIBrake == 0)
 	  {
@@ -2049,15 +2116,6 @@ interrupt void mainISR(void)
 		  gPwmData.Tabc.value[1] = gPwmData_Value;
 		  gPwmData.Tabc.value[2] = gPwmData_Value;
 	  }
-#ifdef SUPPORT_OFFSET_MEASURE
-	  else if(gOffsetMeasureFlag)
-	  {
-		  _iq OffsetValue = _IQ(0.5); //fix 50% duty
-		  gPwmData.Tabc.value[0] = OffsetValue;
-		  gPwmData.Tabc.value[1] = OffsetValue;
-		  gPwmData.Tabc.value[2] = OffsetValue;
-	  }
-#endif
 	  else
 	  {
 		  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
@@ -2077,13 +2135,27 @@ interrupt void mainISR(void)
   }
 #endif
 
+
   //TODO : just temp stop for haunting at low speed of FOC
   if(DRV_isFocControl()
 	 && STA_getTargetFreq() == 0.0
 	 && _IQabs(gMotorVars.Speed_krpm) <= foc_end_rpm) // about 3Hz for 2.2k, 1Hz for 1.5k
   {
-	  gFlag_PwmTest=0;
-	  MAIN_disableSystem();
+#ifdef SUPPORT_DIRECTION_STATUS
+	  if(STA_isDirChanged())
+	  {
+		  if(!STA_isDirFreqSet())
+		  {
+			  FREQ_setFreqValue(dir_freq);
+			  STA_setDirFreqSet();
+		  }
+	  }
+	  else
+#endif
+	  {
+		  gFlag_PwmTest=0;
+		  MAIN_disableSystem();
+	  }
   }
 
 
@@ -2548,7 +2620,22 @@ void MAIN_disableSystem(void)
 int MAIN_setForwardDirection(void)
 {
 	iparam[DIRECTION_INDEX].value.l = 0;
+
+#ifdef SUPPORT_DIRECTION_STATUS
+	if(direction != 1.0)
+	{
+		if(!STA_isStopState()) // motor running
+		{
+			STA_setDirChanged();
+			dir_freq = STA_getTargetFreq();
+			FREQ_setFreqValue(0.0);
+		}
+		direction = 1.0;
+	}
+#else
 	direction = 1.0;
+#endif
+
 
 	return 0;
 
@@ -2557,7 +2644,21 @@ int MAIN_setForwardDirection(void)
 int MAIN_setReverseDirection(void)
 {
 	iparam[DIRECTION_INDEX].value.l = 1;
+
+#ifdef SUPPORT_DIRECTION_STATUS
+	if(direction != -1.0)
+	{
+		if(!STA_isStopState()) // motor running
+		{
+			STA_setDirChanged();
+			dir_freq = STA_getTargetFreq();
+			FREQ_setFreqValue(0.0);
+		}
+		direction = -1.0;
+	}
+#else
 	direction = -1.0;
+#endif
 
 	return 0;
 }

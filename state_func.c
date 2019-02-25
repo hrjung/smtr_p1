@@ -47,6 +47,10 @@
 
 MOTOR_working_st m_status;
 
+uint16_t dir_changed = 0;
+float_t dir_freq = 0.0;
+uint16_t dir_set_freq = 0;
+
 /*******************************************************************************
  * LOCAL FUNCTIONS
  */
@@ -105,6 +109,40 @@ STATIC int STA_isRunStateCond(void)
 	return 0;
 }
 
+#ifdef SUPPORT_DIRECTION_STATUS
+int STA_isDirectionDone(void)
+{
+	return (dir_changed == 1 && dir_set_freq == 1);
+}
+
+int STA_isDirChanged(void)
+{
+	return (dir_changed == 1);
+}
+
+void STA_setDirChanged(void)
+{
+	dir_changed = 1;
+}
+
+int STA_isDirFreqSet(void)
+{
+	return (dir_set_freq == 1);
+}
+
+void STA_setDirFreqSet(void)
+{
+	dir_set_freq = 1;
+}
+
+void STA_initDirectionFlag(void)
+{
+	dir_changed = 0;
+	dir_set_freq = 0;
+	dir_freq = 0.0;
+}
+#endif
+
 
 STATIC mtr_state_e func_start(void)
 {
@@ -128,6 +166,8 @@ STATIC mtr_state_e func_start(void)
 
 //	STA_setNextSpeed(param.ctrl.value[0]);
 
+	STA_initDirectionFlag();
+
 	m_status.status = STATE_STOP;
 	return STATE_STOP;
 }
@@ -150,7 +190,7 @@ STATIC mtr_state_e func_stop(void)
 
 		//TODO : temp testing before brake is ready
 		MAIN_disableSystem();
-
+		STA_initDirectionFlag();
 	}
 
 
@@ -234,7 +274,12 @@ STATIC mtr_state_e func_run(void)
 		UARTprintf(" RUN freq=%f at %f\n", m_status.cur_freq, (float_t)(secCnt/10.0));
 
 		// set RUN_SIG
-
+#ifdef SUPPORT_DIRECTION_STATUS
+		if(STA_isDirectionDone())
+		{
+			STA_initDirectionFlag();
+		}
+#endif
 	}
 
 	//if(prev_target_rpm != m_status.target_rpm)
@@ -497,6 +542,9 @@ float_t STA_getTrajResolution(void)
 
 void STA_setStopCondition(void)
 {
+#ifdef SUPPORT_DIRECTION_STATUS
+	STA_initDirectionFlag();
+#endif
 	STA_setNextFreq(0.0);
 	switch((int)iparam[BRK_TYPE_INDEX].value.l)
 	{
