@@ -37,7 +37,7 @@ typedef struct
 
 spi_queue_st spiRx, spiTx;
 
-//uint16_t spiRxBuf[QUEUE_SIZE], spiTxBuf[QUEUE_SIZE];
+uint16_t spiRxBuf[QUEUE_SIZE], spiTxBuf[QUEUE_SIZE];
 //int16_t spiRxIdx=0, spiTxIdx=0;
 uint16_t spiPacketReceived=0, rx_seq_no, txLen=0;
 //uint16_t spi_tx_cnt=0, spi_rx_cnt=0;
@@ -212,15 +212,15 @@ uint16_t SPI_writeMCU(uint16_t *txData)
 }
 #endif
 
-//int SPI_isPacketReceived(void)
-//{
-//	return spiPacketReceived;
-//}
-//
-//void SPI_clearPacketReceived(void)
-//{
-//	spiPacketReceived=0;
-//}
+int SPI_isPacketReceived(void)
+{
+	return spiPacketReceived;
+}
+
+void SPI_clearPacketReceived(void)
+{
+	spiPacketReceived=0;
+}
 
 void SPI_enableInterrupt(void)
 {
@@ -321,10 +321,13 @@ interrupt void spiARxISR(void)
 	{
 		if(spiRx.idx == 0 && data == 0xAAAA)
 		{
+			spiRxBuf[spiRx.idx]=data; // for log
 			spiRx.buf[spiRx.idx++]=data;
+
 		}
 		else if(spiRx.idx == 1 && data == 0x5555 && spiRx.buf[0] == 0xAAAA)
 		{
+			spiRxBuf[spiRx.idx]=data; // for log
 			spiRx.buf[spiRx.idx++]=data;
 			spi_find_first=1;
 #ifdef SUPPORT_COMM_MCU_STATE
@@ -336,6 +339,7 @@ interrupt void spiARxISR(void)
 	}
 	else
 	{
+		spiRxBuf[spiRx.idx]=data; // for log
 		spiRx.buf[spiRx.idx++]=data;
 
 		if(spiRx.idx >= spiRx.buf[2]) // last data

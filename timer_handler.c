@@ -68,6 +68,8 @@ uint16_t gFlag_LogEnabled=0;
 uint32_t dbg_flag=0;
 extern void dbg_showMonitorParam(void);
 
+extern void printLog(void);
+
 #ifdef SUPPORT_OFFSET_MEASURE_
 
 enum
@@ -348,11 +350,11 @@ interrupt void timer0ISR(void)
 
 	if(gFlag_LogEnabled) // print log at every 1 sec
 	{
-		//printLog();
+
 		if(secCnt%10 == 0)
 		{
-			if(dbg_flag == 0)
-				dbg_showMonitorParam();
+			if(dbg_flag == 0) printLog();
+
 			dbg_flag++;
 		}
 		else

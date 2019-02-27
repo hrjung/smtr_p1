@@ -393,6 +393,8 @@ void STA_setCurSpeed(float_t cur_spd)
 
 	if(m_status.cur_freq > MAX_FREQ_VALUE)
 	{
+		ERR_setTripInfo();
+		trip_info.over_freq = m_status.cur_freq;
 		ERR_setTripFlag(TRIP_REASON_FREQ_RANGE_ERR);
 	}
 }
@@ -480,7 +482,11 @@ void STA_setResolution(int flag, float_t value)
 	}
 
 	if(value > USER_MAX_ACCEL_Hzps)
+	{
+		ERR_setTripInfo();
+		trip_info.over_accel = value;
 		ERR_setTripFlag(TRIP_REASON_ACCEL_ERR);
+	}
 }
 
 void STA_calcResolution(void)

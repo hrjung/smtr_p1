@@ -284,6 +284,10 @@ uint16_t pwm_freq_updated=0;
 
 extern uint32_t secCnt;
 
+extern uint16_t spiRxBuf[64];
+extern int SPI_isPacketReceived(void);
+extern void SPI_clearPacketReceived(void);
+
 #ifdef SUPPORT_COMM_MCU_STATE
 uint16_t comm_mcu_status;
 #endif
@@ -750,6 +754,10 @@ int MAIN_isOverCurrent(void)
 			internal_status.oc_count++;
 			if(internal_status.oc_count > OVER_CURRENT_COUNT_LIMIT)
 			{
+				ERR_setTripInfo();
+				trip_info.Iu_inst = internal_status.Iu_inst;
+				trip_info.Iv_inst = internal_status.Iv_inst;
+				trip_info.Iw_inst = internal_status.Iw_inst;
 				ERR_setTripFlag(TRIP_REASON_OVER_CURRENT);
 				return 1;
 			}
@@ -954,6 +962,8 @@ void MAIN_setDeviceConstant(void)
 
 	internal_status.oc_count = 0;
 
+	ERR_initTripInfo();
+
 }
 
 #if 1
@@ -1060,6 +1070,12 @@ int processMcuCommand(void)
 			result = PARAM_process(cmd_data.index, cmd_data.data);
 			break;
 		}
+	}
+
+	if(SPI_isPacketReceived())
+	{
+		UARTprintf("spi= 0x%x, 0x%x, 0x%x, seq=0x%x\n", spiRxBuf[0],spiRxBuf[1],spiRxBuf[2],spiRxBuf[3]);
+		SPI_clearPacketReceived();
 	}
 
 	return result;
@@ -2021,6 +2037,8 @@ interrupt void mainISR(void)
 
 			if(fabsf(temp_spd_ref) > 12.0) //krpm (400Hz)
 			{
+				ERR_setTripInfo();
+				trip_info.temp_spd_ref = temp_spd_ref;
 				ERR_setTripFlag(TRIP_REASON_RPM_RANGE_ERR);
 				MAIN_disableSystem();
 				return ;
@@ -2970,6 +2988,7 @@ void MAIN_showPidGain(void)
 __interrupt void xint1_isr(void)
 {
 	MAIN_disableSystem();
+	ERR_setTripInfo();
 	ERR_setTripFlag(TRIP_REASON_IPM_FAULT);
     PIE_clearInt(halHandle->pieHandle, PIE_GroupNumber_1);
 }

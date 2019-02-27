@@ -452,6 +452,8 @@ int REGEN_process(float_t dc_volt)
 				UARTprintf("DC under voltage %f trip event happened at %d\n", dc_volt, (int)(secCnt/10));
 				under_flag=1;
 			}
+			ERR_setTripInfo();
+			trip_info.Vdc_inst = dc_volt;
 			ERR_setTripFlag(TRIP_REASON_VDC_UNDER);
 			return 1; // disable PWM after return
 		}
@@ -477,6 +479,8 @@ int REGEN_process(float_t dc_volt)
 			UARTprintf("DC over voltage %fV trip event happened at %d\n", dc_volt, (int)(secCnt/10));
 			over_flag=1;
 		}
+		ERR_setTripInfo();
+		trip_info.Vdc_inst = dc_volt;
 		ERR_setTripFlag(TRIP_REASON_VDC_OVER);
 		return 1; // disable PWM after return
 	}
@@ -559,6 +563,8 @@ int TEMP_monitorTemperature(void)
 
 	if(ipm_temp > IPM_TEMPERATURE_LIMIT)
 	{
+		ERR_setTripInfo();
+		trip_info.ipm_temp = ipm_temp;
 		ERR_setTripFlag(TRIP_REASON_IPM_OVER_TEMP);
 		if(ipm_status == 0)
 		{
@@ -570,6 +576,8 @@ int TEMP_monitorTemperature(void)
 	mtr_temp = UTIL_readMotorTemperature();
 	if(mtr_temp > MOTOR_TEMPERATURE_LIMIT)
 	{
+		ERR_setTripInfo();
+		trip_info.motor_temp = mtr_temp;
 		ERR_setTripFlag(TRIP_REASON_MTR_OVER_TEMP);
 		if(mtr_status == 0)
 		{
@@ -603,6 +611,8 @@ void PROT_init(int input)
 	}
 	else
 	{
+		ERR_setTripInfo();
+		trip_info.V_input = input;
 		ERR_setTripFlag(TRIP_REASON_INPUT_VOLT_ERR);
 	}
 
@@ -628,6 +638,8 @@ int processProtection(void)
 		{
 			// overload trip enabled
 			// trip signal generate
+			ERR_setTripInfo();
+			trip_info.Irms = I_rms;
 			ERR_setTripFlag(TRIP_REASON_OVERLOAD);
 			// set trip error code
 			// disable PWM output
@@ -640,6 +652,8 @@ int processProtection(void)
 
 		if(OVL_processOverCurrentTrip(I_rms))
 		{
+			ERR_setTripInfo();
+			trip_info.Irms = I_rms;
 			ERR_setTripFlag(TRIP_REASON_OVER_CURRENT);
 			MAIN_disableSystem();
 			evt_flag++;

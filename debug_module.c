@@ -31,6 +31,7 @@
 #include "common_tools.h"
 #include "cmd_queue.h"
 #include "drv_spi.h"
+#include "err_trip.h"
 
 #ifdef UNIT_TEST_ENABLED
 #include "test/unity.h"
@@ -181,6 +182,7 @@ extern void MAIN_setSpeedGain(int fw_enabled);
 
 extern void REGEN_start(void);
 extern void REGEN_end(void);
+extern int REGEN_getDuty(void);
 
 extern float_t DRV_getPwmFrequency(void);
 extern void STA_printInvState(void);
@@ -190,6 +192,7 @@ extern float_t UTIL_readIpmTemperature(void);
 extern float_t UTIL_readMotorTemperature(void);
 extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
+extern void ERR_printTripInfo(void);
 
 #ifdef SUPPORT_AUTO_LOAD_TEST_
 int ipm_disp_on = 0;
@@ -427,6 +430,13 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
  *  ======== function ========
  */
 
+void printLog(void)
+{
+	UARTprintf("Speed: %f krpm, Torque: %f Nm \n", _IQtoF(gMotorVars.Speed_krpm), _IQtoF(gMotorVars.Torque_Nm));
+	UARTprintf("IdRef: %f A, Id_rated: %f A,  \n", _IQtoF(gMotorVars.IdRef_A), _IQtoF(gMotorVars.MagnCurr_A));
+	//UARTprintf("IdRef: %f A, Id_A: %f A \n", _IQtoF(gMotorVars.IdRef_A), _IQtoF(gMotorVars.Id_A));
+}
+
 STATIC void dbg_setQueCommand(uint16_t index, union32_st data)
 {
 	cmd_type_st que_data;
@@ -503,10 +513,12 @@ STATIC void dbg_showTripData(void)
 	{
 		UARTprintf("\t errCode: %d, state=%s, cur: %f, freq: %f \n", \
 				err_info[ERR_CODE_INDEX].value.arr[0], state_str[err_info[ERR_CODE_INDEX].value.arr[1]], \
-				err_info[ERR_CURRENT_INDEX].value.f, err_info[ERR_CURRENT_INDEX].value.f);
+				err_info[ERR_CURRENT_INDEX].value.f, err_info[ERR_FREQ_INDEX].value.f);
 	}
+
+	ERR_printTripInfo();
 }
-extern int REGEN_getDuty(void);
+
 extern _iq gVbus_lpf;
 STATIC void dbg_showMonitorParam(void)
 {
@@ -1185,15 +1197,15 @@ mtr_err:
 
 STATIC int dbg_processTripInfo(int argc, char *argv[])
 {
-	int type;
+	int cmd;
 
     if(argc != 2) goto tr_err;
 
-    type = argv[1][0];
+    cmd = argv[1][0];
 
-    if(type != 'r' && type != 'w' && type != 'd') goto tr_err;
+    if(cmd != 'r' && cmd != 'w' && cmd != 'd') goto tr_err;
 
-    switch(type)
+    switch(cmd)
     {
     	case 'r':
     		dbg_showTripData();
@@ -1205,6 +1217,7 @@ STATIC int dbg_processTripInfo(int argc, char *argv[])
     		break;
 
     	case 'w':
+    		ERR_setTripInfo();
     		ERR_setTripFlag(TRIP_REASON_TEST_ERR);
     		UARTprintf("test trip %d happened\n", TRIP_REASON_TEST_ERR);
     		break;
