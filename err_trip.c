@@ -112,12 +112,12 @@ void ERR_setTripInfo(void)
 	trip_info.over_freq = m_status.cur_freq;
 }
 
-void ERR_setTripFlag(int cause)
+void ERR_setTripFlag(uint16_t cause)
 {
 	if(internal_status.trip_happened != cause) // avoid duplicated
 	{
 		internal_status.trip_happened = cause;
-		PARAM_setErrInfo(cause, m_status.status, m_status.current, m_status.cur_freq);
+		PARAM_setErrInfo(cause, (uint16_t)m_status.status, m_status.current, m_status.cur_freq);
 		UTIL_setNotifyFlagMcu(MCU_COMM_ERROR_NOTI);
 	}
 }

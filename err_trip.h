@@ -40,7 +40,7 @@ extern trip_info_st trip_info;
 
 extern void ERR_initTripInfo(void);
 extern void ERR_setTripInfo(void);
-extern void ERR_setTripFlag(int cause);
+extern void ERR_setTripFlag(uint16_t cause);
 
 
 #endif /* ERR_TRIP_H_ */

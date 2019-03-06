@@ -785,7 +785,7 @@ void PARAM_setErrInfo(uint16_t err_code, uint16_t err_status, float_t current, f
 
 uint16_t PARAM_getErrorInfo(uint16_t *buf)
 {
-#if 1 // test only
+#if 0 // test only
 	err_info[ERR_CODE_INDEX].value.arr[0] = 0;
 	err_info[ERR_CODE_INDEX].value.arr[1] = 1;
 	err_info[ERR_CURRENT_INDEX].value.f = 10.5;
@@ -837,7 +837,7 @@ void PARAM_setInvStatus(void)
 
 uint16_t PARAM_getInvStatus(uint16_t *buf)
 {
-#if 1 // test only
+#if 0 // test only
 	inv_status[INV_STATUS_INDEX].value.arr[0] = 0;
 	inv_status[INV_STATUS_INDEX].value.arr[1] = 1;
 	inv_status[INV_I_RMS_INDEX].value.f = 2.1;

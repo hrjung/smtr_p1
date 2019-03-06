@@ -180,6 +180,18 @@ STATIC mtr_state_e func_stop(void)
 
 	if(first == 1)
 	{
+#ifdef SUPPORT_DIRECTION_STATUS
+	  if(STA_isDirChanged())
+	  {
+		  if(!STA_isDirFreqSet())
+		  {
+			  FREQ_setFreqValue(dir_freq);
+			  STA_setDirFreqSet();
+		  }
+	  }
+	  else
+#endif
+	  {
 		first=0;
 		UARTprintf(" STOP %f\n", (float_t)(secCnt/10.0));
 
@@ -190,7 +202,10 @@ STATIC mtr_state_e func_stop(void)
 
 		//TODO : temp testing before brake is ready
 		MAIN_disableSystem();
+#ifdef SUPPORT_DIRECTION_STATUS
 		STA_initDirectionFlag();
+#endif
+	  }
 	}
 
 

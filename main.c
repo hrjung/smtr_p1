@@ -284,7 +284,7 @@ uint16_t pwm_freq_updated=0;
 
 extern uint32_t secCnt;
 
-extern uint16_t spiRxBuf[64];
+extern uint16_t spi_chk_ok, rx_seq_no;
 extern int SPI_isPacketReceived(void);
 extern void SPI_clearPacketReceived(void);
 
@@ -1072,11 +1072,13 @@ int processMcuCommand(void)
 		}
 	}
 
+#if 0
 	if(SPI_isPacketReceived())
 	{
-		UARTprintf("spi= 0x%x, 0x%x, 0x%x, seq=0x%x\n", spiRxBuf[0],spiRxBuf[1],spiRxBuf[2],spiRxBuf[3]);
+		UARTprintf("chk=%d, seq=%d\n", spi_chk_ok, rx_seq_no);
 		SPI_clearPacketReceived();
 	}
+#endif
 
 	return result;
 }
@@ -2235,8 +2237,6 @@ interrupt void mainISR(void)
   }
   //UTIL_testbit(0);
 
-  //temp PARAM_setInvStatus();
-
 #if 1
     Vinst[0] = gAdcData.v_adc[0];
     Vinst[1] = gAdcData.v_adc[1];
@@ -2328,6 +2328,8 @@ void updateGlobalVariables_user(void)
 	else if(gMotorVars.Speed_krpm < _IQ(FW_GAIN_UPDATE_LOW_KRPM))
 		MAIN_setSpeedGain(0);
 #endif
+
+	PARAM_setInvStatus();
 }
 
 void updateGlobalVariables_motor(CTRL_Handle handle)
@@ -2747,7 +2749,7 @@ float_t UTIL_readIpmTemperature(void)
 
 float_t UTIL_readMotorTemperature(void)
 {
-	return (float_t)40.0;
+	return (float_t)40.0; //TODO : RTD
 }
 
 uint16_t UTIL_readMotorTemperatureStatus(void)

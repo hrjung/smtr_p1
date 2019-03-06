@@ -70,6 +70,9 @@ extern void dbg_showMonitorParam(void);
 
 extern void printLog(void);
 
+uint32_t temp_flag=0;
+extern int TEMP_monitorTemperature(void);
+
 #ifdef SUPPORT_OFFSET_MEASURE_
 
 enum
@@ -362,6 +365,17 @@ interrupt void timer0ISR(void)
 			dbg_flag=0;
 		}
 	}
+
+	if(secCnt%50 == 0) //every 5 sec
+	{
+		if(temp_flag == 0)
+			TEMP_monitorTemperature(); // IPM, Motor temperature check
+
+		temp_flag++;
+	}
+	else
+		temp_flag=0;
+
 
 	if(time_sig[DCI_BRAKE_SIG_ON_TSIG].enable)
 	{

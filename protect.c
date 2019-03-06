@@ -667,9 +667,6 @@ int processProtection(void)
 
 	if( REGEN_process(MAIN_getVdcBus()) ) MAIN_disableSystem();
 
-	TEMP_monitorTemperature(); // Power module temperature check
-
-
 	return 0;
 }
 

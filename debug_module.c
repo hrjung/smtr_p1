@@ -1246,11 +1246,13 @@ mnt_err:
 STATIC int dbg_showTempStatus(int argc, char *argv[])
 {
 	float_t ipm_temp, mtr_temp;
+	uint16_t mtr_status;
 	if(argc > 1) goto temp_err;
 
 	ipm_temp = UTIL_readIpmTemperature();
 	mtr_temp = UTIL_readMotorTemperature();
-	UARTprintf("IPM temp = %f, %d, Motor Temp = %f, %d\n", ipm_temp, internal_status.ipm_temp, mtr_temp, internal_status.mtr_temp);
+	mtr_status = UTIL_readMotorTemperatureStatus();
+	UARTprintf("IPM temp= %f, adc= %d, Motor Temp= %f, mtr_status= %d\n", ipm_temp, internal_status.ipm_temp, mtr_temp, mtr_status);
 
 	return 0;
 

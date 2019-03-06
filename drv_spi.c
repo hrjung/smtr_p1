@@ -37,7 +37,7 @@ typedef struct
 
 spi_queue_st spiRx, spiTx;
 
-uint16_t spiRxBuf[QUEUE_SIZE], spiTxBuf[QUEUE_SIZE];
+//uint16_t spiRxBuf[QUEUE_SIZE], spiTxBuf[QUEUE_SIZE];
 //int16_t spiRxIdx=0, spiTxIdx=0;
 uint16_t spiPacketReceived=0, rx_seq_no, txLen=0;
 //uint16_t spi_tx_cnt=0, spi_rx_cnt=0;
@@ -62,7 +62,7 @@ void SPI_initRxBuf(void)
 	spiTx.idx=0;
 	spiTx.cnt=0;
 	for(i=0; i<QUEUE_SIZE; i++)	spiRx.buf[i] = 0;
-	for(i=0; i<QUEUE_SIZE; i++) spiTx.buf[i] = i;
+	for(i=0; i<QUEUE_SIZE; i++) spiTx.buf[i] = 0;
 
 }
 
@@ -321,16 +321,14 @@ interrupt void spiARxISR(void)
 	{
 		if(spiRx.idx == 0 && data == 0xAAAA)
 		{
-			spiRxBuf[spiRx.idx]=data; // for log
 			spiRx.buf[spiRx.idx++]=data;
 
 		}
 		else if(spiRx.idx == 1 && data == 0x5555 && spiRx.buf[0] == 0xAAAA)
 		{
-			spiRxBuf[spiRx.idx]=data; // for log
 			spiRx.buf[spiRx.idx++]=data;
 			spi_find_first=1;
-#ifdef SUPPORT_COMM_MCU_STATE
+#ifdef SUPPORT_COMM_MCU_STATE_
 			UTIL_setNotifyFlagMcu(MCU_COMM_IN_PROGRESS); // start of transmission
 #endif
 		}
@@ -339,7 +337,6 @@ interrupt void spiARxISR(void)
 	}
 	else
 	{
-		spiRxBuf[spiRx.idx]=data; // for log
 		spiRx.buf[spiRx.idx++]=data;
 
 		if(spiRx.idx >= spiRx.buf[2]) // last data
@@ -410,7 +407,10 @@ interrupt void spiARxISR(void)
 					spi_chk_ok=0; // unrecognized command
 			}
 			else
+			{
 				spi_chk_ok=0; // checksum error
+				rx_seq_no = 0; //error
+			}
 
 
 			if(spi_chk_ok == 0)
@@ -458,9 +458,9 @@ interrupt void spiATxISR(void)
 	{
 		spiTx.idx=0;
 		txLen=0;
-		for(i=0; i<15; i++) spiTx.buf[i]=0;
+		for(i=0; i<20; i++) spiTx.buf[i]=0;
 
-#ifdef SUPPORT_COMM_MCU_STATE
+#ifdef SUPPORT_COMM_MCU_STATE_
 		UTIL_setNotifyFlagMcu(MCU_COMM_READY_NOTI); // end of transmission
 #endif
 	}
