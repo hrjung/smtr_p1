@@ -78,11 +78,11 @@ int BRK_isFreeRunEnabled(void)
 }
 
 
-int BRK_setBrakeMethod(uint16_t method)
+int BRK_setBrakeMethod(uint32_t method)
 {
 	if(method > FREE_RUN_BRAKE) return 1;
 
-	iparam[BRK_TYPE_INDEX].value.l = method;
+	iparam[BRK_TYPE_INDEX].value.l = (uint32_t)method;
 
 	return 0;
 }
@@ -203,7 +203,7 @@ int DCIB_processBrakeSigHandler(void)
 		{
 			TMR_startTimerSig(DCI_BRAKE_SIG_OFF_TSIG, iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f);
 			dci_state_flag = DCI_BLOCK_STATE;
-			UARTprintf("DCI handler NONE -> BLOCK, at %d\n", (int)secCnt);
+			UARTprintf("DCI handler NONE -> BLOCK, %f sec at %d\n", iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f, (int)secCnt);
 		}
 		break;
 
@@ -214,7 +214,7 @@ int DCIB_processBrakeSigHandler(void)
 			TMR_disableTimerSig(DCI_BRAKE_SIG_OFF_TSIG);
 			TMR_startTimerSig(DCI_BRAKE_SIG_ON_TSIG, iparam[BRK_DCI_BRAKING_TIME_INDEX].value.f);
 			dci_state_flag = DCI_DC_BRAKE_STATE;
-			UARTprintf("DCI handler BLOCK -> BRAKE, at %d\n", (int)secCnt);
+			UARTprintf("DCI handler BLOCK -> BRAKE, %f sec at %d\n", iparam[BRK_DCI_BRAKING_TIME_INDEX].value.f, (int)secCnt);
 		}
 		break;
 

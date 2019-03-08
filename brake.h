@@ -25,7 +25,7 @@ enum
 extern int BRK_isDCIBrakeEnabled(void);
 extern int BRK_isFreeRunEnabled(void);
 
-extern int BRK_setBrakeMethod(uint16_t method);
+extern int BRK_setBrakeMethod(uint32_t method);
 extern int BRK_setBrakeFreq(float_t freq);
 
 extern int DCIB_getState(void);

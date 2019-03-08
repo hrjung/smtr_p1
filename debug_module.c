@@ -479,13 +479,13 @@ STATIC void dbg_showAccelTimeSetting(void)
 STATIC void dbg_showBrakeControlParam(void)
 {
 	UARTprintf(" Brake Control Settings\n");
-	UARTprintf("\t method %d, brk_freq %f\n", iparam[BRK_TYPE_INDEX].value.l, iparam[BRK_FREQ_INDEX].value.f);
+	UARTprintf("\t method %d, brk_freq %f\n", (int)iparam[BRK_TYPE_INDEX].value.l, iparam[BRK_FREQ_INDEX].value.f);
 }
 
 STATIC void dbg_showDciBrakeParam(void)
 {
 	UARTprintf(" DC injection Brake Settings const=%f\n", dev_const.dci_pwm_rate);
-	UARTprintf("\t brake mode %d, start freq %f, block time %f\n", iparam[BRK_TYPE_INDEX].value.l, iparam[BRK_DCI_START_FREQ_INDEX].value.f, iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f);
+	UARTprintf("\t brake mode %d, start freq %f, block time %f\n", (int)iparam[BRK_TYPE_INDEX].value.l, iparam[BRK_DCI_START_FREQ_INDEX].value.f, iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f);
 	UARTprintf("\t inject rate %f %%, time %f to brake\n", iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f, iparam[BRK_DCI_BRAKING_TIME_INDEX].value.f);
 }
 

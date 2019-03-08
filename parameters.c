@@ -543,7 +543,7 @@ int PARAM_setBrakeType(union32_st value)
 
 	if(MAIN_isSystemEnabled()) return 1;
 
-	result = BRK_setBrakeMethod((uint16_t)ldata);
+	result = BRK_setBrakeMethod(ldata);
 
 	return result;
 }
