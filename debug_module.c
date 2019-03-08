@@ -715,7 +715,7 @@ STATIC int dbg_setEnergySave(int argc, char *argv[])
 
 	if(argc == 1)
 	{
-		UARTprintf("energy save is %d\n", iparam[ENERGY_SAVE_INDEX].value.l);
+		UARTprintf("energy save is %d\n", (int)iparam[ENERGY_SAVE_INDEX].value.l);
 		return 0;
 	}
 

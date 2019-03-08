@@ -385,7 +385,7 @@ int PARAM_setEnergySave(union32_st value)
 
 	//TODO : only work on FOC running
 	result = DRV_setEnergySave((int)on_off);
-	UARTprintf("set Energy_save %d is %s\n", on_off, res_str[result]);
+	UARTprintf("set Energy_save %d %d is %s\n", (int)on_off, (int)value.l, res_str[result]);
 
 	return result;
 }
