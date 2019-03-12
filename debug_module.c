@@ -186,6 +186,7 @@ extern int REGEN_getDuty(void);
 
 extern float_t DRV_getPwmFrequency(void);
 extern void STA_printInvState(void);
+extern int DCIB_getState(void);
 extern void DCIB_setFlag(void);
 extern void UTIL_clearInitRelay(void);
 extern float_t UTIL_readIpmTemperature(void);
@@ -484,7 +485,7 @@ STATIC void dbg_showBrakeControlParam(void)
 
 STATIC void dbg_showDciBrakeParam(void)
 {
-	UARTprintf(" DC injection Brake Settings const=%f\n", dev_const.dci_pwm_rate);
+	UARTprintf(" DC injection Brake Settings const=%f, state=%d\n", dev_const.dci_pwm_rate, DCIB_getState());
 	UARTprintf("\t brake mode %d, start freq %f, block time %f\n", (int)iparam[BRK_TYPE_INDEX].value.l, iparam[BRK_DCI_START_FREQ_INDEX].value.f, iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f);
 	UARTprintf("\t inject rate %f %%, time %f to brake\n", iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f, iparam[BRK_DCI_BRAKING_TIME_INDEX].value.f);
 }

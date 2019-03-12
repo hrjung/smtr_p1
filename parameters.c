@@ -173,13 +173,13 @@ void PARAM_init(void)
 	iparam[FOC_TORQUE_LIMIT_INDEX].value.f = 180.0;
 
 	iparam[BRK_TYPE_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[BRK_TYPE_INDEX].value.l = REDUCE_SPEED_BRAKE;
+	iparam[BRK_TYPE_INDEX].value.l = DC_INJECT_BRAKE; //REDUCE_SPEED_BRAKE;
 
 	iparam[BRK_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[BRK_FREQ_INDEX].value.f = 1.0;
 
 	iparam[BRK_DCI_START_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[BRK_DCI_START_FREQ_INDEX].value.f = 3.0;
+	iparam[BRK_DCI_START_FREQ_INDEX].value.f = 5.0; //3.0;
 
 	iparam[BRK_DCI_BLOCK_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[BRK_DCI_BLOCK_TIME_INDEX].value.f = 1.0;

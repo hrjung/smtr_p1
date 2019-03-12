@@ -315,7 +315,7 @@ _iq temp_traj = _IQ(0.0);
 _iq traj_spd = _IQ(0.0);
 #endif
 
-#if (USER_MOTOR == SAMYANG_1_5K_MOTOR)
+#if (USER_MOTOR == SAMYANG_1_5K_MOTOR) // 1Hz -> 30rpm
 _iq foc_end_rpm = _IQ(0.015);
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)
 _iq foc_end_rpm = _IQ(0.03);
@@ -988,7 +988,7 @@ int MAIN_processDCBrake(void)
 		// PWM off
 		if(block_flag == 0)
 		{
-			HAL_disablePwm(halHandle);
+			//HAL_disablePwm(halHandle);
 			block_flag = 1;
 			UARTprintf("DCI BLOCK off PWM, at %d\n", (int)secCnt);
 		}
@@ -1516,6 +1516,9 @@ void main(void)
         processProtection();
 
         processMcuCommand();
+
+        //DC Injection Brake
+        DCIB_processBrakeSigHandler();
 
 #ifdef SUPPORT_VAR_PWM_FREQ
         if(pwm_freq_updated)
@@ -2130,18 +2133,10 @@ interrupt void mainISR(void)
 #ifdef PWM_DUTY_TEST
   if(gFlag_PwmTest)
   {
-	  if(gFlagDCIBrake == 0)
-	  {
-		  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
-		  gPwmData.Tabc.value[1] = gPwmData_Value;
-		  gPwmData.Tabc.value[2] = gPwmData_Value;
-	  }
-	  else
-	  {
-		  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
-		  gPwmData.Tabc.value[1] = _IQ(0.0);//gPwmData_Value;
-		  gPwmData.Tabc.value[2] = _IQ(0.0);//gPwmData_Value;
-	  }
+	  // please check DC Inject Brake enabled or not
+	  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
+	  gPwmData.Tabc.value[1] = gPwmData_Value;
+	  gPwmData.Tabc.value[2] = gPwmData_Value;
   }
 #else
 
@@ -2159,7 +2154,7 @@ interrupt void mainISR(void)
   //TODO : just temp stop for haunting at low speed of FOC
   if(DRV_isFocControl()
 	 && STA_getTargetFreq() == 0.0
-	 && _IQabs(gMotorVars.Speed_krpm) <= foc_end_rpm) // about 3Hz for 2.2k, 1Hz for 1.5k
+	 && _IQabs(gMotorVars.Speed_krpm) <= foc_end_rpm) // about 1Hz for 2.2k, 0.5Hz for 1.5k
   {
 #ifdef SUPPORT_DIRECTION_STATUS
 	  if(STA_isDirChanged())

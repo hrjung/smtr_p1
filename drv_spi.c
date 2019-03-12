@@ -151,67 +151,6 @@ void setupSpiB(SPI_Handle spiHandle)
   return;
 }
 
-#if 0
-//function for reading from spi
-uint16_t SPI_readMCU(uint16_t *rxData)
-{
-    volatile uint16_t WaitTimeOut = 0;
-    volatile SPI_FifoStatus_e RxFifoCnt = SPI_FifoStatus_Empty;
-    uint16_t i, ret=0;
-
-    // reset the Rx fifo pointer to zero
-    SPI_resetRxFifo(halHandle->spiAHandle);
-    SPI_enableRxFifo(halHandle->spiAHandle);
-
-    for(i=0; i<4; i++)
-    {
-		// wait for two words to populate the RX fifo, or a wait timeout will occur
-		while((RxFifoCnt < SPI_FifoStatus_1_Word) && (WaitTimeOut < 0xff))
-		{
-			RxFifoCnt = SPI_getRxFifoStatus(halHandle->spiAHandle);
-			WaitTimeOut++;
-		}
-
-		if(WaitTimeOut >= 0xff)
-			ret = 1;
-		else
-		{
-			//read the spi word
-			rxData[i] = SPI_read(halHandle->spiAHandle);
-		}
-    }
-
-    return ret;
-}
-
-uint16_t SPI_writeMCU(uint16_t *txData)
-{
-    volatile uint16_t WaitTimeOut = 0;
-    volatile SPI_FifoStatus_e TxFifoCnt;
-    uint16_t ret=0;
-
-    // reset the Rx fifo pointer to zero
-    SPI_resetTxFifo(halHandle->spiAHandle);
-    SPI_enableTxFifo(halHandle->spiAHandle);
-
-	//read the spi word
-	SPI_write(halHandle->spiAHandle, txData[0]);
-
-	TxFifoCnt = SPI_getTxFifoStatus(halHandle->spiAHandle);
-    while((TxFifoCnt != SPI_FifoStatus_Empty) && (WaitTimeOut < 0xff))
-    {
-        TxFifoCnt = SPI_getTxFifoStatus(halHandle->spiAHandle);
-        WaitTimeOut++;
-    }
-
-    if(WaitTimeOut >= 0xff)
-    	ret = 1;
-
-
-    return ret;
-}
-#endif
-
 int SPI_isPacketReceived(void)
 {
 	return spiPacketReceived;
@@ -471,6 +410,67 @@ interrupt void spiATxISR(void)
 
 }
 
+
+#if 0
+//function for reading from spi
+uint16_t SPI_readSensor(uint16_t *rxData)
+{
+    volatile uint16_t WaitTimeOut = 0;
+    volatile SPI_FifoStatus_e RxFifoCnt = SPI_FifoStatus_Empty;
+    uint16_t i, ret=0;
+
+    // reset the Rx fifo pointer to zero
+    SPI_resetRxFifo(halHandle->spiBHandle);
+    SPI_enableRxFifo(halHandle->spiBHandle);
+
+    for(i=0; i<4; i++)
+    {
+		// wait for two words to populate the RX fifo, or a wait timeout will occur
+		while((RxFifoCnt < SPI_FifoStatus_1_Word) && (WaitTimeOut < 0xff))
+		{
+			RxFifoCnt = SPI_getRxFifoStatus(halHandle->spiBHandle);
+			WaitTimeOut++;
+		}
+
+		if(WaitTimeOut >= 0xff)
+			ret = 1;
+		else
+		{
+			//read the spi word
+			rxData[i] = SPI_read(halHandle->spiBHandle);
+		}
+    }
+
+    return ret;
+}
+
+uint16_t SPI_writeSesnsor(uint16_t *txData)
+{
+    volatile uint16_t WaitTimeOut = 0;
+    volatile SPI_FifoStatus_e TxFifoCnt;
+    uint16_t ret=0;
+
+    // reset the Rx fifo pointer to zero
+    SPI_resetTxFifo(halHandle->spiBHandle);
+    SPI_enableTxFifo(halHandle->spiBHandle);
+
+	//read the spi word
+	SPI_write(halHandle->spiBHandle, txData[0]);
+
+	TxFifoCnt = SPI_getTxFifoStatus(halHandle->spiBHandle);
+    while((TxFifoCnt != SPI_FifoStatus_Empty) && (WaitTimeOut < 0xff))
+    {
+        TxFifoCnt = SPI_getTxFifoStatus(halHandle->spiBHandle);
+        WaitTimeOut++;
+    }
+
+    if(WaitTimeOut >= 0xff)
+    	ret = 1;
+
+
+    return ret;
+}
+#endif
 
 //*****************************************************************************
 //
