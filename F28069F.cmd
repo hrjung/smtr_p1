@@ -120,16 +120,16 @@ SECTIONS
 {
 
    /* Allocate program areas: */
-   .cinit              : > FLASHA_B,   PAGE = 0
-   .pinit              : > FLASHA_B,   PAGE = 0
-   .text               : > FLASHA_B,   PAGE = 0
+   .cinit              : > FLASHA_B,   PAGE = 0, ALIGN(4)
+   .pinit              : > FLASHA_B,   PAGE = 0, ALIGN(4)
+   .text               : > FLASHA_B,   PAGE = 0, ALIGN(4)
    codestart           : > BEGIN,      PAGE = 0
    ramfuncs            : LOAD = FLASHF, /* FLASHD -> FLASHF */
                          RUN = RAML0_1,
                          LOAD_START(_RamfuncsLoadStart),
                          LOAD_END(_RamfuncsLoadEnd),
                          RUN_START(_RamfuncsRunStart),
-                         PAGE = 0
+                         PAGE = 0, ALIGN(4)
 
    csmpasswds          : > CSM_PWL_P0, PAGE = 0
    csm_rsvd            : > CSM_RSVD,   PAGE = 0

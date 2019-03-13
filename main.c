@@ -1471,6 +1471,9 @@ void main(void)
   //hrjung enable the Timer 0 interrupts
   HAL_enableTimer0Int(halHandle);
 
+  // below function should be called after other interrupts settings
+  //easyDSP_SCI_Init();
+
   // enable DC bus compensation
   CTRL_setFlag_enableDcBusComp(ctrlHandle, true);
 
