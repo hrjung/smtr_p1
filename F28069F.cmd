@@ -77,8 +77,10 @@ PAGE 0 :   /* Program Memory */
    /* FLASHD      : origin = 0x3E8000, length = 0x004000 */     /* on-chip FLASH */
    /* FLASHC      : origin = 0x3EC000, length = 0x004000 */    /* on-chip FLASH */   
    /* FLASHA_B    : origin = 0x3F0000, length = 0x007F80 */    /* on-chip FLASH */
-   CSM_RSVD    : origin = 0x3F7F80, length = 0x000076     /* Part of FLASHA.  Program with all 0x0000 when CSM is in use. */
-   BEGIN       : origin = 0x3F7FF6, length = 0x000002     /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
+   /* CSM_RSVD    : origin = 0x3F7F80, length = 0x000076 */    /* Part of FLASHA.  Program with all 0x0000 when CSM is in use. */
+   /* BEGIN       : origin = 0x3F7FF6, length = 0x000002 */    /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
+   CSM_RSVD    : origin = 0x3F7F80, length = 0x000074     /* Part of FLASHA.  Program with all 0x0000 when CSM is in use. */
+   BEGIN       : origin = 0x3F7FF4, length = 0x000004     /* Part of FLASHA.  Used for "boot to Flash" bootloader mode. */
    CSM_PWL_P0  : origin = 0x3F7FF8, length = 0x000008     /* Part of FLASHA.  CSM password locations in FLASHA */
 
    FPUTABLES   : origin = 0x3FD590, length = 0x0006A0	 /* FPU Tables in Boot ROM */
@@ -123,7 +125,7 @@ SECTIONS
    .cinit              : > FLASHA_B,   PAGE = 0, ALIGN(4)
    .pinit              : > FLASHA_B,   PAGE = 0, ALIGN(4)
    .text               : > FLASHA_B,   PAGE = 0, ALIGN(4)
-   codestart           : > BEGIN,      PAGE = 0
+   codestart           : > BEGIN,      PAGE = 0, ALIGN(4)
    ramfuncs            : LOAD = FLASHF, /* FLASHD -> FLASHF */
                          RUN = RAML0_1,
                          LOAD_START(_RamfuncsLoadStart),
