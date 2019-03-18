@@ -133,7 +133,7 @@
 									<listOptionValue builtIn="false" value="&quot;${PROJECT_LOC}/F2806x_headers&quot;"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.PREINCLUDE.1976365721" name="Specify a preinclude file (--preinclude)" superClass="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.PREINCLUDE" valueType="includeFiles">
-									<listOptionValue builtIn="false" value="&quot;E:\work\mtr_ws\smtr_p1\def.h&quot;"/>
+									<listOptionValue builtIn="false" value="${PROJECT_LOC}/def.h"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.ADVICE__PERFORMANCE.1684366857" name="Provide advice on optimization techniques (--advice:performance)" superClass="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.ADVICE__PERFORMANCE" value="--advice:performance=all" valueType="string"/>
 								<option id="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.DEFINE.1203514441" name="Pre-define NAME (--define, -D)" superClass="com.ti.ccstudio.buildDefinitions.C2000_15.12.compilerID.DEFINE" valueType="definedSymbols">

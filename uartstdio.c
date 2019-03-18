@@ -612,6 +612,10 @@ UARTprintf(char *pcString, ...)
     char *fStr;
 #endif
 
+#ifdef SUPPORT_EASYDSP_DEBUG
+    return;
+#endif
+
     va_start(vaArgP, pcString);
 
     // Loop while there are more characters in the string.

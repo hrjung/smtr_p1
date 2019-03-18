@@ -82,6 +82,9 @@
 
 #include "cmd_queue.h"
 
+#ifdef SUPPORT_EASYDSP_DEBUG
+#include "easy2806x_v8.h"
+#endif
 
 // **************************************************************************
 // the defines
@@ -101,6 +104,7 @@
 // the extern function
 extern void dbg_logo(void);
 extern void ProcessDebugCommand(void);
+
 //extern void init_test_param(void);
 #ifdef SAMPLE_ADC_VALUE
 extern void dbg_getSample(float_t val1, float_t val2, float_t val3);
@@ -988,7 +992,7 @@ int MAIN_processDCBrake(void)
 		// PWM off
 		if(block_flag == 0)
 		{
-			//HAL_disablePwm(halHandle);
+			HAL_disablePwm(halHandle);
 			block_flag = 1;
 			UARTprintf("DCI BLOCK off PWM, at %d\n", (int)secCnt);
 		}
@@ -1364,8 +1368,10 @@ void main(void)
   SetGpioInterrupt();
 //#endif
 
+#ifndef SUPPORT_EASYDSP_DEBUG
   // enable the SCI interrupts
   UARTStdioInit(halHandle, SCI_A);
+#endif
 
   //initialize timer variable
   TMR_init();
@@ -1471,8 +1477,10 @@ void main(void)
   //hrjung enable the Timer 0 interrupts
   HAL_enableTimer0Int(halHandle);
 
+#ifdef SUPPORT_EASYDSP_DEBUG
   // below function should be called after other interrupts settings
-  //easyDSP_SCI_Init();
+  easyDSP_SCI_Init();
+#endif
 
   // enable DC bus compensation
   CTRL_setFlag_enableDcBusComp(ctrlHandle, true);
@@ -1533,8 +1541,10 @@ void main(void)
         //TODO : should find correct location
         state_param.inv = STA_control();
 
+#ifndef SUPPORT_EASYDSP_DEBUG
         //debug command for Motor stop
         ProcessDebugCommand();
+#endif
 
         MAIN_resetOffsetV();
 
@@ -1852,8 +1862,10 @@ void main(void)
         //TODO : should find correct location
         state_param.inv = STA_control();
 
+#ifndef SUPPORT_EASYDSP_DEBUG
         // debug command in Motor running
         ProcessDebugCommand();
+#endif
 
 #ifdef SUPPORT_AUTO_LOAD_TEST
   	    if(load_test_type)

@@ -20,15 +20,15 @@
 //          according to your system
 //          Don't change any other variables and source
 /////////////////////////////////////////////////////////////////
-#define CPU_CLK		80000000L				// 80MHz 
-#define	LSP_CLK		(CPU_CLK/4)
-#define	BAUDRATE	115200L
+#define CPU_CLK		90000000L				// 90MHz
+#define	LSP_CLK		(CPU_CLK/4)		//default
+//#define	BAUDRATE	115200L
 //#define	BAUDRATE	1200L
 //#define	BAUDRATE	2400L
 //#define	BAUDRATE	4800L
 //#define	BAUDRATE	9600L
 //#define	BAUDRATE	19200L	
-//#define	BAUDRATE	38400L
+#define	BAUDRATE	38400L
 //#define	BAUDRATE	57600L
 //#define	BAUDRATE	86400L
 //#define	BAUDRATE	153600L
