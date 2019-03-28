@@ -318,15 +318,16 @@ interrupt void timer0ISR(void)
 			if(freq_set == 0)
 			{
 				//set frequency
-				FREQ_setFreqValue(25.0);
+				FREQ_setFreqValue(40.0);
 				// start
-				MAIN_enableSystem(0);
+				MAIN_enableSystem();
 				STA_calcResolution();
 				freq_set = 1;
 				test_duration = secCnt;
-				UARTprintf("set freq 20Hz at %f\n", (float_t)(secCnt/10.0));
+				UARTprintf("set freq 40Hz at %f\n", (float_t)(secCnt/10.0));
 			}
 
+#if 0 // no stop for impulse test
 			// run 10s including acceleration
 			if(freq_set == 1 && (secCnt - test_duration > 100))
 			{
@@ -338,6 +339,7 @@ interrupt void timer0ISR(void)
 					UARTprintf("stop at %f\n", (float_t)(secCnt/10.0));
 				}
 			}
+#endif
 		}
 	}
 #endif

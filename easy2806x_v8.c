@@ -3,6 +3,8 @@
 	Mar, 2012 : 	first release
 	by Daewoong Chung (Á¤´ë¿õ)
 ****************************************************************/
+#ifdef SUPPORT_EASYDSP_DEBUG
+
 #include "F2806x_Device.h"
 #include "easy2806x_v8.h"
 #include "RingBuff.h"
@@ -22,13 +24,13 @@
 /////////////////////////////////////////////////////////////////
 #define CPU_CLK		90000000L				// 90MHz
 #define	LSP_CLK		(CPU_CLK/4)		//default
-//#define	BAUDRATE	115200L
+#define	BAUDRATE	115200L
 //#define	BAUDRATE	1200L
 //#define	BAUDRATE	2400L
 //#define	BAUDRATE	4800L
 //#define	BAUDRATE	9600L
 //#define	BAUDRATE	19200L	
-#define	BAUDRATE	38400L
+//#define	BAUDRATE	38400L
 //#define	BAUDRATE	57600L
 //#define	BAUDRATE	86400L
 //#define	BAUDRATE	153600L
@@ -77,12 +79,6 @@
 #define	CMD_FB_READ			0x0D
 #define	CMD_FB_WRITE_OK		0x0D
 #define CMD_FB_WRITE_NG		0x3C
-
-volatile struct GPIO_CTRL_REGS GpioCtrlRegs;
-volatile struct PIE_CTRL_REGS PieCtrlRegs;
-volatile struct PIE_VECT_TABLE PieVectTable;
-volatile struct SCI_REGS SciaRegs;
-volatile struct SYS_CTRL_REGS SysCtrlRegs;
 
 // for internal use
 unsigned int ezDSP_DSP = 0, ezDSP_Version_SCI = 800, ezDSP_SW_Reset = 0;
@@ -158,6 +154,8 @@ interrupt void easy_RXINT_ISR()
 {
 	unsigned int uIndex;
 
+	//GpioDataRegs.GPATOGGLE.bit.GPIO12 = 1; //toggle LED R
+
 	// check RX Error
 	if(SciaRegs.SCIRXST.bit.RXERROR) {
 		if(SciaRegs.SCIRXST.bit.BRKDT)	ezDSP_uBRKDTCount++;	// Break Down
@@ -195,6 +193,8 @@ interrupt void easy_RXINT_ISR()
 	// Parsing by state
 	////////////////////////////////////////////
 	
+	//GpioDataRegs.GPATOGGLE.bit.GPIO12 = 1; //toggle LED R
+
 	if(ezDSP_uState == STAT_INIT) {
 		if(ezDSP_ucRx == CMD_ADDR) {
 			ezDSP_uState = STAT_ADDR;
@@ -463,6 +463,7 @@ interrupt void easy_RXINT_ISR()
                                               
 interrupt void easy_TXINT_ISR(void)
 {
+	GpioDataRegs.GPATOGGLE.bit.GPIO12 = 1; //toggle LED R
 	// buffer => sio
 	if(!IsRingEmpty()) {
 		if(SciaRegs.SCICTL2.bit.TXRDY)	// check TXRDY
@@ -476,3 +477,5 @@ interrupt void easy_TXINT_ISR(void)
 
 	PieCtrlRegs.PIEACK.all = PIEACK_GROUP9;	
 }
+
+#endif
