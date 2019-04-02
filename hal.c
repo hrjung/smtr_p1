@@ -1245,6 +1245,11 @@ void HAL_setupGpios(HAL_Handle handle)
   GPIO_setMode(obj->gpioHandle,GPIO_Number_26,GPIO_26_Mode_GeneralPurpose);
   GPIO_setMode(obj->gpioHandle,GPIO_Number_27,GPIO_27_Mode_GeneralPurpose);
 
+#ifdef SUPPORT_EASYDSP_DEBUG
+  GPIO_setPullup(obj->gpioHandle, GPIO_Number_28, GPIO_Pullup_Enable);
+  GPIO_setPullup(obj->gpioHandle, GPIO_Number_29, GPIO_Pullup_Enable);
+  GPIO_setQualification(obj->gpioHandle, GPIO_Number_28, GPIO_Qual_ASync);
+#endif
   // SCIA_RX
   GPIO_setMode(obj->gpioHandle,GPIO_Number_28,GPIO_28_Mode_SCIRXDA);
   // SCIA_TX

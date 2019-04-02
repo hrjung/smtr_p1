@@ -23,7 +23,7 @@
 //          Don't change any other variables and source
 /////////////////////////////////////////////////////////////////
 #define CPU_CLK		90000000L				// 90MHz
-#define	LSP_CLK		(CPU_CLK/4)		//default
+#define	LSP_CLK		(CPU_CLK)  //(CPU_CLK/4)		//default
 #define	BAUDRATE	115200L
 //#define	BAUDRATE	1200L
 //#define	BAUDRATE	2400L
@@ -463,7 +463,6 @@ interrupt void easy_RXINT_ISR()
                                               
 interrupt void easy_TXINT_ISR(void)
 {
-	GpioDataRegs.GPATOGGLE.bit.GPIO12 = 1; //toggle LED R
 	// buffer => sio
 	if(!IsRingEmpty()) {
 		if(SciaRegs.SCICTL2.bit.TXRDY)	// check TXRDY
