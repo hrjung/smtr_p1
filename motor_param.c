@@ -101,7 +101,8 @@ void MPARAM_setDciPwmRate(float_t rate)
 #ifdef SUPPORT_MOTOR_PARAM
 	dev_const.dci_pwm_rate = rate/100.0 * mtr_param.max_current*mtr_param.Rs;
 #else
-	dev_const.dci_pwm_rate = rate/100.0 * USER_MOTOR_MAX_CURRENT/sqrtf(2.0)*USER_MOTOR_Rs;
+	//dev_const.dci_pwm_rate = rate/100.0 * USER_MOTOR_MAX_CURRENT/sqrtf(2.0)*USER_MOTOR_Rs*2; //*2 for Y connection
+	dev_const.dci_pwm_rate = rate/100.0 * USER_MOTOR_MAX_CURRENT*USER_MOTOR_Rs*2;
 #endif
 }
 

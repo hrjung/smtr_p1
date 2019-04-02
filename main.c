@@ -974,7 +974,7 @@ void MAIN_setDeviceConstant(void)
 int dc_pwm_off=0;
 int MAIN_processDCBrake(void)
 {
-	float_t dc_value=0.0;
+	static float_t dc_value=0.0;
 	static int block_flag=0, dc_brake_flag=0;
 
 	if(iparam[BRK_TYPE_INDEX].value.l != DC_INJECT_BRAKE) return 0;
@@ -2152,6 +2152,12 @@ interrupt void mainISR(void)
 	  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
 	  gPwmData.Tabc.value[1] = gPwmData_Value;
 	  gPwmData.Tabc.value[2] = gPwmData_Value;
+  }
+  else if(gFlagDCIBrake) // DCI brake test
+  {
+	  gPwmData.Tabc.value[0] = gPwmData_Value;  //~0.5 ~ 0.5
+	  gPwmData.Tabc.value[1] = _IQ(0.0);
+	  gPwmData.Tabc.value[2] = _IQ(0.0);
   }
 #else
 

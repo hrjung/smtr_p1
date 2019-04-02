@@ -2250,18 +2250,20 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	if(enable == 1)
     	{
 			gFlagDCIBrake = true;
+			dbg_enableSystem();
 			UARTprintf(" enable PWM DC inject test \n");
     	}
     	else
     	{
+    		dbg_disableSystem();
 			gFlagDCIBrake = false;
 			UARTprintf(" disable PWM DC inject test \n");
     	}
     }
     else if(index == 'd')
     {
-    	int16_t cur_rate=0.0;
-    	float_t pwm_f=0.0, V_duty=0.0;
+    	int16_t cur_rate=0;
+    	float_t V_duty=0.0; //pwm_f=0.0,
 
     	if(argc != 3)
     	{
@@ -2269,17 +2271,16 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     		return 0;
     	}
 
-    	cur_rate = atoi(argv[2]);
+    	cur_rate = (int16_t)atoi(argv[2]);
     	if(cur_rate >= 0 && cur_rate <= 200) // input duty as 0 ~ 200%
     	{
-#ifdef SUPPORT_MOTOR_PARAM
-    		pwm_f = (float_t)(cur_rate)/100.0 * mtr_param.max_current*mtr_param.Rs*2.0;// 2*Rs for Y connection
-#else
-    		pwm_f = (float_t)(cur_rate)/100.0 * USER_MOTOR_MAX_CURRENT*USER_MOTOR_Rs*2.0;// 2*Rs for Y connection
-#endif
-    		V_duty = pwm_f*100.0 / MAIN_getVdcBus();
+    		MPARAM_setDciPwmRate((float_t)cur_rate); //dev_const.dci_pwm_rate
+    		V_duty = dev_const.dci_pwm_rate*100.0/MAIN_getVdcBus();
+//    		pwm_f = (float_t)(cur_rate)/100.0 * USER_MOTOR_MAX_CURRENT*USER_MOTOR_Rs*2;
+//    		V_duty = pwm_f*100.0 / MAIN_getVdcBus();
     		gPwmData_Value = _IQ(V_duty/100.0);
-    		UARTprintf(" DCI Pwm data %d -> V=%f, V_percent=%f\n", cur_rate, (pwm_f/100.0), V_duty);
+    		UARTprintf(" DCI Pwm data %d -> V_percent=%f\n", cur_rate, V_duty/100.0);
+    		MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f); // restore dev_const.dci_pwm_rate
     	}
     	else
     		UARTprintf(" DCI Pwm a error %d\n", cur_rate);
