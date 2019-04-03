@@ -73,6 +73,8 @@ extern void printLog(void);
 uint32_t temp_flag=0;
 extern int TEMP_monitorTemperature(void);
 
+uint16_t wd_count=0;
+
 #ifdef SUPPORT_OFFSET_MEASURE_
 
 enum
@@ -294,14 +296,17 @@ interrupt void timer0ISR(void)
 #else
 			HAL_toggleLed(halHandle,(GPIO_Number_e)HAL_Gpio_LED3);
 #endif
-	//    	ADC_readCurrentControl(&adc_data);
-			//UARTprintf(" %d, %d\n", (int)gTimerCount, (int)secCnt);
 		}
 	}
 #endif
 
 	// acknowledge the Timer 0 interrupt
 	HAL_acqTimer0Int(halHandle);
+
+#ifdef SUPPORT_WATCHDOG
+	if(gTimerCount%100 == 0) // 100ms kick
+		HAL_kickWdog(halHandle);
+#endif
 
 #if 0 // only for test without debug connection
 	if(internal_status.relay_enabled)
@@ -377,7 +382,6 @@ interrupt void timer0ISR(void)
 	}
 	else
 		temp_flag=0;
-
 
 	if(time_sig[DCI_BRAKE_SIG_ON_TSIG].enable)
 	{

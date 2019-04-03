@@ -320,7 +320,12 @@ extern void HAL_disableGlobalInts(HAL_Handle handle);
 //! \brief      Disables the watch dog
 //! \param[in]  handle  The hardware abstraction layer (HAL) handle
 extern void HAL_disableWdog(HAL_Handle handle);
-
+#ifdef SUPPORT_WATCHDOG
+extern void HAL_enableWdog(HAL_Handle halHandle);
+extern void HAL_kickWdog(HAL_Handle halHandle);
+extern void HAL_setWdogPrescaler(HAL_Handle halHandle, const WDOG_PreScaler_e scale);
+extern void HAL_setWdogCount(HAL_Handle halHandle, uint_least8_t count);
+#endif
 
 //! \brief      Disables the PWM device
 //! \details    Turns off the outputs of the EPWM peripherals which will put

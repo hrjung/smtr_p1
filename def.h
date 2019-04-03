@@ -52,6 +52,8 @@
 
 #define SUPPORT_DIRECTION_STATUS
 
+#define SUPPORT_WATCHDOG
+
 //
 //	list of Debug features
 //
@@ -65,7 +67,7 @@
 // support constant PWM duty test
 #define PWM_DUTY_TEST
 
-#define SUPPORT_EASYDSP_DEBUG
+//#define SUPPORT_EASYDSP_DEBUG
 
 // enable for unit test only
 #define UNIT_TEST_ENABLED

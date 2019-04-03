@@ -464,6 +464,36 @@ void HAL_disableWdog(HAL_Handle halHandle)
   return;
 } // end of HAL_disableWdog() function
 
+#ifdef SUPPORT_WATCHDOG
+void HAL_enableWdog(HAL_Handle halHandle)
+{
+    HAL_Obj *hal = (HAL_Obj *) halHandle;
+
+    WDOG_enable(hal->wdogHandle);
+}
+
+void HAL_kickWdog(HAL_Handle halHandle)
+{
+    HAL_Obj *hal = (HAL_Obj *) halHandle;
+
+    WDOG_clearCounter(hal->wdogHandle);
+}
+
+void HAL_setWdogPrescaler(HAL_Handle halHandle, const WDOG_PreScaler_e scale)
+{
+    HAL_Obj *hal = (HAL_Obj *) halHandle;
+
+    WDOG_setPreScaler(hal->wdogHandle, scale);
+}
+
+void HAL_setWdogCount(HAL_Handle halHandle, uint_least8_t count)
+{
+    HAL_Obj *hal = (HAL_Obj *) halHandle;
+
+    WDOG_setCount(hal->wdogHandle, count);
+}
+#endif
+
 
 void HAL_disableGlobalInts(HAL_Handle handle)
 {
@@ -1220,7 +1250,7 @@ void HAL_setupGpios(HAL_Handle handle)
 
   // not used
   GPIO_setMode(obj->gpioHandle,GPIO_Number_20,GPIO_20_Mode_GeneralPurpose);
-#ifdef SUPPORT_AUTO_LOAD_TEST
+#ifdef SUPPORT_AUTO_LOAD_TEST_
   // test switch input : on : run, off : stop
   GPIO_setMode(obj->gpioHandle,GPIO_Number_21,GPIO_21_Mode_GeneralPurpose);
   GPIO_setDirection(obj->gpioHandle,GPIO_Number_21,GPIO_Direction_Input);

@@ -326,6 +326,7 @@ _iq foc_end_rpm = _IQ(0.03);
 #endif
 
 void SetGpioInterrupt(void);
+void SetWatchdogInterrupt(void);
 
 #ifdef SUPPORT_OFFSET_MEASURE
 extern uint16_t gOffsetMeasureFlag;
@@ -334,6 +335,7 @@ extern uint16_t gOffsetMeasureFlag;
 #ifdef SUPPORT_DIRECTION_STATUS
 extern float_t dir_freq;
 #endif
+
 
 #ifdef SUPPORT_AUTO_LOAD_TEST
 enum {
@@ -1511,6 +1513,12 @@ void main(void)
 
   CTRL_getGains(ctrlHandle,CTRL_Type_PID_Iq, &iq_Kp, &iq_Ki, &iq_Kd);
   UARTprintf("Iq Kp=%f, Ki=%f, Kd=%f\n", (float_t)_IQtoF(iq_Kp), (float_t)_IQtoF(iq_Ki), (float_t)_IQtoF(iq_Kd));
+#endif
+
+#ifdef SUPPORT_WATCHDOG
+  HAL_setWdogPrescaler(halHandle, WDOG_PreScaler_OscClk_by_512_by_64); // around 300Hz
+  HAL_setWdogCount(halHandle, 150); // about 0.5 sec
+  HAL_enableWdog(halHandle);
 #endif
 
   // debug command print
@@ -3033,6 +3041,7 @@ void SetGpioInterrupt(void)
     // enable CPU1 interrupt for XINT1
     PIE_enableExtInt(halHandle->pieHandle, CPU_ExtIntNumber_1);
 }
+
 
 //@} //defgroup
 // end of file
