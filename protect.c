@@ -198,7 +198,7 @@ int OVL_processOverloadWarning(float_t cur_val)
 			if(!TMR_isTimerEnabled(OVERLOAD_WARN_START_TSIG))
 			{
 				//start timer
-				TMR_startTimerSig(OVERLOAD_WARN_START_TSIG, (float_t)iparam[OVL_TR_DURATION_INDEX].value.l);
+				TMR_startTimerSig(OVERLOAD_WARN_START_TSIG, (float_t)iparam[OVL_WR_DURATION_INDEX].value.l);
 				UARTprintf("OVL warning started %f at %d\n", cur_val, (int)(secCnt/10));
 			}
 		}
@@ -234,7 +234,7 @@ int OVL_processOverloadWarning(float_t cur_val)
 			if(!TMR_isTimerEnabled(OVERLOAD_WARN_END_TSIG))
 			{
 				//start timer
-				TMR_startTimerSig(OVERLOAD_WARN_END_TSIG, (float_t)iparam[OVL_TR_DURATION_INDEX].value.l);
+				TMR_startTimerSig(OVERLOAD_WARN_END_TSIG, (float_t)iparam[OVL_WR_DURATION_INDEX].value.l);
 				UARTprintf("OVL warning end started %f at %d\n", cur_val, (int)(secCnt/10));
 			}
 		}

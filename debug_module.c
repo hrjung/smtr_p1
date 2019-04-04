@@ -341,10 +341,10 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 
 	{"ovl", dbg_setOverload, " overload protect settings\n" 			\
 			"   ovl en flag(0, 1) : enable/disable overload trip\n"  		\
-			"   ovl wlevel level(30-150) : set warning current level\n"  		\
-			"   ovl w_dur dur(0-30) : set warning duration\n"  				\
-			"   ovl tlevel level(30-200) : set trip current level\n"  		\
-			"   ovl t_dur dur(0-60) : set trip duration\n"  				\
+			"   ovl wl level(30-150) : set warning current level\n"  		\
+			"   ovl wd dur(0-30) : set warning duration\n"  				\
+			"   ovl tl level(30-200) : set trip current level\n"  		\
+			"   ovl td dur(0-60) : set trip duration\n"  				\
 			"   ovl show : display overload settings"
 	},
 
@@ -540,17 +540,17 @@ STATIC void dbg_showMonitorParam(void)
 STATIC void dbg_showOverloadParam(void)
 {
 	UARTprintf(" Overload Setting\n");
-	UARTprintf("\t enable: %d\n", iparam[OVL_ENABLE_INDEX].value.l);
-	UARTprintf("\t Warning level: %d, duration: %d\n", iparam[OVL_WARN_LIMIT_INDEX].value.l, iparam[OVL_WR_DURATION_INDEX].value.l);
-	UARTprintf("\t Trip level: %d, duration: %d\n", iparam[OVL_TR_LIMIT_INDEX].value.l, iparam[OVL_TR_DURATION_INDEX].value.l);
+	UARTprintf("\t enable: %d\n", (int)iparam[OVL_ENABLE_INDEX].value.l);
+	UARTprintf("\t Warning level: %d, duration: %d\n", (int)iparam[OVL_WARN_LIMIT_INDEX].value.l, (int)iparam[OVL_WR_DURATION_INDEX].value.l);
+	UARTprintf("\t Trip level: %d, duration: %d\n", (int)iparam[OVL_TR_LIMIT_INDEX].value.l, (int)iparam[OVL_TR_DURATION_INDEX].value.l);
 	UARTprintf("\t warn: %f, trip: %f OVC: %f\n", dev_const.warn_level, dev_const.trip_level, dev_const.ovc_level);
 }
 
 STATIC void dbg_showRegenParam(void)
 {
 	float_t value = sqrtf(0.9*150.0*50.0);
-	UARTprintf("\t resistance ohm %f power %d \n", iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
-	UARTprintf("\t thermal %f reduction %d \n", iparam[REGEN_THERMAL_INDEX].value.f, iparam[REGEN_BAND_INDEX].value.l);
+	UARTprintf("\t resistance ohm %f power %d \n", iparam[REGEN_RESISTANCE_INDEX].value.f, (int)iparam[REGEN_POWER_INDEX].value.l);
+	UARTprintf("\t thermal %f reduction %d \n", iparam[REGEN_THERMAL_INDEX].value.f, (int)iparam[REGEN_BAND_INDEX].value.l);
 	UARTprintf("\t V_max %f %f regen_duty %d \n", dev_const.regen_max_V, value, REGEN_getDuty());
 }
 
@@ -1313,19 +1313,19 @@ STATIC int dbg_setOverload(int argc, char *argv[])
 
 			dbg_setQueCommand(OVL_ENABLE_INDEX, data);
 		}
-		else if(strcmp(argv[1], "wlevel")==0)
+		else if(strcmp(argv[1], "wl")==0)
 		{
 			dbg_setQueCommand(OVL_WARN_LIMIT_INDEX, data);
 		}
-		else if(strcmp(argv[1], "w_dur")==0)
+		else if(strcmp(argv[1], "wd")==0)
 		{
 			dbg_setQueCommand(OVL_WR_DURATION_INDEX, data);
 		}
-		else if(strcmp(argv[1], "tlevel")==0)
+		else if(strcmp(argv[1], "tl")==0)
 		{
 			dbg_setQueCommand(OVL_TR_LIMIT_INDEX, data);
 		}
-		else if(strcmp(argv[1], "t_dur")==0)
+		else if(strcmp(argv[1], "td")==0)
 		{
 			dbg_setQueCommand(OVL_TR_DURATION_INDEX, data);
 		}

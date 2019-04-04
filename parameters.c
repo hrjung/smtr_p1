@@ -629,7 +629,7 @@ int PARAM_setOvlWarnTime(union32_st value)
 	int result;
 
 	result = OVL_setWarningTime((uint16_t)ldata);
-	UARTprintf("set Overload warning duration %d is %s\n", ldata, res_str[result]);
+	UARTprintf("set Overload warning duration %d is %s\n", (int)ldata, res_str[result]);
 
 	return result;
 }
@@ -662,7 +662,7 @@ int PARAM_setOvlTripTime(union32_st value)
 	int result;
 
 	result = OVL_setTripTime((uint16_t)ldata);
-	UARTprintf("set Overload trip duration %d is %s\n", ldata, res_str[result]);
+	UARTprintf("set Overload trip duration %d is %s\n", (int)ldata, res_str[result]);
 
 	return result;
 }

@@ -111,7 +111,7 @@ void MPARAM_setOvlTripLevel(uint32_t level)
 #ifdef SUPPORT_MOTOR_PARAM
 	dev_const.trip_level = mtr_param.max_current*(float_t)level/100.0;
 #else
-	dev_const.trip_level = USER_MOTOR_MAX_CURRENT*(float_t)level/100.0;
+	dev_const.trip_level = USER_MOTOR_RATED_CURRENT*(float_t)level/100.0;
 #endif
 }
 
@@ -120,7 +120,7 @@ void MPARAM_setOvlWarnLevel(uint32_t level)
 #ifdef SUPPORT_MOTOR_PARAM
 	dev_const.warn_level = mtr_param.max_current*(float_t)level/100.0;
 #else
-	dev_const.warn_level = USER_MOTOR_MAX_CURRENT*(float_t)level/100.0;
+	dev_const.warn_level = USER_MOTOR_RATED_CURRENT*(float_t)level/100.0;
 #endif
 }
 
@@ -168,7 +168,8 @@ void MPARAM_updateDevConst(void)
 #ifdef SUPPORT_MOTOR_PARAM
 	dev_const.ovc_level = mtr_param.max_current*3.0;
 #else
-	dev_const.ovc_level = USER_MOTOR_MAX_CURRENT*3.0;
+	dev_const.ovc_level = USER_MOTOR_RATED_CURRENT*3.0;
+	//dev_const.ovc_level = USER_MOTOR_RATED_CURRENT*0.5; // test only
 #endif
 	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 }
