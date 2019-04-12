@@ -345,11 +345,19 @@ enum {
 
 };
 
-#define AL_TEST_WORKING_FREQ        (45.0)
+// 2nd inertia test at Samyang
+//#define AL_TEST_WORKING_FREQ        (45.0)
+//#define AL_TEST_ACCEL_TIME          (10.0)
+//#define AL_TEST_DECEL_TIME          (30.0)
+//#define AL_TEST_RUNNING_TIME        (100)
+//#define AL_TEST_REVERSE_TIME        (400)
+
+// 3rd no inertial test at Samyang
+#define AL_TEST_WORKING_FREQ        (60.0)
 #define AL_TEST_ACCEL_TIME          (10.0)
-#define AL_TEST_DECEL_TIME          (30.0)
+#define AL_TEST_DECEL_TIME          (10.0)
 #define AL_TEST_RUNNING_TIME        (100)
-#define AL_TEST_REVERSE_TIME        (400)
+#define AL_TEST_REVERSE_TIME        (200)
 
 int load_test_type=1;  // 0: FULL_LOAD_TEST, 1: AUTO_LOAD_TEST
 int AL_test_stop_flag=0, AL_test_start_flag=0;
@@ -868,7 +876,7 @@ _iq MAIN_avoidJumpSpeed(_iq spd_pu)
 
 void MAIN_setRegenDuty(float_t resist, uint32_t power)
 {
-	dev_const.regen_max_V = 0.9*sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
+	dev_const.regen_max_V = sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
 }
 
 uint16_t Kp_for_fw=0;
@@ -1098,7 +1106,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1655,10 +1663,10 @@ void main(void)
                     {
                         // update the ADC bias values
                         HAL_updateAdcBias(halHandle);
-                        if(MAIN_isValidOffset())
-                        	offset_updated=1;
-                        else
-                        	ERR_setTripFlag(TRIP_REASON_OFFSET_ERR);
+//                        if(MAIN_isValidOffset())
+//                        	offset_updated=1;
+//                        else
+//                        	ERR_setTripFlag(TRIP_REASON_OFFSET_ERR);
 
                     }
                     else
@@ -1752,6 +1760,8 @@ void main(void)
 
             //Set new max trajectory
             CTRL_setSpdMax(ctrlHandle, Iq_Max_pu);
+
+            CTRL_setMaxVsMag_pu(ctrlHandle,gMotorVars.OverModulation);
 #endif
             // set the current ramp
             EST_setMaxCurrentSlope_pu(obj->estHandle,gMaxCurrentSlope);
@@ -1953,6 +1963,7 @@ interrupt void mainISR(void)
 
   // convert the ADC data
   HAL_readAdcData(halHandle,&gAdcData);
+  gAdcData.I.value[0] = -(gAdcData.I.value[1]+gAdcData.I.value[2]);
 
 
 #if 1

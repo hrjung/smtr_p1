@@ -606,46 +606,41 @@ static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
 #ifdef SUPPORT_V08_HW
 //  float_t f_val;
 
-// convert V_I
+  // convert V_I
   value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_1);
-  value = _IQ12mpy(value,current_sf) - obj->adcBias.I.value[0];      // divide by 2^numAdcBits = 2^12
-  //value = _IQ12mpy(value,current_sf) - _IQ(I_B_offset);
-  pAdcData->I.value[0] = -value;
-
-  // convert U_V
-  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_2);
-  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[2];      // divide by 2^numAdcBits = 2^12
-  pAdcData->V.value[2] = -value;
+  value = _IQ12mpy(value,current_sf) - obj->adcBias.I.value[1];      // divide by 2^numAdcBits = 2^12
+  pAdcData->I.value[1] = value;
 
   // convert W_I
+  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_2);
+  value = _IQ12mpy(value,-current_sf) - obj->adcBias.I.value[2];      // divide by 2^numAdcBits = 2^12
+  pAdcData->I.value[2] = value;
+
+  // convert U_V
   value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_3);
-  value = _IQ12mpy(value,current_sf) - obj->adcBias.I.value[1];      // divide by 2^numAdcBits = 2^12
-  //value = _IQ12mpy(value,current_sf) - _IQ(I_C_offset);
-  pAdcData->I.value[1] = value;
+  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[0];      // divide by 2^numAdcBits = 2^12
+  pAdcData->V.value[0] = value;
 
   // convert V_V
   value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_4);
-  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[0];      // divide by 2^numAdcBits = 2^12
-  pAdcData->V.value[0] = -value;
+  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[1];      // divide by 2^numAdcBits = 2^12
+  pAdcData->V.value[1] = value;
+
+  // convert W_V : hrjung : value = 0.000222*ADC - 0.000222*2048
+  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_5);
+  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[2];      // divide by 2^numAdcBits = 2^12
+  pAdcData->V.value[2] = value;
 
  // convert Vdc
-  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_5);
+  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_6);
   value = _IQ12mpy(value,voltage_sf);
   pAdcData->dcBus = value;
-
-  // convert W_V
-  value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_6);
-  value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[1];      // divide by 2^numAdcBits = 2^12
-  pAdcData->V.value[1] = -value;
 
   // convert IPM temperature
   pAdcData->ipm_temperature = ADC_readResult(obj->adcHandle,ADC_ResultNumber_7);
 
   // convert Motor temperature
   pAdcData->mtr_temperature = ADC_readResult(obj->adcHandle,ADC_ResultNumber_8);
-
-  // U_I calculation
-  pAdcData->I.value[2] = -(pAdcData->I.value[0] + pAdcData->I.value[1]);
 
   // for monitoring
 #if 1
@@ -1325,7 +1320,6 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
       bias += OFFSET_getOffset(obj->offsetHandle_I[cnt]);
 
       HAL_setBias(handle,HAL_SensorType_Current,cnt,bias);
-      i_offset[cnt] = bias;
     }
 
 
@@ -1336,9 +1330,7 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
 
       bias += OFFSET_getOffset(obj->offsetHandle_V[cnt]);
 
-      //hrjung HAL_setBias(handle,HAL_SensorType_Voltage,cnt,bias);
-      HAL_setBias(handle,HAL_SensorType_Voltage,cnt,-bias); // to make offset of positive value
-      v_offset[cnt] = -bias;
+      HAL_setBias(handle,HAL_SensorType_Voltage,cnt,bias);
     }
 
   return;

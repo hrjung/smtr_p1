@@ -128,15 +128,10 @@ extern "C" {
 //! \brief Compile time calculation for scale factor (ratio) used throughout the system
 #define USER_CURRENT_SF               ((float_t)((USER_ADC_FULL_SCALE_CURRENT_A)/(USER_IQ_FULL_SCALE_CURRENT_A)))
 
-
-#ifdef SUPPORT_HW_COMMON
-#define USER_NUM_CURRENT_SENSORS            (2)   // 3 Preferred setting for best performance across full speed range, allows for 100% duty cycle
-#else
 //! \brief Defines the number of current sensors used
 //! \brief Defined by the hardware capability present
 //! \brief May be (2) or (3)
 #define USER_NUM_CURRENT_SENSORS            (3)   // 3 Preferred setting for best performance across full speed range, allows for 100% duty cycle
-#endif
 
 //! \brief Defines the number of voltage (phase) sensors
 //! \brief Must be (3)
@@ -434,11 +429,11 @@ extern "C" {
     #define USER_MOTOR_NO_LOAD_CURRENT      (2.0)
     #define USER_MOTOR_RATED_CURRENT        (3.4)
 #if 1// test value
-    #define USER_MOTOR_Rr                   (1.79456)
-    #define USER_MOTOR_Rs                   (2.15)
-    #define USER_MOTOR_Ls_d                 (0.016746)
+    #define USER_MOTOR_Rr                   (2.006833315) //(1.79456)
+    #define USER_MOTOR_Rs                   (2.549335718) //(2.15)
+    #define USER_MOTOR_Ls_d                 (0.009685347788) //(0.016746)
     #define USER_MOTOR_Ls_q                 USER_MOTOR_Ls_d
-    #define USER_MOTOR_RATED_FLUX           (4.873543)
+    #define USER_MOTOR_RATED_FLUX           (4.94542551) //(4.873543)
 #else
     #define USER_MOTOR_Rr                   (2.14568)
     #define USER_MOTOR_Rs                   (2.5)
@@ -450,7 +445,7 @@ extern "C" {
     #define USER_MOTOR_RES_EST_CURRENT      (1.0)
     #define USER_MOTOR_IND_EST_CURRENT      (NULL)
     //#define USER_MOTOR_MAX_CURRENT          (3.4) //(4.0)
-    #define USER_MOTOR_MAX_CURRENT          (0.98*4.8) // max 4.8 = sqrt(2) * 3.4
+    #define USER_MOTOR_MAX_CURRENT          (10.0) //(0.98*4.8) // max 4.8 = sqrt(2) * 3.4
     #define USER_MOTOR_FLUX_EST_FREQ_Hz     (5.0)
 
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)

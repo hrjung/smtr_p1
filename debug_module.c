@@ -180,6 +180,7 @@ extern float_t MAIN_getDC_lfp(void);
 extern void MAIN_showPidGain(void);
 extern void MAIN_setSpeedGain(int fw_enabled);
 
+extern int regen_duty;
 extern void REGEN_start(void);
 extern void REGEN_end(void);
 extern int REGEN_getDuty(void);
@@ -550,7 +551,7 @@ STATIC void dbg_showRegenParam(void)
 {
 	float_t value = sqrtf(0.9*150.0*50.0);
 	UARTprintf("\t resistance ohm %f power %d \n", iparam[REGEN_RESISTANCE_INDEX].value.f, (int)iparam[REGEN_POWER_INDEX].value.l);
-	UARTprintf("\t thermal %f reduction %d \n", iparam[REGEN_THERMAL_INDEX].value.f, (int)iparam[REGEN_BAND_INDEX].value.l);
+	UARTprintf("\t thermal %f band %d \n", iparam[REGEN_THERMAL_INDEX].value.f, (int)iparam[REGEN_BAND_INDEX].value.l);
 	UARTprintf("\t V_max %f %f regen_duty %d \n", dev_const.regen_max_V, value, REGEN_getDuty());
 }
 
@@ -2057,13 +2058,18 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     {
     	UARTprintf(" Trip happened %d, Mcu_comm %d \n", internal_status.trip_happened, (int)UTIL_getCommStatus());
     }
-    else if(index == 'r')
+    else if(index == 'i')
     {
     	int i;
     	extern float_t array_Iu[];
     	UARTprintf(" Irms =%f \n", MAIN_getIave());
     	for(i=0; i<I_RMS_SAMPLE_COUNT; i++)
     		UARTprintf(" int_Iu %f \n", array_Iu[i]);
+    }
+    else if(index == 'r')
+    {
+    	regen_duty = atoi(argv[2]);
+    	UARTprintf(" set regen duty = %d \n", regen_duty);
     }
     else if(index == 'k')
     {

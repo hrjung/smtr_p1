@@ -93,7 +93,7 @@ extern uint16_t gOffsetMeasureFlag;
 #endif
 
 static int evt_flag=0;
-static int regen_duty=0;
+int regen_duty=70; //default
 
 protect_dc_st protect_dc;
 
@@ -399,7 +399,7 @@ int REGEN_setRegenDuty(float_t dc_value)
 	//int i;
 	float_t exp_duty; //exp_I, exp_W
 
-	exp_duty = 0.9*dev_const.regen_max_V/dc_value;
+	exp_duty = dev_const.regen_max_V/dc_value;
 	return (int)(exp_duty*100.0); // rounded integer
 }
 
@@ -414,7 +414,8 @@ void REGEN_active(float_t dc_value)
 
 	internal_status.regen_enabled = 1;
 
-	regen_duty = REGEN_setRegenDuty(dc_value);
+	//regen_duty = REGEN_setRegenDuty(dc_value);
+	//regen_duty = 70; 	// use fixed value
 	UTIL_setRegenPwmDuty(regen_duty);
 }
 
@@ -487,12 +488,12 @@ int REGEN_process(float_t dc_volt)
 
 	if(dc_volt > protect_dc.dc_volt_start_regen_level) //dev_const.regen_limit + param.protect.regen.band)
 	{
+		REGEN_active(dc_volt);
 		if(regen_flag==0)
 		{
-			UARTprintf("REGEN_start() DC=%f\n", dc_volt);
+			UARTprintf("REGEN_start() DC=%f, duty=%d \n", dc_volt, regen_duty);
 			regen_flag++;
 		}
-		REGEN_active(dc_volt);
 	}
 
 
@@ -500,10 +501,12 @@ int REGEN_process(float_t dc_volt)
 	{
 		if(dc_volt < protect_dc.dc_volt_end_regen_level) //dev_const.regen_limit)
 		{
-			UARTprintf("REGEN_end() DC=%f\n", dc_volt);
+			UARTprintf("REGEN_end() DC=%f, duty=%d \n", dc_volt, regen_duty);
 			REGEN_end();
 			regen_flag=0;
 		}
+//		else
+//			REGEN_active(dc_volt);
 	}
 
 	return 0;
