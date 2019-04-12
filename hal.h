@@ -1320,6 +1320,7 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
       bias += OFFSET_getOffset(obj->offsetHandle_I[cnt]);
 
       HAL_setBias(handle,HAL_SensorType_Current,cnt,bias);
+      i_offset[cnt] = bias;
     }
 
 
@@ -1331,6 +1332,7 @@ static inline void HAL_updateAdcBias(HAL_Handle handle)
       bias += OFFSET_getOffset(obj->offsetHandle_V[cnt]);
 
       HAL_setBias(handle,HAL_SensorType_Voltage,cnt,bias);
+      v_offset[cnt] = bias;
     }
 
   return;

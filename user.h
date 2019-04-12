@@ -140,53 +140,21 @@ extern "C" {
 //! \brief ADC current offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
-//#define   I_A_offset    (0.9966602325)
-//#define   I_B_offset    (0.9960474968)
-//#define   I_C_offset    (0.997712791)
 
-//for V0
-//#define   I_A_offset    (1.346306)
-//#define   I_B_offset    (1.363306)
-////#define   I_C_offset    (1.333306)
-//#define   I_C_offset    (0.002903)
-
-//for V0.8
-#define   I_A_offset    (0.8333) //(1.36)	// V
-#define   I_B_offset    (0.8333) //(1.325)  // W
-#define   I_C_offset    (0.0)  // U
-// for V0.8 after updating IQ_FULL
-//#define   I_A_offset    (0.8333) //(1.36)	// V
-//#define   I_B_offset    (0.8333) //(1.325)  // W
-//#define   I_C_offset    (0.0)  // U
+//for P2
+#define   I_A_offset    (1.902) //(1.36)	// V
+#define   I_B_offset    (0.846) //(1.325)  // W
+#define   I_C_offset    (-0.839)  // U
 
 
 //! \brief ADC voltage offsets for A, B, and C phases
 //! \brief One-time hardware dependent, though the calibration can be done at run-time as well
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
-//#define   V_A_offset    (0.3384106159)
-//#define   V_B_offset    (0.3370528817)
-//#define   V_C_offset    (0.3377450705)
-//for V0
-//#define   V_A_offset    (0.354)
-//#define   V_B_offset    (0.354)
-//#define   V_C_offset    (0.354)
-//for V0.8
-//#define   V_A_offset    (0.284)  // V
-//#define   V_B_offset    (0.282)  // W
-//#define   V_C_offset    (0.284)  // U
-// for V0.8 after rescale voltage measure
-//#define   V_A_offset    (0.332) //(0.284)  // V
-//#define   V_B_offset    (0.332) //(0.282)  // W
-//#define   V_C_offset    (0.332) //(0.284)  // U
-//for V0.8 IQ_FULL = 1500.0
-//#define   V_A_offset    (0.172)  // V
-//#define   V_B_offset    (0.172)  // W
-//#define   V_C_offset    (0.172)  // U
-// for P2
-#define   V_A_offset    (0.269)  // V
-#define   V_B_offset    (0.267)  // W
-#define   V_C_offset    (0.269)  // U
 
+// for P2
+#define   V_A_offset    (0.2765789032)  // U
+#define   V_B_offset    (0.2768177986)  // V
+#define   V_C_offset    (0.275618732)  // W
 
 //! \brief CLOCKS & TIMERS
 // **************************************************************************

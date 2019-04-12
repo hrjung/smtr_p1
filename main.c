@@ -1106,7 +1106,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1465,9 +1465,9 @@ void main(void)
   datalog.iptr[0] = &Id_in;//&pwm_set[0];	// &gAdcData.V.value[0];
   datalog.iptr[1] = &Iq_in; //&pwm_set[1];	//&gAdcData.I.value[0];
 #endif
-  datalog.iptr[0] = &gAdcData.I.value[0];  // V
-  datalog.iptr[1] = &gAdcData.I.value[1];  // W &angle_pu
-  datalog.iptr[2] = &gAdcData.I.value[2];  // U
+  datalog.iptr[0] = &gAdcData.I.value[0];  // U
+  datalog.iptr[1] = &gAdcData.I.value[1];  // V &angle_pu
+  datalog.iptr[2] = &gAdcData.I.value[2];  // W
 
   datalog.Flag_EnableLogData = true;
   datalog.Flag_EnableLogOneShot = false;
@@ -1675,7 +1675,7 @@ void main(void)
                       //if(!DRV_isVfControl())
 #endif
                       {
-#if 1
+#if 0
 	                      MAIN_setOffset();
 #else
 	                      // set the current bias

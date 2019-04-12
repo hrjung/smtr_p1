@@ -361,4 +361,5 @@ extern uint16_t UTIL_setRegenPwmDuty(int duty);
 extern float_t UTIL_readIpmTemperature(void);
 extern float_t UTIL_readMotorTemperature(void);
 
+
 #endif /* INV_PARAM_H_ */
