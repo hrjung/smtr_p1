@@ -14,6 +14,11 @@
 #include "drive.h"
 
 
+#ifdef FLASH
+#pragma CODE_SECTION(FREQ_setFreqValue,"ramfuncs");
+#pragma CODE_SECTION(FREQ_getVarifiedFreq,"ramfuncs");
+#pragma CODE_SECTION(FREQ_getRangedFreq,"ramfuncs");
+#endif
 /*******************************************************************************
  * MACROS
  */
@@ -57,10 +62,10 @@
  *  ======== local function ========
  */
 
-int FREQ_isJumpFreqUsed(int index)
-{
-	return (int)iparam[JMP_ENABLE_BASE + index].value.l;
-}
+//int FREQ_isJumpFreqUsed(int index)
+//{
+//	return (int)iparam[JMP_ENABLE_BASE + index].value.l;
+//}
 
 
 STATIC int FREQ_isInJumpFreq(float_t value)

@@ -38,7 +38,7 @@
 /*******************************************************************************
  * LOCAL VARIABLES
  */
-static int dci_state_flag = DCI_NONE_STATE;
+int dci_state_flag = DCI_NONE_STATE;
 
 /*******************************************************************************
  * LOCAL FUNCTIONS
@@ -61,10 +61,10 @@ extern uint32_t secCnt;
 /*
  *  ======== public function ========
  */
-int BRK_isDCIBrakeEnabled(void)
-{
-	return (iparam[BRK_TYPE_INDEX].value.l == DC_INJECT_BRAKE);
-}
+//int BRK_isDCIBrakeEnabled(void)
+//{
+//	return (iparam[BRK_TYPE_INDEX].value.l == DC_INJECT_BRAKE);
+//}
 
 int BRK_isFreeRunEnabled(void)
 {
@@ -174,10 +174,10 @@ int DCIB_setBrakeTime(float_t b_time)
 	return 0;
 }
 
-int DCIB_getState(void)
-{
-	return dci_state_flag;
-}
+//int DCIB_getState(void)
+//{
+//	return dci_state_flag;
+//}
 
 int DCIB_isBrakeTriggered(void)
 {

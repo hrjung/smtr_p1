@@ -16,7 +16,10 @@
 #include "err_trip.h"
 
 
-
+#ifdef FLASH
+#pragma CODE_SECTION(ERR_setTripInfo,"ramfuncs");
+#pragma CODE_SECTION(ERR_setTripFlag,"ramfuncs");
+#endif
 /*******************************************************************************
  * MACROS
  */

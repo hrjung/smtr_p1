@@ -16,6 +16,13 @@
 #include "freq.h"
 #include "err_trip.h"
 
+#ifdef FLASH
+#pragma CODE_SECTION(STA_setStopStatus,"ramfuncs");
+#pragma CODE_SECTION(STA_calcResolution,"ramfuncs");
+#pragma CODE_SECTION(STA_setResolution,"ramfuncs");
+#pragma CODE_SECTION(STA_setNextFreq,"ramfuncs");
+#endif
+
 /*******************************************************************************
  * MACROS
  */
@@ -115,25 +122,25 @@ int STA_isDirectionDone(void)
 	return (dir_changed == 1 && dir_set_freq == 1);
 }
 
-int STA_isDirChanged(void)
-{
-	return (dir_changed == 1);
-}
+//int STA_isDirChanged(void)
+//{
+//	return (dir_changed == 1);
+//}
 
-void STA_setDirChanged(void)
-{
-	dir_changed = 1;
-}
+//void STA_setDirChanged(void)
+//{
+//	dir_changed = 1;
+//}
 
-int STA_isDirFreqSet(void)
-{
-	return (dir_set_freq == 1);
-}
+//int STA_isDirFreqSet(void)
+//{
+//	return (dir_set_freq == 1);
+//}
 
-void STA_setDirFreqSet(void)
-{
-	dir_set_freq = 1;
-}
+//void STA_setDirFreqSet(void)
+//{
+//	dir_set_freq = 1;
+//}
 
 void STA_initDirectionFlag(void)
 {
@@ -335,30 +342,30 @@ STATIC mtr_state_e func_run(void)
 //	return m_status.cur_rpm;
 //}
 
-int STA_getState(void)
-{
-    return m_status.status;
-}
-
-int STA_isStopState(void)
-{
-	return (m_status.status == STATE_STOP);
-}
-
-int STA_isRunState(void)
-{
-	return (m_status.status == STATE_RUN);
-}
-
-int STA_isAccelState(void)
-{
-	return (m_status.status == STATE_ACCEL);
-}
-
-int STA_isDecelState(void)
-{
-	return (m_status.status == STATE_DECEL);
-}
+//int STA_getState(void)
+//{
+//    return m_status.status;
+//}
+//
+//int STA_isStopState(void)
+//{
+//	return (m_status.status == STATE_STOP);
+//}
+//
+//int STA_isRunState(void)
+//{
+//	return (m_status.status == STATE_RUN);
+//}
+//
+//int STA_isAccelState(void)
+//{
+//	return (m_status.status == STATE_ACCEL);
+//}
+//
+//int STA_isDecelState(void)
+//{
+//	return (m_status.status == STATE_DECEL);
+//}
 
 void STA_setStopStatus(void)
 {
@@ -420,10 +427,10 @@ float_t STA_getCurSpeed(void)
 	return m_status.cur_rpm;
 }
 
-float_t STA_getTargetFreq(void)
-{
-	return m_status.target_freq;
-}
+//float_t STA_getTargetFreq(void)
+//{
+//	return m_status.target_freq;
+//}
 
 float_t STA_getCurFreq(void)
 {

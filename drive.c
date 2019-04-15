@@ -111,15 +111,15 @@ int DRV_setDecelTime(float_t value)
 	return 0;
 }
 
-int DRV_isVfControl(void)
-{
-	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
-}
+//int DRV_isVfControl(void)
+//{
+//	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
+//}
 
-int DRV_isFocControl(void)
-{
-	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
-}
+//int DRV_isFocControl(void)
+//{
+//	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
+//}
 
 void DRV_enableVfControl(void)
 {

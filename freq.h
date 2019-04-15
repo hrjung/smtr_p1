@@ -13,7 +13,7 @@
  * CONSTANTS
  */
 #define 	MAX_FREQ_VALUE	(400.0)
-#define		MIN_FREQ_VALUE	(1.0)
+#define		MIN_FREQ_VALUE	(0.9)
 
 #define 	ACCEL	0
 #define		DECEL	1

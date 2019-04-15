@@ -48,19 +48,19 @@ typedef struct
 /*******************************************************************************
  * EXTERNS
  */
-//extern MOTOR_working_st sta_freq;
+extern MOTOR_working_st m_status;
 
-extern int STA_getState(void);
-extern int STA_isRunState(void);
-extern int STA_isStopState(void);
-extern int STA_isAccelState(void);
-extern int STA_isDecelState(void);
+//extern int STA_getState(void);
+//extern int STA_isRunState(void);
+//extern int STA_isStopState(void);
+//extern int STA_isAccelState(void);
+//extern int STA_isDecelState(void);
 
 #ifdef SUPPORT_DIRECTION_STATUS
-extern int STA_isDirChanged(void);
-extern void STA_setDirChanged(void);
-extern int STA_isDirFreqSet(void);
-extern void STA_setDirFreqSet(void);
+//extern int STA_isDirChanged(void);
+//extern void STA_setDirChanged(void);
+//extern int STA_isDirFreqSet(void);
+//extern void STA_setDirFreqSet(void);
 #endif
 
 extern float_t STA_getCurrent(void);
@@ -74,7 +74,7 @@ extern float_t STA_getCurSpeed(void);
 //extern void STA_setNextSpeed(int target);
 //extern void STA_updateCurrentSpeed(float speed);
 //extern int STA_getSpeedRange(void);
-extern float_t STA_getTargetFreq(void);
+//extern float_t STA_getTargetFreq(void);
 extern float_t STA_getCurFreq(void);
 extern void STA_setCurFreq(float_t cur_freq);
 extern void STA_setNextFreq(float_t target);
@@ -89,5 +89,59 @@ extern float_t STA_getTrajResolution(void);
 extern void STA_setStopCondition(void);
 
 extern int STA_control(void);
+
+inline int STA_getState(void)
+{
+    return m_status.status;
+}
+
+inline int STA_isStopState(void)
+{
+	return (m_status.status == STATE_STOP);
+}
+
+inline int STA_isRunState(void)
+{
+	return (m_status.status == STATE_RUN);
+}
+
+inline int STA_isAccelState(void)
+{
+	return (m_status.status == STATE_ACCEL);
+}
+
+inline int STA_isDecelState(void)
+{
+	return (m_status.status == STATE_DECEL);
+}
+
+
+inline float_t STA_getTargetFreq(void)
+{
+	return m_status.target_freq;
+}
+
+#ifdef SUPPORT_DIRECTION_STATUS
+extern uint16_t dir_set_freq, dir_changed;
+inline int STA_isDirFreqSet(void)
+{
+	return (dir_set_freq == 1);
+}
+
+inline int STA_isDirChanged(void)
+{
+	return (dir_changed == 1);
+}
+
+inline void STA_setDirChanged(void)
+{
+	dir_changed = 1;
+}
+
+inline void STA_setDirFreqSet(void)
+{
+	dir_set_freq = 1;
+}
+#endif
 
 #endif /* STATE_FUNC_H_ */

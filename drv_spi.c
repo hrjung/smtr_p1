@@ -25,6 +25,10 @@
 //! @{
 //
 //*****************************************************************************
+#ifdef FLASH
+#pragma CODE_SECTION(spiARxISR,"ramfuncs");
+#pragma CODE_SECTION(spiATxISR,"ramfuncs");
+#endif
 
 #define QUEUE_SIZE  64
 

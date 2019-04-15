@@ -55,11 +55,14 @@
 
 #ifdef FLASH
 #pragma CODE_SECTION(mainISR,"ramfuncs");
-#pragma CODE_SECTION(timer0ISR,"ramfuncs");
 #pragma CODE_SECTION(MAIN_calculateIrms,"ramfuncs");
 #pragma CODE_SECTION(MAIN_readCurrent,"ramfuncs");
-#pragma CODE_SECTION(spiARxISR,"ramfuncs");
-#pragma CODE_SECTION(spiATxISR,"ramfuncs");
+#pragma CODE_SECTION(xint1_isr,"ramfuncs");
+
+#pragma CODE_SECTION(MAIN_isSystemEnabled,"ramfuncs");
+#pragma CODE_SECTION(MAIN_avoidJumpSpeed,"ramfuncs");
+#pragma CODE_SECTION(MAIN_disableSystem,"ramfuncs");
+#pragma CODE_SECTION(MAIN_processDCBrake,"ramfuncs");
 #endif
 
 #include "uartstdio.h"
@@ -320,7 +323,7 @@ _iq traj_spd = _IQ(0.0);
 #endif
 
 #if (USER_MOTOR == SAMYANG_1_5K_MOTOR) // 1Hz -> 30rpm
-_iq foc_end_rpm = _IQ(0.015);
+_iq foc_end_rpm = _IQ(0.015); // 0.5Hz
 #elif (USER_MOTOR == SAMYANG_2_2K_MOTOR)
 _iq foc_end_rpm = _IQ(0.03);
 #endif
@@ -524,19 +527,19 @@ float_t MAIN_getIave(void)
 inline void MAIN_readCurrent(void)
 {
 	  // update instant current value
-	  internal_status.Iu_inst = _IQtoF(gAdcData.I.value[2])*USER_IQ_FULL_SCALE_CURRENT_A;
-	  internal_status.Iv_inst = _IQtoF(gAdcData.I.value[0])*USER_IQ_FULL_SCALE_CURRENT_A;
-	  internal_status.Iw_inst = _IQtoF(gAdcData.I.value[1])*USER_IQ_FULL_SCALE_CURRENT_A;
+	  internal_status.Iu_inst = _IQtoF(gAdcData.I.value[0])*USER_IQ_FULL_SCALE_CURRENT_A;
+	  internal_status.Iv_inst = _IQtoF(gAdcData.I.value[1])*USER_IQ_FULL_SCALE_CURRENT_A;
+	  internal_status.Iw_inst = _IQtoF(gAdcData.I.value[2])*USER_IQ_FULL_SCALE_CURRENT_A;
 
 
-	  if(internal_status.Iu_inst > 15.0) internal_status.Iu_inst = 15.0;
-	  else if(internal_status.Iu_inst < -15.0) internal_status.Iu_inst = -15.0;
+	  if(internal_status.Iu_inst > 20.0) internal_status.Iu_inst = 20.0;
+	  else if(internal_status.Iu_inst < -20.0) internal_status.Iu_inst = -20.0;
 
-	  if(internal_status.Iv_inst > 15.0) internal_status.Iv_inst = 15.0;
-	  else if(internal_status.Iv_inst < -15.0) internal_status.Iv_inst = -15.0;
+	  if(internal_status.Iv_inst > 20.0) internal_status.Iv_inst = 20.0;
+	  else if(internal_status.Iv_inst < -20.0) internal_status.Iv_inst = -20.0;
 
-	  if(internal_status.Iw_inst > 15.0) internal_status.Iw_inst = 15.0;
-	  else if(internal_status.Iw_inst < -15.0) internal_status.Iw_inst = -15.0;
+	  if(internal_status.Iw_inst > 20.0) internal_status.Iw_inst = 20.0;
+	  else if(internal_status.Iw_inst < -20.0) internal_status.Iw_inst = -20.0;
 }
 
 #ifdef SUPPORT_I_RMS_MEASURE
@@ -754,11 +757,7 @@ void MAIN_setOffset(void)
 int MAIN_isOverCurrent(void)
 {
 #if 0
-	if(MAIN_isSystemEnabled()
-#ifdef SAMPLE_ADC_VALUE
-		&& start_calc_rms
-#endif
-	)
+	if(MAIN_isSystemEnabled())
 #endif
 	{
 		if(fabsf(internal_status.Iu_inst) > OVER_CURRENT_INSTANT_VALUE
@@ -2280,9 +2279,9 @@ interrupt void mainISR(void)
     float_t spd_rpm_f = _IQtoF(gMotorVars.Speed_krpm)*1000.0;
     internal_status.spd_rpm = (int32_t) spd_rpm_f;
 
-	internal_status.Vu_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
-	internal_status.Vv_inst = _IQtoF(gAdcData.V.value[0])*USER_IQ_FULL_SCALE_VOLTAGE_V;
-	internal_status.Vw_inst = _IQtoF(gAdcData.V.value[1])*USER_IQ_FULL_SCALE_VOLTAGE_V;
+	internal_status.Vu_inst = _IQtoF(gAdcData.V.value[0])*USER_IQ_FULL_SCALE_VOLTAGE_V;
+	internal_status.Vv_inst = _IQtoF(gAdcData.V.value[1])*USER_IQ_FULL_SCALE_VOLTAGE_V;
+	internal_status.Vw_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 
 #ifdef SAMPLE_ADC_VALUE
 	if(sample_type == V_UVW_SAMPLE_TYPE)
@@ -2625,10 +2624,10 @@ int MAIN_isSystemEnabled(void)
 	return (gMotorVars.Flag_enableSys == true && gMotorVars.Flag_Run_Identify == true);
 }
 
-int MAIN_isTripHappened(void)
-{
-	return (internal_status.trip_happened != TRIP_REASON_NONE);
-}
+//int MAIN_isTripHappened(void)
+//{
+//	return (internal_status.trip_happened != TRIP_REASON_NONE);
+//}
 
 #ifdef SUPPORT_DEBUG_TERMINAL
 void dbg_enableSystem(void)

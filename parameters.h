@@ -8,6 +8,7 @@
 #ifndef PARAMETERS_H_
 #define PARAMETERS_H_
 
+
 typedef union
 {
   uint16_t arr[2];
@@ -21,6 +22,24 @@ typedef struct
 	uint16_t	type;
 	union32_st	value;
 } inv_parameter_st;
+
+
+// ctrl.vf_foc_sel
+enum
+{
+	VF_CONTROL = 0,
+	FOC_CONTROL,
+
+};
+
+// stop control : brake_method
+enum
+{
+	REDUCE_SPEED_BRAKE,
+	DC_INJECT_BRAKE,
+	FREE_RUN_BRAKE,
+	MAX_BRAKE
+};
 
 enum {
 	ERR_CODE_INDEX = 0,
@@ -145,4 +164,28 @@ extern void PARAM_initInvStatus(void);
 extern void PARAM_setInvStatus(void);
 extern uint16_t PARAM_getInvStatus(uint16_t *buf);
 
+
+#define JMP_ENABLE_BASE		JUMP_ENABLE0_INDEX
+#define JMP_LOW_BASE		JUMP_LOW0_INDEX
+#define JMP_HIGH_BASE		JUMP_HIGH0_INDEX
+
+inline int FREQ_isJumpFreqUsed(int index)
+{
+	return (int)iparam[JMP_ENABLE_BASE + index].value.l;
+}
+
+inline int DRV_isVfControl(void)
+{
+	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
+}
+
+inline int DRV_isFocControl(void)
+{
+	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
+}
+
+inline int BRK_isDCIBrakeEnabled(void)
+{
+	return (iparam[BRK_TYPE_INDEX].value.l == DC_INJECT_BRAKE);
+}
 #endif /* PARAMETERS_H_ */

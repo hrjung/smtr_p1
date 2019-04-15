@@ -54,7 +54,7 @@
 
 #define MAX_JUMP_FREQ_NUM	3
 
-#define OVER_CURRENT_INSTANT_VALUE	(10.0)
+#define OVER_CURRENT_INSTANT_VALUE	(15.0)
 #define OVER_CURRENT_COUNT_LIMIT	10
 
 #define MISSING_PHASE_RMS_VALUE		(0.05)
@@ -68,23 +68,6 @@ enum
 	REVERSE = -1,
 	STOP = 0,
 	FORWARD = 1
-};
-
-// ctrl.vf_foc_sel
-enum
-{
-	VF_CONTROL = 0,
-	FOC_CONTROL,
-
-};
-
-// stop control : brake_method
-enum
-{
-	REDUCE_SPEED_BRAKE,
-	DC_INJECT_BRAKE,
-	FREE_RUN_BRAKE,
-	MAX_BRAKE
 };
 
 
@@ -344,7 +327,7 @@ extern float_t MAIN_getVdcBus(void);
 extern int MAIN_isSystemEnabled(void);
 extern int MAIN_enableSystem(void);
 extern void MAIN_disableSystem(void);
-extern int MAIN_isTripHappened(void);
+//extern int MAIN_isTripHappened(void);
 extern int MAIN_setForwardDirection(void);
 extern int MAIN_setReverseDirection(void);
 extern int MAIN_getCurrentSpeed(void);
@@ -360,6 +343,12 @@ extern uint16_t UTIL_setPwmDuty(int duty);
 extern uint16_t UTIL_setRegenPwmDuty(int duty);
 extern float_t UTIL_readIpmTemperature(void);
 extern float_t UTIL_readMotorTemperature(void);
+
+
+inline int MAIN_isTripHappened(void)
+{
+	return (internal_status.trip_happened != TRIP_REASON_NONE);
+}
 
 
 #endif /* INV_PARAM_H_ */

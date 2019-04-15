@@ -17,6 +17,10 @@
 #include "state_func.h"
 #include "timer_handler.h"
 
+#ifdef FLASH
+#pragma CODE_SECTION(timer0ISR,"ramfuncs");
+#endif
+
 /*******************************************************************************
  * MACROS
  */
@@ -270,7 +274,7 @@ int TMR_isTimeout(int type)
 	return (time_sig[type].enable && time_sig[type].timeout_flag);
 }
 
-int TMR_isTimeOutCondition(int type)
+inline int TMR_isTimeOutCondition(int type)
 {
 	return (time_sig[type].duration <=  secCnt - time_sig[type].st_time) && (time_sig[type].timeout_flag == 0);
 }
@@ -448,13 +452,6 @@ interrupt void timer0ISR(void)
 			TMR_disableTimerSig(TIMER_TEST_TSIG);
 		}
 	}
-
-	// record run-time
-
-
-	// record inverter on-time
-
-	//UTIL_testbit(0);
 
 	return;
 } // end of timer0ISR() function

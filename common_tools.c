@@ -11,8 +11,8 @@
 #include <stdbool.h>
 #include <Assert.h>
 
-#include "main.h"
-#include "inv_param.h"
+//#include "main.h"
+//#include "inv_param.h"
 #include "common_tools.h"
 #include "uartstdio.h"
 
