@@ -96,7 +96,7 @@
 #define SUPPORT_P2_HW // 2 pins added to communicate with MCU
 
 //for cycle test with load, forward <-> reverse rotation
-//#define SUPPORT_AUTO_LOAD_TEST
+#define SUPPORT_AUTO_LOAD_TEST
 
 
 #ifdef SUPPORT_V0_HW

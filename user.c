@@ -212,7 +212,8 @@ void USER_setParams(USER_Params *pUserParams)
 #ifdef SUPPORT_VAR_PWM_FREQ
   pUserParams->ctrlWaitTime[CTRL_State_Error]         = 0;
   pUserParams->ctrlWaitTime[CTRL_State_Idle]          = 0;
-  pUserParams->ctrlWaitTime[CTRL_State_OffLine]       = (uint_least32_t)( 5.0 * pUserParams->ctrlFreq_Hz);
+  //pUserParams->ctrlWaitTime[CTRL_State_OffLine]       = (uint_least32_t)( 5.0 * pUserParams->ctrlFreq_Hz);
+  pUserParams->ctrlWaitTime[CTRL_State_OffLine]       = (uint_least32_t)( 3.0 * pUserParams->ctrlFreq_Hz); // reduce offset recalculation time
   pUserParams->ctrlWaitTime[CTRL_State_OnLine]        = 0;
 
   pUserParams->estWaitTime[EST_State_Error]           = 0;
