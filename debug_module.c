@@ -32,6 +32,7 @@
 #include "cmd_queue.h"
 #include "drv_spi.h"
 #include "err_trip.h"
+#include "drv_accelerometer.h"
 
 #ifdef UNIT_TEST_ENABLED
 #include "test/unity.h"
@@ -148,6 +149,7 @@ uint16_t invbuf[15], errbuf[10], rparam[5];
  * EXTERNS
  */
 extern CTRL_Handle ctrlHandle;
+extern HAL_Handle halHandle;
 #ifdef SUPPORT_MOTOR_PARAM
 extern motor_param_st mtr_param;
 #endif
@@ -195,6 +197,11 @@ extern float_t UTIL_readMotorTemperature(void);
 extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
 extern void ERR_printTripInfo(void);
+
+#ifdef SUPPORT_SPI_ACCELEROMETER
+extern uint16_t SPI_readSensor(uint16_t regNum, uint16_t *rxData);
+extern uint16_t SPI_writeSesnsor(uint16_t *txData);
+#endif
 
 #ifdef SUPPORT_AUTO_LOAD_TEST_
 int ipm_disp_on = 0;
@@ -2071,6 +2078,32 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	regen_duty = atoi(argv[2]);
     	UARTprintf(" set regen duty = %d \n", regen_duty);
     }
+#ifdef SUPPORT_SPI_ACCELEROMETER
+    else if(index == 'a')
+    {
+    	int ret=0;
+    	uint16_t data[2]= {0,0};
+
+    	ret = SPI_readSensor(0x20, data);
+    	UARTprintf(" accel ret=%d, data0=%d, data1=%d \n", ret, data[0], data[1]);
+    }
+    else if(index == 'b')
+    {
+    	int ret=0;
+    	uint16_t data[2]= {0x20,0xA5};
+
+    	ret = SPI_writeSesnsor(data);
+    	UARTprintf(" accel write, ret=%d, data0=%d, data1=%d \n", ret, data[0], data[1]);
+    }
+    else if(index == 'c') // read who am i register -> 51
+    {
+    	int ret=0;
+    	uint16_t data[2]= {0,0};
+
+    	ret = SPI_readSensor(0xF, data);
+    	UARTprintf(" accel read 51, ret=%d, data0=%d, data1=%d \n", ret, data[0], data[1]);
+    }
+#endif
     else if(index == 'k')
     {
     	//_iq Kp, Ki;

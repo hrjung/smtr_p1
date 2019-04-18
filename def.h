@@ -27,6 +27,9 @@
 // SPI communication for DSP <-> MCU
 #define SUPPORT_SPI_INTERRUPT
 
+// SPI communication for accelerometer : move to MCU
+//#define SUPPORT_SPI_ACCELEROMETER
+
 #define SUPPORT_COMM_MCU_STATE
 
 #define SUPPORT_VF_CONTROL

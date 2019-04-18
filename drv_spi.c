@@ -5,11 +5,6 @@
 // TITLE:  SPI driver for F28069F motorware
 //
 //###########################################################################
-// $TI Release: F2806x C/C++ Header Files and Peripheral Examples V151 $
-// $Release Date: February  2, 2016 $
-// $Copyright: Copyright (C) 2011-2016 Texas Instruments Incorporated -
-//             http://www.ti.com/ ALL RIGHTS RESERVED $
-//###########################################################################
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -19,6 +14,7 @@
 #include "common_tools.h"
 #include "parameters.h"
 #include "cmd_queue.h"
+#include "drv_accelerometer.h"
 //*****************************************************************************
 //
 //! \addtogroup modebus_api
@@ -135,24 +131,6 @@ void setupSpiA(SPI_Handle spiHandle)
 	SPI_setTriWire(spiHandle, SPI_TriWire_NormalFourWire);
 
 	SPI_initRxBuf();
-}
-
-// TODO: need to update when ready
-void setupSpiB(SPI_Handle spiHandle)
-{
-    SPI_reset(spiHandle);
-    SPI_setMode(spiHandle,SPI_Mode_Master);
-    SPI_setClkPolarity(spiHandle,SPI_ClkPolarity_OutputRisingEdge_InputFallingEdge);
-    SPI_enableTx(spiHandle);
-    SPI_enableTxFifoEnh(spiHandle);
-    SPI_enableTxFifo(spiHandle);
-    SPI_setTxDelay(spiHandle,0x0018);
-    SPI_setBaudRate(spiHandle,(SPI_BaudRate_e)(0x000d));
-    SPI_setCharLength(spiHandle,SPI_CharLength_8_Bits);
-    SPI_setSuspend(spiHandle,SPI_TxSuspend_free);
-    SPI_enable(spiHandle);
-
-  return;
 }
 
 int SPI_isPacketReceived(void)
@@ -415,37 +393,39 @@ interrupt void spiATxISR(void)
 }
 
 
-#if 0
+#ifdef SUPPORT_SPI_ACCELEROMETER
 //function for reading from spi
-uint16_t SPI_readSensor(uint16_t *rxData)
+uint16_t SPI_readSensor(uint16_t regNum, uint16_t *rxData)
 {
     volatile uint16_t WaitTimeOut = 0;
     volatile SPI_FifoStatus_e RxFifoCnt = SPI_FifoStatus_Empty;
-    uint16_t i, ret=0;
+    uint16_t ret=0;
 
     // reset the Rx fifo pointer to zero
     SPI_resetRxFifo(halHandle->spiBHandle);
     SPI_enableRxFifo(halHandle->spiBHandle);
 
-    for(i=0; i<4; i++)
-    {
-		// wait for two words to populate the RX fifo, or a wait timeout will occur
-		while((RxFifoCnt < SPI_FifoStatus_1_Word) && (WaitTimeOut < 0xff))
-		{
-			RxFifoCnt = SPI_getRxFifoStatus(halHandle->spiBHandle);
-			WaitTimeOut++;
-		}
+    // write the address
+    SPI_write(halHandle->spiBHandle, (regNum | 0x80)<<8); // read and single
+    SPI_write(halHandle->spiBHandle, 0); // dummy write to read 1byte
 
-		if(WaitTimeOut >= 0xff)
-			ret = 1;
-		else
-		{
-			//read the spi word
-			rxData[i] = SPI_read(halHandle->spiBHandle);
-		}
-    }
+	// wait for two words to populate the RX fifo, or a wait timeout will occur
+	while((RxFifoCnt < SPI_FifoStatus_2_Words) && (WaitTimeOut < 0xff))
+	{
+		RxFifoCnt = SPI_getRxFifoStatus(halHandle->spiBHandle);
+		WaitTimeOut++;
+	}
 
-    return ret;
+	if(WaitTimeOut >= 0xff)
+		ret = 1;
+	else
+	{
+	    // Read two words, the dummy word and the data
+		rxData[0] = SPI_read(halHandle->spiBHandle);
+		rxData[1] = SPI_read(halHandle->spiBHandle);
+	}
+
+	return ret;
 }
 
 uint16_t SPI_writeSesnsor(uint16_t *txData)
@@ -458,8 +438,10 @@ uint16_t SPI_writeSesnsor(uint16_t *txData)
     SPI_resetTxFifo(halHandle->spiBHandle);
     SPI_enableTxFifo(halHandle->spiBHandle);
 
-	//read the spi word
-	SPI_write(halHandle->spiBHandle, txData[0]);
+	//write address
+	SPI_write(halHandle->spiBHandle, (txData[0]<<8)&0xFF00);
+	//write data
+	SPI_write(halHandle->spiBHandle, (txData[1]<<8)&0xFF00);
 
 	TxFifoCnt = SPI_getTxFifoStatus(halHandle->spiBHandle);
     while((TxFifoCnt != SPI_FifoStatus_Empty) && (WaitTimeOut < 0xff))
@@ -471,9 +453,9 @@ uint16_t SPI_writeSesnsor(uint16_t *txData)
     if(WaitTimeOut >= 0xff)
     	ret = 1;
 
-
     return ret;
 }
+
 #endif
 
 //*****************************************************************************
