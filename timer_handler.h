@@ -25,7 +25,7 @@ enum
 	MAX_TIMER_TSIG
 };
 
-#define OVER_CURRENT_TIMEOUT	1	// 1 sec
+#define OVER_CURRENT_TIMEOUT	2	// 2 sec
 
 #if 0
 typedef struct

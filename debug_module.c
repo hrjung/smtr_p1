@@ -1939,31 +1939,11 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     if(index == '0')
     {
-#if 0
-        for(i=100; i<400; i+=15)
-        {
-    //    	iq_val = _IQ((float)i);
-    //    	value = _IQint(iq_val);
-    //		_IQtoa(val_str, "%5.10f", f_val);
-    //		UARTprintf("%d iq_int=%d iq=%d\n", i, value, (int)iq_val);
-
-    	    s_value = i;
-    	    f_val = MAIN_convert2InternalSpeedRef(s_value);
-    	    value = MAIN_convert2Speed(f_val);
-    	    UARTprintf("value = %d -> %d\n", s_value, value);
-        }
-
-        s_value = 120;
-        f_val = MAIN_convert2InternalSpeedRef(s_value);
-        value = MAIN_convert2Speed(f_val);
-        UARTprintf("value = %d -> %d\n", s_value, value);
-#else
         for(i=0; i<400; i+=30)
         {
         	s_value = FREQ_convertToSpeed(i);
         	UARTprintf("value = freq=%d -> rpm=%d\n", i, s_value);
         }
-#endif
     }
     else if(index == 1)
     {
@@ -2077,6 +2057,14 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     {
     	regen_duty = atoi(argv[2]);
     	UARTprintf(" set regen duty = %d \n", regen_duty);
+    }
+    else if(index == 'f')
+    {
+    	int duty;
+    	duty = atoi(argv[2]);
+    	UTIL_setRegenPwmDuty(duty);
+
+    	UARTprintf(" set REGEN pwm duty=%d\n", duty);
     }
 #ifdef SUPPORT_SPI_ACCELEROMETER
     else if(index == 'a')
@@ -2204,14 +2192,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	UARTprintf(" IPM temperature periodic display enable=%d\n", ipm_disp_on);
     }
 #endif
-    else if(index == 'f')
-    {
-    	int duty;
-    	duty = atoi(argv[2]);
-    	UTIL_setRegenPwmDuty(duty);
 
-    	UARTprintf(" set REGEN pwm duty=%d\n", duty);
-    }
 #ifdef PWM_DUTY_TEST
     else if(index == 'p')
     {

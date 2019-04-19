@@ -325,7 +325,7 @@ int OVL_processOverCurrentTrip(float_t cur_val)
 		if(!TMR_isTimerEnabled(OVERLOAD_OVC_TSIG))
 		{
 			//start timer
-			TMR_startTimerSig(OVERLOAD_OVC_TSIG, OVER_CURRENT_TIMEOUT); // 1 sec
+			TMR_startTimerSig(OVERLOAD_OVC_TSIG, OVER_CURRENT_TIMEOUT); // 2 sec
 			UARTprintf("OV current trip started %f at %d\n", cur_val, (int)(secCnt/10));
 		}
 	}

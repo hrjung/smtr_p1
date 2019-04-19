@@ -526,20 +526,22 @@ float_t MAIN_getIave(void)
 
 inline void MAIN_readCurrent(void)
 {
-	  // update instant current value
-	  internal_status.Iu_inst = _IQtoF(gAdcData.I.value[0])*USER_IQ_FULL_SCALE_CURRENT_A;
-	  internal_status.Iv_inst = _IQtoF(gAdcData.I.value[1])*USER_IQ_FULL_SCALE_CURRENT_A;
-	  internal_status.Iw_inst = _IQtoF(gAdcData.I.value[2])*USER_IQ_FULL_SCALE_CURRENT_A;
+	float_t current_limit = USER_MOTOR_RATED_CURRENT*4.5;
+
+	// update instant current value
+	internal_status.Iu_inst = _IQtoF(gAdcData.I.value[0])*USER_IQ_FULL_SCALE_CURRENT_A;
+	internal_status.Iv_inst = _IQtoF(gAdcData.I.value[1])*USER_IQ_FULL_SCALE_CURRENT_A;
+	internal_status.Iw_inst = _IQtoF(gAdcData.I.value[2])*USER_IQ_FULL_SCALE_CURRENT_A;
 
 
-	  if(internal_status.Iu_inst > 20.0) internal_status.Iu_inst = 20.0;
-	  else if(internal_status.Iu_inst < -20.0) internal_status.Iu_inst = -20.0;
+	if(internal_status.Iu_inst > current_limit) internal_status.Iu_inst = current_limit;
+	else if(internal_status.Iu_inst < -current_limit) internal_status.Iu_inst = -current_limit;
 
-	  if(internal_status.Iv_inst > 20.0) internal_status.Iv_inst = 20.0;
-	  else if(internal_status.Iv_inst < -20.0) internal_status.Iv_inst = -20.0;
+	if(internal_status.Iv_inst > current_limit) internal_status.Iv_inst = current_limit;
+	else if(internal_status.Iv_inst < -current_limit) internal_status.Iv_inst = -current_limit;
 
-	  if(internal_status.Iw_inst > 20.0) internal_status.Iw_inst = 20.0;
-	  else if(internal_status.Iw_inst < -20.0) internal_status.Iw_inst = -20.0;
+	if(internal_status.Iw_inst > current_limit) internal_status.Iw_inst = current_limit;
+	else if(internal_status.Iw_inst < -current_limit) internal_status.Iw_inst = -current_limit;
 }
 
 #ifdef SUPPORT_I_RMS_MEASURE
@@ -756,13 +758,15 @@ void MAIN_setOffset(void)
 
 int MAIN_isOverCurrent(void)
 {
+	float_t over_current_value = USER_MOTOR_RATED_CURRENT*4.0;
+
 #if 0
 	if(MAIN_isSystemEnabled())
 #endif
 	{
-		if(fabsf(internal_status.Iu_inst) > OVER_CURRENT_INSTANT_VALUE
-			|| fabsf(internal_status.Iw_inst) > OVER_CURRENT_INSTANT_VALUE)
-			//|| fabsf(internal_status.Iv_inst) > OVER_CURRENT_INSTANT_VALUE
+		if(fabsf(internal_status.Iu_inst) > over_current_value
+			|| fabsf(internal_status.Iv_inst) > over_current_value
+			|| fabsf(internal_status.Iw_inst) > over_current_value)
 		{
 			internal_status.oc_count++;
 			if(internal_status.oc_count > OVER_CURRENT_COUNT_LIMIT)
@@ -791,6 +795,7 @@ int MAIN_isMissingIphase(void)
 		internal_status.Iu_miss_cnt++;
 		if(internal_status.Iu_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
 		{
+			ERR_setTripInfo();
 			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
 			return 1;
 		}
@@ -804,6 +809,7 @@ int MAIN_isMissingIphase(void)
 		internal_status.Iw_miss_cnt++;
 		if(internal_status.Iw_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
 		{
+			ERR_setTripInfo();
 			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
 			return 1;
 		}
@@ -817,6 +823,7 @@ int MAIN_isMissingIphase(void)
 		internal_status.Iw_miss_cnt++;
 		if(internal_status.Iw_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
 		{
+			ERR_setTripInfo();
 			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
 			return 1;
 		}
@@ -1557,7 +1564,7 @@ void main(void)
         state_param.inv = STA_control();
 
 #ifndef SUPPORT_EASYDSP_DEBUG
-        //debug command for Motor stop
+        //debug command during Motor stop
         ProcessDebugCommand();
 #endif
 
@@ -1872,6 +1879,8 @@ void main(void)
         processProtection();
 
         processMcuCommand();
+
+        MAIN_isMissingIphase();
 
         //DC Injection Brake
         DCIB_processBrakeSigHandler();
