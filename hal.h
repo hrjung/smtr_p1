@@ -613,7 +613,7 @@ static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
 
   // convert W_I
   value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_2);
-  value = _IQ12mpy(value,-current_sf) - obj->adcBias.I.value[2];      // divide by 2^numAdcBits = 2^12
+  value = _IQ12mpy(value,-current_sf) + obj->adcBias.I.value[2];      // divide by 2^numAdcBits = 2^12
   pAdcData->I.value[2] = value;
 
   // convert U_V
@@ -626,7 +626,7 @@ static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
   value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[1];      // divide by 2^numAdcBits = 2^12
   pAdcData->V.value[1] = value;
 
-  // convert W_V : hrjung : value = 0.000222*ADC - 0.000222*2048
+  // convert W_V
   value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_5);
   value = _IQ12mpy(value,voltage_sf) - obj->adcBias.V.value[2];      // divide by 2^numAdcBits = 2^12
   pAdcData->V.value[2] = value;
@@ -647,12 +647,12 @@ static inline void HAL_readAdcData(HAL_Handle handle,HAL_AdcData_t *pAdcData)
   V_bias[0] = obj->adcBias.V.value[0];
   V_bias[1] = obj->adcBias.V.value[1];
   V_bias[2] = obj->adcBias.V.value[2];
-  pAdcData->vdc_adc = ADC_readResult(obj->adcHandle,ADC_ResultNumber_5);
-  pAdcData->v_adc[0] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_2); // U_V
+  pAdcData->vdc_adc = ADC_readResult(obj->adcHandle,ADC_ResultNumber_6);
+  pAdcData->v_adc[0] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_3); // U_V
   pAdcData->v_adc[1] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_4); // V_V
-  pAdcData->v_adc[2] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_6); // W_V
+  pAdcData->v_adc[2] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_5); // W_V
   pAdcData->i_adc[0] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_1); // V_I
-  pAdcData->i_adc[1] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_3); // W_I
+  pAdcData->i_adc[1] = ADC_readResult(obj->adcHandle,ADC_ResultNumber_2); // W_I
 #endif
 
 #else

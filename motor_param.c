@@ -168,8 +168,8 @@ void MPARAM_updateDevConst(void)
 #ifdef SUPPORT_MOTOR_PARAM
 	dev_const.ovc_level = mtr_param.max_current*3.0;
 #else
-	dev_const.ovc_level = USER_MOTOR_RATED_CURRENT*3.0;
-	//dev_const.ovc_level = USER_MOTOR_RATED_CURRENT*0.5; // test only
+	dev_const.ovc_level = USER_MOTOR_RATED_CURRENT*3.5;
+	//dev_const.ovc_level = 2.1; //USER_MOTOR_RATED_CURRENT*0.5; // test only
 #endif
 	MPARAM_setDciPwmRate(iparam[BRK_DCI_BRAKING_RATE_INDEX].value.f);
 }

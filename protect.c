@@ -666,8 +666,6 @@ int processProtection(void)
 	}
 #endif
 
-	//if(MAIN_isOverCurrent()) MAIN_disableSystem();
-
 	if( REGEN_process(MAIN_getVdcBus()) ) MAIN_disableSystem();
 
 	return 0;

@@ -1112,7 +1112,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1513,8 +1513,6 @@ void main(void)
 //  HAL_setBias(halHandle,HAL_SensorType_Voltage,1,_IQ(gUserParams.V_B_Offset));
 //  HAL_setBias(halHandle,HAL_SensorType_Voltage,2,_IQ(gUserParams.V_C_Offset));
 
-  //DRV_enableFocControl(); // FOC test
-
 #if 0
   _iq spd_Kp, spd_Ki, spd_Kd;
   _iq id_Kp, id_Ki, id_Kd;
@@ -1880,7 +1878,7 @@ void main(void)
 
         processMcuCommand();
 
-        MAIN_isMissingIphase();
+        //MAIN_isMissingIphase();
 
         //DC Injection Brake
         DCIB_processBrakeSigHandler();

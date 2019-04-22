@@ -872,7 +872,7 @@ void HAL_setParams(HAL_Handle handle,const USER_Params *pUserParams)
  {
    uint_least8_t cnt;
 #ifdef SUPPORT_V08_HW
-   _iq bias[2] = {_IQ(I_A_offset), _IQ(I_B_offset)};
+   _iq bias[3] = {_IQ(I_A_offset), _IQ(I_B_offset), _IQ(I_C_offset)}; // hrjung: set I offset
 
    for(cnt=0;cnt<HAL_getNumCurrentSensors(handle);cnt++)
      {
