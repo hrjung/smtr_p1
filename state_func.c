@@ -21,6 +21,7 @@
 #pragma CODE_SECTION(STA_calcResolution,"ramfuncs");
 #pragma CODE_SECTION(STA_setResolution,"ramfuncs");
 #pragma CODE_SECTION(STA_setNextFreq,"ramfuncs");
+#pragma CODE_SECTION(STA_getCurFreq,"ramfuncs");
 #endif
 
 /*******************************************************************************

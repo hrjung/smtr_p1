@@ -58,11 +58,13 @@
 #pragma CODE_SECTION(MAIN_calculateIrms,"ramfuncs");
 #pragma CODE_SECTION(MAIN_readCurrent,"ramfuncs");
 #pragma CODE_SECTION(xint1_isr,"ramfuncs");
+#pragma CODE_SECTION(MAIN_isMissingIphase,"ramfuncs");
 
 #pragma CODE_SECTION(MAIN_isSystemEnabled,"ramfuncs");
 #pragma CODE_SECTION(MAIN_avoidJumpSpeed,"ramfuncs");
 #pragma CODE_SECTION(MAIN_disableSystem,"ramfuncs");
 #pragma CODE_SECTION(MAIN_processDCBrake,"ramfuncs");
+
 #endif
 
 #include "uartstdio.h"
@@ -231,6 +233,7 @@ int for_rev_flag=0; //flag for forward <-> reverse drive
 uint16_t Vinst[3];
 
 uint16_t block_count=0;
+uint16_t miss_count = 0;
 #ifdef SUPPORT_I_RMS_MEASURE
 float_t array_Iu[I_RMS_SAMPLE_COUNT], array_Iv[I_RMS_SAMPLE_COUNT], array_Iw[I_RMS_SAMPLE_COUNT];
 float_t array_Vu[I_RMS_SAMPLE_COUNT], array_Vv[I_RMS_SAMPLE_COUNT], array_Vw[I_RMS_SAMPLE_COUNT];
@@ -546,7 +549,7 @@ inline void MAIN_readCurrent(void)
 
 #ifdef SUPPORT_I_RMS_MEASURE
 
-int MAIN_getSampleCountLimit(void)
+inline int MAIN_getSampleCountLimit(void)
 {
 	float_t freq=0.0;
 	//float_t pwm_freq[] = {4000.0, 8000.0, 12000.0, 16000.0};
@@ -622,7 +625,7 @@ inline void MAIN_calculateIrms(void)
 	//int i;
 	float_t bk_Iu=0.0, bk_Iw=0.0, bk_Iv=0.0;
 	float_t bk_Vu=0.0, bk_Vw=0.0, bk_Vv=0.0;
-	float_t bk_Vppu=0.0, bk_Vppw=0.0, bk_Vppv=0.0;
+	//float_t bk_Vppu=0.0, bk_Vppw=0.0, bk_Vppv=0.0;
 
 
 	if(i_pos >= I_RMS_SAMPLE_COUNT)
@@ -639,9 +642,9 @@ inline void MAIN_calculateIrms(void)
 	bk_Vv = array_Vv[i_pos];
 	bk_Vw = array_Vw[i_pos];
 
-	bk_Vppu = array_Vppu[i_pos];
-	bk_Vppv = array_Vppv[i_pos];
-	bk_Vppw = array_Vppw[i_pos];
+//	bk_Vppu = array_Vppu[i_pos];
+//	bk_Vppv = array_Vppv[i_pos];
+//	bk_Vppw = array_Vppw[i_pos];
 
 	array_Iu[i_pos] = internal_status.Iu_inst*internal_status.Iu_inst;
 	array_Iv[i_pos] = internal_status.Iv_inst*internal_status.Iv_inst;
@@ -653,9 +656,9 @@ inline void MAIN_calculateIrms(void)
 	array_Vw[i_pos] = internal_status.Vw_inst*internal_status.Vw_inst;
 
 	// phase to phase voltage
-	array_Vppu[i_pos] = (internal_status.Vu_inst-internal_status.Vv_inst)*(internal_status.Vu_inst-internal_status.Vv_inst);
-	array_Vppv[i_pos] = (internal_status.Vv_inst-internal_status.Vw_inst)*(internal_status.Vv_inst-internal_status.Vw_inst);
-	array_Vppw[i_pos] = (internal_status.Vw_inst-internal_status.Vu_inst)*(internal_status.Vw_inst-internal_status.Vu_inst);
+//	array_Vppu[i_pos] = (internal_status.Vu_inst-internal_status.Vv_inst)*(internal_status.Vu_inst-internal_status.Vv_inst);
+//	array_Vppv[i_pos] = (internal_status.Vv_inst-internal_status.Vw_inst)*(internal_status.Vv_inst-internal_status.Vw_inst);
+//	array_Vppw[i_pos] = (internal_status.Vw_inst-internal_status.Vu_inst)*(internal_status.Vw_inst-internal_status.Vu_inst);
 
 	total_Iu += array_Iu[i_pos];
 	total_Iv += array_Iv[i_pos];
@@ -665,9 +668,9 @@ inline void MAIN_calculateIrms(void)
 	total_Vv += array_Vv[i_pos];
 	total_Vw += array_Vw[i_pos];
 
-	total_Vppu += array_Vppu[i_pos];
-	total_Vppv += array_Vppv[i_pos];
-	total_Vppw += array_Vppw[i_pos];
+//	total_Vppu += array_Vppu[i_pos];
+//	total_Vppv += array_Vppv[i_pos];
+//	total_Vppw += array_Vppw[i_pos];
 
 	if(i_ready_flag) // calculate RMS after array is full
 	{
@@ -679,9 +682,9 @@ inline void MAIN_calculateIrms(void)
 		total_Vv -= bk_Vv;
 		total_Vw -= bk_Vw;
 
-		total_Vppu -= bk_Vppu;
-		total_Vppv -= bk_Vppv;
-		total_Vppw -= bk_Vppw;
+//		total_Vppu -= bk_Vppu;
+//		total_Vppv -= bk_Vppv;
+//		total_Vppw -= bk_Vppw;
 
 		internal_status.Irms[0] = sqrtf(total_Iu/(float_t)I_RMS_SAMPLE_COUNT);
 		internal_status.Irms[1] = sqrtf(total_Iv/(float_t)I_RMS_SAMPLE_COUNT);
@@ -691,9 +694,9 @@ inline void MAIN_calculateIrms(void)
 		internal_status.Vrms[1] = sqrtf(total_Vv/(float_t)I_RMS_SAMPLE_COUNT);
 		internal_status.Vrms[2] = sqrtf(total_Vw/(float_t)I_RMS_SAMPLE_COUNT);
 
-		internal_status.Vpprms[0] = sqrtf(total_Vppu/(float_t)I_RMS_SAMPLE_COUNT);
-		internal_status.Vpprms[1] = sqrtf(total_Vppv/(float_t)I_RMS_SAMPLE_COUNT);
-		internal_status.Vpprms[2] = sqrtf(total_Vppw/(float_t)I_RMS_SAMPLE_COUNT);
+//		internal_status.Vpprms[0] = sqrtf(total_Vppu/(float_t)I_RMS_SAMPLE_COUNT);
+//		internal_status.Vpprms[1] = sqrtf(total_Vppv/(float_t)I_RMS_SAMPLE_COUNT);
+//		internal_status.Vpprms[2] = sqrtf(total_Vppw/(float_t)I_RMS_SAMPLE_COUNT);
 	}
 	i_pos++;
 }
@@ -786,14 +789,17 @@ int MAIN_isOverCurrent(void)
 	return 0;
 }
 
+#define CURRENT_MISS_COUNT_LIMIT	100
+#define MISSING_PHASE_I_RMS			(0.1*USER_MOTOR_NO_LOAD_CURRENT)
 int MAIN_isMissingIphase(void)
 {
+	if(!MAIN_isSystemEnabled()) return 0;
 
 	// Iv phase is missing
-	if(internal_status.Irms[1] < MISSING_PHASE_RMS_VALUE)
+	if(internal_status.Irms[1] < MISSING_PHASE_I_RMS)
 	{
-		internal_status.Iu_miss_cnt++;
-		if(internal_status.Iu_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
+		internal_status.Iv_miss_cnt++;
+		if(internal_status.Iv_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
 		{
 			ERR_setTripInfo();
 			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
@@ -801,10 +807,10 @@ int MAIN_isMissingIphase(void)
 		}
 	}
 	else
-		internal_status.Iu_miss_cnt = 0;
+		internal_status.Iv_miss_cnt = 0;
 
 	// Iw phase is missing
-	if(internal_status.Irms[2] < MISSING_PHASE_RMS_VALUE)
+	if(internal_status.Irms[2] < MISSING_PHASE_I_RMS)
 	{
 		internal_status.Iw_miss_cnt++;
 		if(internal_status.Iw_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
@@ -818,10 +824,10 @@ int MAIN_isMissingIphase(void)
 		internal_status.Iw_miss_cnt = 0;
 
 	// Iu phase is missing
-	if(internal_status.Irms[2] == -internal_status.Irms[1])
+	if(fabsf(internal_status.Irms[2] - internal_status.Irms[1]) < MISSING_PHASE_I_RMS)
 	{
-		internal_status.Iw_miss_cnt++;
-		if(internal_status.Iw_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
+		internal_status.Iu_miss_cnt++;
+		if(internal_status.Iu_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
 		{
 			ERR_setTripInfo();
 			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
@@ -829,7 +835,7 @@ int MAIN_isMissingIphase(void)
 		}
 	}
 	else
-		internal_status.Iv_miss_cnt = 0;
+		internal_status.Iu_miss_cnt = 0;
 
 	return 0;
 }
@@ -1112,7 +1118,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -2274,7 +2280,13 @@ interrupt void mainISR(void)
   {
 	  MAIN_readCurrent();
 	  MAIN_calculateIrms();
-	  STA_setCurrent(MAIN_getIave()); //Iv_rms
+	  STA_setCurrent(MAIN_getIave());
+
+//	  if(miss_count > 20)
+//		  MAIN_isMissingIphase();
+//	  else
+//		  miss_count++;
+
   }
   //UTIL_testbit(0);
 
@@ -2664,6 +2676,7 @@ int MAIN_enableSystem(void)
 	STA_setNextFreq(iparam[FREQ_VALUE_INDEX].value.f);
 
 	block_count=0;
+	miss_count=0;
 
 	return result;
 }

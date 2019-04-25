@@ -56,9 +56,6 @@
 
 #define OVER_CURRENT_COUNT_LIMIT	20
 
-#define MISSING_PHASE_RMS_VALUE		(0.05)
-#define CURRENT_MISS_COUNT_LIMIT	10
-
 #define I_RMS_SAMPLE_COUNT			12
 
 // operation control

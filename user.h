@@ -142,7 +142,7 @@ extern "C" {
 //! \brief After initial board calibration these values should be updated for your specific hardware so they are available after compile in the binary to be loaded to the controller
 
 //for P2
-#define   I_A_offset    (0.0) //(2.9837)  // U
+#define   I_A_offset    (0.0)     // U
 #define   I_B_offset    (0.8466)  // V
 #define   I_C_offset    (0.8386)  // W
 
