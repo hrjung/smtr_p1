@@ -350,6 +350,7 @@ int OVL_processOverCurrentTrip(float_t cur_val)
 	return 0;
 }
 
+#if 0
 // valid resistance 150 ~ 500 ohm
 int REGEN_setRegenResistance(float_t resist)
 {
@@ -379,8 +380,9 @@ int REGEN_setRegenThermal(float_t value)
 
 	return 0;
 }
+#endif
 
-int REGEN_setRegenBand(uint16_t value)
+int REGEN_setRegenBand(uint32_t value)
 {
 	if(value > 150) return 1;
 
@@ -394,6 +396,16 @@ int REGEN_getDuty(void)
 	return regen_duty;
 }
 
+#if 1
+int REGEN_setRegenDuty(uint32_t value)
+{
+	if(value > 100) return 1;
+
+	iparam[REGEN_DUTY_INDEX].value.l = value;
+
+	return 0;
+}
+#else
 int REGEN_setRegenDuty(float_t dc_value)
 {
 	//int i;
@@ -402,6 +414,7 @@ int REGEN_setRegenDuty(float_t dc_value)
 	exp_duty = dev_const.regen_max_V/dc_value;
 	return (int)(exp_duty*100.0); // rounded integer
 }
+#endif
 
 int REGEN_isEnabled(void)
 {

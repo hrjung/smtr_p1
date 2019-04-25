@@ -115,7 +115,7 @@ int DRV_setDecelTime(float_t value)
 //{
 //	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
 //}
-
+//
 //int DRV_isFocControl(void)
 //{
 //	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
@@ -123,12 +123,12 @@ int DRV_setDecelTime(float_t value)
 
 void DRV_enableVfControl(void)
 {
-	iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL;
+	//iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL;
 }
 
 void DRV_enableFocControl(void)
 {
-	iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL;
+	//iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL;
 }
 
 int DRV_setTorqueLimit(float_t limit)
@@ -149,6 +149,7 @@ int DRV_setEnergySave(int method)
 	return 0;
 }
 
+#if 0
 int DRV_setVoltageBoost(float_t value)
 {
 	if(value < 0.0 || value > 15.0) return 1;
@@ -161,6 +162,7 @@ int DRV_setVoltageBoost(float_t value)
 
 	return 0;
 }
+#endif
 
 int DRV_setPwmFrequency(int value)
 {

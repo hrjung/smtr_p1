@@ -39,10 +39,11 @@ extern int OVL_setTripLevel(uint16_t level);
 extern int OVL_setWarningTime(uint16_t dur);
 extern int OVL_setTripTime(uint16_t dur);
 
-extern int REGEN_setRegenResistance(float_t resist);
-extern int REGEN_setRegenResistancePower(uint16_t power);
-extern int REGEN_setRegenThermal(float_t value);
-extern int REGEN_setRegenBand(uint16_t value);
+//extern int REGEN_setRegenResistance(float_t resist);
+//extern int REGEN_setRegenResistancePower(uint16_t power);
+//extern int REGEN_setRegenThermal(float_t value);
+extern int REGEN_setRegenDuty(uint32_t value);
+extern int REGEN_setRegenBand(uint32_t value);
 
 //extern int OSC_setDampImpact(int value);
 //extern int OSC_setDampFilter(int value);

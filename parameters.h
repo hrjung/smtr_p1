@@ -61,53 +61,61 @@ enum {
 #define PARAMETER_TYPE_LONG			0
 #define PARAMETER_TYPE_FLOAT		1
 
-#define	FREQ_VALUE_INDEX			0
-#define ACCEL_TIME_INDEX        	1
-#define DECEL_TIME_INDEX        	2
-#define DIRECTION_INDEX        		3
-#define VF_FOC_SEL_INDEX			4
-#define ENERGY_SAVE_INDEX			5
-#define PWM_FREQ_INDEX 				6
-#define JUMP_ENABLE0_INDEX			7
-#define JUMP_ENABLE1_INDEX			8
-#define JUMP_ENABLE2_INDEX			9
-#define JUMP_LOW0_INDEX 			10
-#define JUMP_LOW1_INDEX 			11
-#define JUMP_LOW2_INDEX 			12
-#define JUMP_HIGH0_INDEX 			13
-#define JUMP_HIGH1_INDEX 			14
-#define JUMP_HIGH2_INDEX 			15
-#define V_BOOST_INDEX				16
-#define FOC_TORQUE_LIMIT_INDEX		17
-#define BRK_TYPE_INDEX				18
-#define BRK_FREQ_INDEX 				19
-#define BRK_DCI_START_FREQ_INDEX	20
-#define BRK_DCI_BLOCK_TIME_INDEX	21
-#define BRK_DCI_BRAKING_TIME_INDEX	22
-#define BRK_DCI_BRAKING_RATE_INDEX	23
-#define OVL_WARN_LIMIT_INDEX		24
-#define OVL_WR_DURATION_INDEX 		25
-#define OVL_ENABLE_INDEX			26
-#define OVL_TR_LIMIT_INDEX			27
-#define OVL_TR_DURATION_INDEX		28
-#define REGEN_RESISTANCE_INDEX		29
-#define REGEN_THERMAL_INDEX			30
-#define REGEN_POWER_INDEX			31
-#define REGEN_BAND_INDEX 			32
-#define FAN_COMMAND_INDEX 			33
+enum {
+	FREQ_VALUE_INDEX = 0,
+	ACCEL_TIME_INDEX,
+	DECEL_TIME_INDEX,
+	DIRECTION_INDEX,
+// VF_FOC_SEL_INDEX,
+	ENERGY_SAVE_INDEX,
 
-#define STATOR_RESISTANCE_INDEX		34
-#define ROTATOR_RESISTANCE_INDEX	35
-#define INDUCTANCE_INDEX			36
-#define NOLOAD_CURRENT_INDEX		37
-#define RATED_CURRENT_INDEX			38
-#define POLES_INDEX					39
-#define INPUT_VOLTAGE_INDEX			40
-#define RATED_FREQ_INDEX			41
+	PWM_FREQ_INDEX,		// 5
+	JUMP_ENABLE0_INDEX,
+	JUMP_ENABLE1_INDEX,
+	JUMP_ENABLE2_INDEX,
+	JUMP_LOW0_INDEX,
 
-#define INV_RUN_STOP_INDEX			42
+	JUMP_LOW1_INDEX,	//10
+	JUMP_LOW2_INDEX,
+	JUMP_HIGH0_INDEX,
+	JUMP_HIGH1_INDEX,
+	JUMP_HIGH2_INDEX,
 
-#define	INV_PARAM_INDEX_MAX			43
+//#define V_BOOST_INDEX				16
+	FOC_TORQUE_LIMIT_INDEX,	//15
+	BRK_TYPE_INDEX,
+	BRK_FREQ_INDEX,
+	BRK_DCI_START_FREQ_INDEX,
+	BRK_DCI_BLOCK_TIME_INDEX,
+
+	BRK_DCI_BRAKING_TIME_INDEX,	//20
+	BRK_DCI_BRAKING_RATE_INDEX,
+	OVL_WARN_LIMIT_INDEX,
+	OVL_WR_DURATION_INDEX,
+	OVL_ENABLE_INDEX,
+
+	OVL_TR_LIMIT_INDEX,			//25
+	OVL_TR_DURATION_INDEX,
+//	REGEN_RESISTANCE_INDEX,
+//	REGEN_THERMAL_INDEX,
+//	REGEN_POWER_INDEX,
+	REGEN_DUTY_INDEX,
+	REGEN_BAND_INDEX,
+	FAN_COMMAND_INDEX,
+
+	STATOR_RESISTANCE_INDEX,	//30
+	ROTATOR_RESISTANCE_INDEX,
+	INDUCTANCE_INDEX,
+	NOLOAD_CURRENT_INDEX,
+	RATED_CURRENT_INDEX,
+
+	POLES_INDEX,				//35
+	INPUT_VOLTAGE_INDEX,
+	RATED_FREQ_INDEX,
+	INV_RUN_STOP_INDEX,
+
+	INV_PARAM_INDEX_MAX,		//39
+};
 
 
 extern inv_parameter_st iparam[];
@@ -121,7 +129,7 @@ extern int PARAM_setFreq(union32_st value);
 extern int PARAM_setAccel(union32_st value);
 extern int PARAM_setDecel(union32_st value);
 extern int PARAM_setDirection(union32_st value);
-extern int PARAM_setVfFoc(union32_st value);
+//extern int PARAM_setVfFoc(union32_st value);
 extern int PARAM_setEnergySave(union32_st value);
 extern int PARAM_setPwmFreq(union32_st value);
 extern int PARAM_setEnableJump0(union32_st value);
@@ -133,7 +141,7 @@ extern int PARAM_setJumpFreqLow2(union32_st value);
 extern int PARAM_setJumpFreqHigh0(union32_st value);
 extern int PARAM_setJumpFreqHigh1(union32_st value);
 extern int PARAM_setJumpFreqHigh2(union32_st value);
-extern int PARAM_setVoltageBoost(union32_st value);
+//extern int PARAM_setVoltageBoost(union32_st value);
 extern int PARAM_setTorqueLimit(union32_st value);
 extern int PARAM_setBrakeType(union32_st value);
 extern int PARAM_setBrakeFreq(union32_st value);
@@ -146,9 +154,10 @@ extern int PARAM_setOvlWarnTime(union32_st value);
 extern int PARAM_setOvlEnableTrip(union32_st value);
 extern int PARAM_setOvlTripLevel(union32_st value);
 extern int PARAM_setOvlTripTime(union32_st value);
-extern int PARAM_setRegenResistance(union32_st value);
-extern int PARAM_setRegenResistThermal(union32_st value);
-extern int PARAM_setRegenResistPower(union32_st value);
+//extern int PARAM_setRegenResistance(union32_st value);
+//extern int PARAM_setRegenResistThermal(union32_st value);
+//extern int PARAM_setRegenResistPower(union32_st value);
+extern int PARAM_setRegenDuty(union32_st value);
 extern int PARAM_setRegenBand(union32_st value);
 extern int PARAM_setFanControl(union32_st value);
 
@@ -176,12 +185,14 @@ inline int FREQ_isJumpFreqUsed(int index)
 
 inline int DRV_isVfControl(void)
 {
-	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
+	//return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
+	return 0;
 }
 
 inline int DRV_isFocControl(void)
 {
-	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
+	//return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
+	return 1;
 }
 
 inline int BRK_isDCIBrakeEnabled(void)

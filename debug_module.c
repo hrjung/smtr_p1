@@ -245,7 +245,7 @@ STATIC int dbg_setFreq(int argc, char *argv[]);
 STATIC int dbg_setJumpFreq(int argc, char *argv[]);
 STATIC int dbg_setAccelTime(int argc, char *argv[]);
 STATIC int dbg_setEnergySave(int argc, char *argv[]);
-STATIC int dbg_setVoltVoost(int argc, char *argv[]);
+//STATIC int dbg_setVoltVoost(int argc, char *argv[]);
 
 STATIC int dbg_setDriveControl(int argc, char *argv[]);
 
@@ -316,7 +316,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 			"   time show : display time settings"
 	},
 	{"engy", dbg_setEnergySave, " engy 0,1 : energy save off/on"},
-	{"vst", dbg_setVoltVoost, " vst rate(0-1000) : v_boost"},
+	//{"vst", dbg_setVoltVoost, " vst rate(0-1000) : v_boost"},
 	{"drv", dbg_setDriveControl, " Main Drive Control setting\n" \
 				"   drv pwm freq(0~3): set pwm frequency \n"  \
 				"   drv show : display drive control settings"
@@ -390,7 +390,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"jmpf", dbg_setJumpFreq, " jump freq setting"},
 	{"time", dbg_setAccelTime, " Accel/Decel time"},
 	{"engy", dbg_setEnergySave, " energy save off/on"},
-	{"vst", dbg_setVoltVoost, " v_boost"},
+	//{"vst", dbg_setVoltVoost, " v_boost"},
 	{"drv", dbg_setDriveControl, " Main Drive"},
 
 	{"start", dbg_runMotor, " start"},
@@ -556,10 +556,12 @@ STATIC void dbg_showOverloadParam(void)
 
 STATIC void dbg_showRegenParam(void)
 {
-	float_t value = sqrtf(0.9*150.0*50.0);
-	UARTprintf("\t resistance ohm %f power %d \n", iparam[REGEN_RESISTANCE_INDEX].value.f, (int)iparam[REGEN_POWER_INDEX].value.l);
-	UARTprintf("\t thermal %f band %d \n", iparam[REGEN_THERMAL_INDEX].value.f, (int)iparam[REGEN_BAND_INDEX].value.l);
-	UARTprintf("\t V_max %f %f regen_duty %d \n", dev_const.regen_max_V, value, REGEN_getDuty());
+	//float_t value = sqrtf(0.9*150.0*50.0);
+//	UARTprintf("\t resistance ohm %f, power %d \n", iparam[REGEN_RESISTANCE_INDEX].value.f, (int)iparam[REGEN_POWER_INDEX].value.l);
+//	UARTprintf("\t thermal %f, band %d \n", iparam[REGEN_THERMAL_INDEX].value.f, (int)iparam[REGEN_BAND_INDEX].value.l);
+//	UARTprintf("\t V_max %f, %f, regen_duty %d \n", dev_const.regen_max_V, value, REGEN_getDuty());
+	UARTprintf("\t duty %d, band %d \n", iparam[REGEN_DUTY_INDEX].value.l, (int)iparam[REGEN_BAND_INDEX].value.l);
+	UARTprintf("\t V_max %f, regen_duty %d \n", dev_const.regen_max_V, REGEN_getDuty());
 }
 
 
@@ -741,6 +743,7 @@ save_err:
 	return 1;
 }
 
+#if 0
 STATIC int dbg_setVoltVoost(int argc, char *argv[])
 {
 	int value;
@@ -768,6 +771,7 @@ boost_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SET_V_BOOST].pcHelp);
 	return 1;
 }
+#endif
 
 STATIC int dbg_setDriveControl(int argc, char *argv[])
 {
@@ -776,6 +780,7 @@ STATIC int dbg_setDriveControl(int argc, char *argv[])
 
     if(argc != 2 && argc != 3) goto drv_err;
 
+#if 0
     if(argc == 2)
     {
     	if(strcmp("vf", argv[1]) == 0)
@@ -791,6 +796,7 @@ STATIC int dbg_setDriveControl(int argc, char *argv[])
     	else
     		goto drv_err;
     }
+#endif
 
     if(argc == 3)
     {
@@ -1353,7 +1359,7 @@ STATIC int dbg_setRegen(int argc, char *argv[])
 	uint16_t value, power;
 	union32_st data;
 
-	if(argc < 2 && argc > 4) goto regen_err;
+	if(argc < 2 && argc > 3) goto regen_err;
 
 	if(argc == 2)
 	{
@@ -1366,26 +1372,17 @@ STATIC int dbg_setRegen(int argc, char *argv[])
 			goto regen_err;
 	}
 
-	if(argc == 3) goto regen_err;
-
-	if(argc == 4)
+	if(argc == 3)
 	{
 		value = (uint16_t)atoi(argv[2]);
-		power = (uint16_t)atoi(argv[3]);
-		if(strcmp(argv[1], "res")==0)
+		if(strcmp(argv[1], "duty")==0)
 		{
-			data.f = (float_t)value;
-			dbg_setQueCommand(REGEN_RESISTANCE_INDEX, data);
-
-			data.l = (uint32_t)power;
-			dbg_setQueCommand(REGEN_POWER_INDEX, data);
+			data.l = (uint32_t)value;
+			dbg_setQueCommand(REGEN_DUTY_INDEX, data);
 		}
-		else if(strcmp(argv[1], "thml")==0)
+		else if(strcmp(argv[1], "band")==0)
 		{
-			data.f = (float_t)value;
-			dbg_setQueCommand(REGEN_THERMAL_INDEX, data);
-
-			data.l = (uint32_t)power;
+			data.l = (uint32_t)value;
 			dbg_setQueCommand(REGEN_BAND_INDEX, data);
 		}
 		else
@@ -2022,8 +2019,9 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 //    	uint16_t   pwm_12k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/12.0)) >> 1;
 //    	uint16_t   pwm_16k = (uint16_t)(gUserParams.systemFreq_MHz*(1000.0/16.0)) >> 1;
 
-    	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)DRV_getPwmFrequency());
+//    	UARTprintf("current control %d, pwm=%d kHz \n", (int)iparam[VF_FOC_SEL_INDEX].value.l, (int)DRV_getPwmFrequency());
     	//UARTprintf(" PWM period 4k:%d, 8k:%d 12k:%d, 16k:%d\n", pwm_4k, pwm_8k, pwm_12k, pwm_16k);
+    	UARTprintf(" pwm=%d kHz \n", (int)DRV_getPwmFrequency());
     	UARTprintf(" I offset %f, %f, %f \n", _IQtoF(i_offset[0]), _IQtoF(i_offset[1]), _IQtoF(i_offset[2]));
     	UARTprintf(" V offset %f, %f, %f \n", _IQtoF(v_offset[0]), _IQtoF(v_offset[1]), _IQtoF(v_offset[2]));
     	UARTprintf(" Vs %f A, VsRef=%f A \n", _IQtoF(gMotorVars.Vs), _IQtoF(gMotorVars.VsRef));

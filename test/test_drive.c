@@ -85,6 +85,7 @@ void test_controlDrive(void)
 	result = DRV_setEnergySave(ESAVE_BOTH+1);
 	TEST_ASSERT_EQUAL_INT(exp, result);
 
+#if 0
 	// set Vmin boost correct value
 	exp = 0;
 	result = DRV_setVoltageBoost(0.0);
@@ -101,6 +102,7 @@ void test_controlDrive(void)
 	exp = 1;
 	result = DRV_setVoltageBoost(20.1);
 	TEST_ASSERT_EQUAL_INT(exp, result);
+#endif
 
 	// set PWM freq correct value
 	exp = 0;

@@ -886,10 +886,10 @@ _iq MAIN_avoidJumpSpeed(_iq spd_pu)
 	return conv_spd_pu;
 }
 
-void MAIN_setRegenDuty(float_t resist, uint32_t power)
-{
-	dev_const.regen_max_V = sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
-}
+//void MAIN_setRegenDuty(float_t resist, uint32_t power)
+//{
+//	dev_const.regen_max_V = sqrtf(iparam[REGEN_RESISTANCE_INDEX].value.f*(float_t)iparam[REGEN_POWER_INDEX].value.l);
+//}
 
 uint16_t Kp_for_fw=0;
 void MAIN_setSpeedGain(int fw_enabled)
@@ -927,7 +927,7 @@ void MAIN_setDeviceConstant(void)
 
 	FREQ_updateJumpSpeed();
 
-	MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
+	//MAIN_setRegenDuty(iparam[REGEN_RESISTANCE_INDEX].value.f, iparam[REGEN_POWER_INDEX].value.l);
 
 	// variable setting from parameter
 	if(iparam[DIRECTION_INDEX].value.l == 0)
@@ -964,10 +964,18 @@ void MAIN_setDeviceConstant(void)
 	internal_status.Vv_inst = 0.0;
 	internal_status.Vw_inst = 0.0;
 
+	internal_status.Iu_miss_cnt = 0;
+	internal_status.Iv_miss_cnt = 0;
+	internal_status.Iw_miss_cnt = 0;
+
 	internal_status.Vdc_inst = 0.0;
+	internal_status.angle_pu = 0.0;
 
 	internal_status.Vab_pu[0] = 0.0;
 	internal_status.Vab_pu[1] = 0.0;
+
+	internal_status.phasor[0] = 0.0;
+	internal_status.phasor[1] = 0.0;
 
 	internal_status.pwmData[0] = 0.0;
 	internal_status.pwmData[1] = 0.0;
@@ -975,15 +983,17 @@ void MAIN_setDeviceConstant(void)
 
 	internal_status.accel_resol = 0.0;
 	internal_status.decel_resol = 0.0;
+	internal_status.rev_resol = 0.0;
 
 	internal_status.spd_rpm = 0;
 
-	internal_status.ipm_temp = 0.0;
-	internal_status.mtr_temp = 0.0;
+	internal_status.ipm_temp = 0;
+	internal_status.mtr_temp = 0;
 
 	internal_status.relay_enabled = 0;
 	internal_status.regen_enabled = 0;
 	internal_status.trip_happened = 0;
+	internal_status.fan_enabled = 0;
 	internal_status.shaft_brake_enabled = 0;
 
 	internal_status.oc_count = 0;
@@ -1118,7 +1128,7 @@ void init_global(void)
 	gMotorVars.Flag_enableFieldWeakening = false;
 	gMotorVars.Flag_enableRsRecalc = false; // false -> true
 	gMotorVars.Flag_enableUserParams = true;
-	gMotorVars.Flag_enableOffsetcalc = true; // false -> true
+	gMotorVars.Flag_enableOffsetcalc = false; // false -> true
 	gMotorVars.Flag_enablePowerWarp = false;
 	gMotorVars.Flag_enableSpeedCtrl = false;
 
@@ -1418,10 +1428,10 @@ void main(void)
   vs_freqHandle = VS_FREQ_init(&vs_freq,sizeof(vs_freq));
   VS_FREQ_setParams(vs_freqHandle,  gUserParams.iqFullScaleFreq_Hz, gUserParams.iqFullScaleVoltage_V, gUserParams.maxVsMag_pu);
 
-  if(iparam[V_BOOST_INDEX].value.f == 0.0)
+//  if(iparam[V_BOOST_INDEX].value.f == 0.0)
 	  VS_FREQ_setProfile(vs_freqHandle, USER_MOTOR_FREQ_LOW, USER_MOTOR_FREQ_HIGH, gUserParams.VF_volt_min, gUserParams.VF_volt_max);
-  else
-	  MAIN_applyBoost();
+//  else
+//	  MAIN_applyBoost();
 
   {
 #ifdef SUPPORT_VAR_PWM_FREQ
@@ -2737,6 +2747,7 @@ int MAIN_setReverseDirection(void)
 	return 0;
 }
 
+#if 0
 int MAIN_applyBoost(void)
 {
 	float_t voost_value = gUserParams.VF_volt_max*iparam[V_BOOST_INDEX].value.f/100.0;
@@ -2746,6 +2757,7 @@ int MAIN_applyBoost(void)
 
 	return 0;
 }
+#endif
 
 float_t MAIN_getPwmFrequency(void)
 {

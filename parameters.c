@@ -38,7 +38,7 @@ int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
 		PARAM_setAccel, 		//ACCEL_TIME_INDEX
 		PARAM_setDecel, 		//DECEL_TIME_INDEX
 		PARAM_setDirection, 	//DIRECTION_INDEX
-		PARAM_setVfFoc,			//VF_FOC_SEL_INDEX
+//		PARAM_setVfFoc,			//VF_FOC_SEL_INDEX
 		PARAM_setEnergySave,	//ENERGY_SAVE_INDEX
 		PARAM_setPwmFreq,		//PWM_FREQ_INDEX
 
@@ -51,7 +51,7 @@ int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
 		PARAM_setJumpFreqHigh0, //JUMP_HIGH0_INDEX
 		PARAM_setJumpFreqHigh1, //JUMP_HIGH1_INDEX
 		PARAM_setJumpFreqHigh2, //JUMP_HIGH2_INDEX
-		PARAM_setVoltageBoost,	//V_BOOST_INDEX
+		//PARAM_setVoltageBoost,	//V_BOOST_INDEX
 		PARAM_setTorqueLimit,	//FOC_TORQUE_LIMIT_INDEX
 
 		PARAM_setBrakeType, 	//BRK_TYPE_INDEX
@@ -67,9 +67,10 @@ int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
 		PARAM_setOvlTripLevel, 	//OVL_TR_LIMIT_INDEX
 		PARAM_setOvlTripTime, 	//OVL_TR_DURATION_INDEX
 
-		PARAM_setRegenResistance,		//REGEN_RESISTANCE_INDEX
-		PARAM_setRegenResistThermal,	//REGEN_THERMAL_INDEX
-		PARAM_setRegenResistPower,		//REGEN_POWER_INDEX
+//		PARAM_setRegenResistance,		//REGEN_RESISTANCE_INDEX
+//		PARAM_setRegenResistThermal,	//REGEN_THERMAL_INDEX
+//		PARAM_setRegenResistPower,		//REGEN_POWER_INDEX
+		PARAM_setRegenDuty,				//REGEN_DUTY_INDEX
 		PARAM_setRegenBand, 			//REGEN_BAND_INDEX
 
 		PARAM_setFanControl,	//FAN_COMMAND_INDEX
@@ -130,8 +131,8 @@ void PARAM_init(void)
 	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[DIRECTION_INDEX].value.l = 0;
 
-	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL; //VF_CONTROL;
+//	iparam[VF_FOC_SEL_INDEX].type = PARAMETER_TYPE_LONG;
+//	iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL; //VF_CONTROL;
 
 	iparam[ENERGY_SAVE_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[ENERGY_SAVE_INDEX].value.l = ESAVE_UNUSED; //  ESAVE_BOTH;
@@ -166,8 +167,8 @@ void PARAM_init(void)
 	iparam[JUMP_HIGH2_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[JUMP_HIGH2_INDEX].value.f = 1.0;
 
-	iparam[V_BOOST_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[V_BOOST_INDEX].value.f = 0.0;
+//	iparam[V_BOOST_INDEX].type = PARAMETER_TYPE_FLOAT;
+//	iparam[V_BOOST_INDEX].value.f = 0.0;
 
 	iparam[FOC_TORQUE_LIMIT_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[FOC_TORQUE_LIMIT_INDEX].value.f = 180.0;
@@ -205,14 +206,17 @@ void PARAM_init(void)
 	iparam[OVL_TR_DURATION_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[OVL_TR_DURATION_INDEX].value.l = 30;
 
-	iparam[REGEN_RESISTANCE_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[REGEN_RESISTANCE_INDEX].value.f = 200.0;
+//	iparam[REGEN_RESISTANCE_INDEX].type = PARAMETER_TYPE_FLOAT;
+//	iparam[REGEN_RESISTANCE_INDEX].value.f = 200.0;
+//
+//	iparam[REGEN_THERMAL_INDEX].type = PARAMETER_TYPE_FLOAT;
+//	iparam[REGEN_THERMAL_INDEX].value.f = 1000.0;
+//
+//	iparam[REGEN_POWER_INDEX].type = PARAMETER_TYPE_LONG;
+//	iparam[REGEN_POWER_INDEX].value.l = 400;
 
-	iparam[REGEN_THERMAL_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[REGEN_THERMAL_INDEX].value.f = 1000.0;
-
-	iparam[REGEN_POWER_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[REGEN_POWER_INDEX].value.l = 400;
+	iparam[REGEN_DUTY_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[REGEN_DUTY_INDEX].value.l = 30;
 
 	iparam[REGEN_BAND_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[REGEN_BAND_INDEX].value.l = 12;
@@ -512,6 +516,7 @@ int PARAM_setJumpFreqHigh2(union32_st value)
 	return result;
 }
 
+#if 0
 int PARAM_setVoltageBoost(union32_st value)
 {
 	float_t fdata = value.f;
@@ -525,6 +530,7 @@ int PARAM_setVoltageBoost(union32_st value)
 
 	return result;
 }
+#endif
 
 int PARAM_setTorqueLimit(union32_st value)
 {
@@ -667,6 +673,7 @@ int PARAM_setOvlTripTime(union32_st value)
 	return result;
 }
 
+#if 0
 int PARAM_setRegenResistance(union32_st value)
 {
 	float_t fdata = value.f;
@@ -705,6 +712,20 @@ int PARAM_setRegenResistPower(union32_st value)
 
 	return result;
 }
+#endif
+
+int PARAM_setRegenDuty(union32_st value)
+{
+	uint32_t ldata = value.l;
+	int result;
+
+	if(MAIN_isSystemEnabled()) return 1;
+
+	result = REGEN_setRegenDuty(ldata);
+	UARTprintf("set regen duty %d is %s\n", (int)ldata, res_str[result]);
+
+	return result;
+}
 
 int PARAM_setRegenBand(union32_st value)
 {
@@ -713,8 +734,8 @@ int PARAM_setRegenBand(union32_st value)
 
 	if(MAIN_isSystemEnabled()) return 1;
 
-	result = REGEN_setRegenBand((uint16_t)ldata);
-	UARTprintf("set regen reduce %d is %s\n", (int)ldata, res_str[result]);
+	result = REGEN_setRegenBand(ldata);
+	UARTprintf("set regen band %d is %s\n", (int)ldata, res_str[result]);
 
 	return result;
 }
