@@ -131,6 +131,7 @@ void DRV_enableFocControl(void)
 	//iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL;
 }
 
+#if 0
 int DRV_setTorqueLimit(float_t limit)
 {
 	if(limit < 100.0 || limit > 220.0) return 0;
@@ -139,6 +140,7 @@ int DRV_setTorqueLimit(float_t limit)
 
 	return 0;
 }
+#endif
 
 int DRV_setEnergySave(int method)
 {

@@ -52,7 +52,7 @@ int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
 		PARAM_setJumpFreqHigh1, //JUMP_HIGH1_INDEX
 		PARAM_setJumpFreqHigh2, //JUMP_HIGH2_INDEX
 		//PARAM_setVoltageBoost,	//V_BOOST_INDEX
-		PARAM_setTorqueLimit,	//FOC_TORQUE_LIMIT_INDEX
+		//PARAM_setTorqueLimit,	//FOC_TORQUE_LIMIT_INDEX
 
 		PARAM_setBrakeType, 	//BRK_TYPE_INDEX
 		PARAM_setBrakeFreq, 	//BRK_FREQ_INDEX
@@ -170,8 +170,8 @@ void PARAM_init(void)
 //	iparam[V_BOOST_INDEX].type = PARAMETER_TYPE_FLOAT;
 //	iparam[V_BOOST_INDEX].value.f = 0.0;
 
-	iparam[FOC_TORQUE_LIMIT_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[FOC_TORQUE_LIMIT_INDEX].value.f = 180.0;
+//	iparam[FOC_TORQUE_LIMIT_INDEX].type = PARAMETER_TYPE_FLOAT;
+//	iparam[FOC_TORQUE_LIMIT_INDEX].value.f = 180.0;
 
 	iparam[BRK_TYPE_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[BRK_TYPE_INDEX].value.l = REDUCE_SPEED_BRAKE;
@@ -530,7 +530,7 @@ int PARAM_setVoltageBoost(union32_st value)
 
 	return result;
 }
-#endif
+
 
 int PARAM_setTorqueLimit(union32_st value)
 {
@@ -541,6 +541,7 @@ int PARAM_setTorqueLimit(union32_st value)
 
 	return result;
 }
+#endif
 
 int PARAM_setBrakeType(union32_st value)
 {
