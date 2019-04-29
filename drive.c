@@ -23,6 +23,7 @@
 #include "freq.h"
 //#include "err_trip.h"
 
+
 /*******************************************************************************
  * MACROS
  */
@@ -70,25 +71,6 @@ extern uint16_t pwm_freq_updated;
  *  ======== public function ========
  */
 
-float_t DRV_calculateAccelRate_krpm(float_t time, float_t diff)
-{
-	float_t spd_rpm, rate_krpm; //spd_range_rpm;
-//	int freq_range;
-
-	//calculate based on frequency to RPM
-	//spd_range_rpm = (float)STA_getSpeedRange();
-	//rate_krpm = spd_range_rpm/(time_100msec * 100); // scale to 1ms unit
-
-	//spd_rpm = FREQ_convertToSpeed(FREQ_getFreqRange()); // max ~ min
-	spd_rpm = FREQ_convertToSpeed(diff);
-	rate_krpm = spd_rpm/(time * 1000.0); // scale to 1ms unit
-
-	UARTprintf("Accel rate = %f\n", rate_krpm);
-	if(rate_krpm == 0.0)
-		UARTprintf("Accel rate is too small\n");
-	return rate_krpm;
-}
-
 int DRV_setAccelTime(float_t value)
 {
 	if(value < MIN_ACCEL_TIME || value > MAX_ACCEL_TIME) return 1;
@@ -109,6 +91,40 @@ int DRV_setDecelTime(float_t value)
 	//STA_setResolution(DECEL, DRV_calculateAccelRate_krpm(value));
 
 	return 0;
+}
+
+#ifdef SUPPORT_ACCEL_TIME_BASE
+inline int DRV_isAccelTimeBaseMaxFreq(void)
+{
+	return(iparam[ACCEL_BASE_INDEX].value.l == ACC_TIME_BASE_MAX_FREQ);
+}
+
+int DRV_setAccelTimeBase(uint16_t base)
+{
+	if(base > ACC_TIME_BASE_NEXT_FREQ) return 1; // 0 or 1
+
+	iparam[ACCEL_BASE_INDEX].value.l = (uint32_t)base;
+
+	return 0;
+}
+#endif
+
+
+float_t DRV_calculateAccelRate_krpm(float_t time, float_t diff)
+{
+	float_t spd_rpm, rate_krpm; //spd_range_rpm;
+
+#ifdef SUPPORT_ACCEL_TIME_BASE
+	if(DRV_isAccelTimeBaseMaxFreq())
+		diff = FREQ_getMaxFreqValue();
+#endif
+	spd_rpm = FREQ_convertToSpeed(diff);
+	rate_krpm = spd_rpm/(time * 1000.0); // scale to 1ms unit
+
+	UARTprintf("Accel rate = %f\n", rate_krpm);
+	if(rate_krpm == 0.0)
+		UARTprintf("Accel rate is too small\n");
+	return rate_krpm;
 }
 
 //int DRV_isVfControl(void)

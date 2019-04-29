@@ -35,8 +35,11 @@
 
 int (*iparam_func[INV_PARAM_INDEX_MAX])(union32_st value) = {
 		PARAM_setFreq, 			//FREQ_VALUE_INDEX
+		PARAM_setMaxFreq,		//MAX_FREQ_INDEX
 		PARAM_setAccel, 		//ACCEL_TIME_INDEX
 		PARAM_setDecel, 		//DECEL_TIME_INDEX
+		PARAM_setAccelTimeBase, //ACCEL_BASE_INDEX
+
 		PARAM_setDirection, 	//DIRECTION_INDEX
 //		PARAM_setVfFoc,			//VF_FOC_SEL_INDEX
 		PARAM_setEnergySave,	//ENERGY_SAVE_INDEX
@@ -122,11 +125,17 @@ void PARAM_init(void)
 	iparam[FREQ_VALUE_INDEX].value.f = 20.0;
 	}
 
+	iparam[MAX_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
+	iparam[MAX_FREQ_INDEX].value.f = 200.0;
+
 	iparam[ACCEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[ACCEL_TIME_INDEX].value.f = 10.0;
 
 	iparam[DECEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[DECEL_TIME_INDEX].value.f = 10.0;
+
+	iparam[ACCEL_BASE_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[ACCEL_BASE_INDEX].value.l = 0;
 
 	iparam[DIRECTION_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[DIRECTION_INDEX].value.l = 0;
@@ -274,8 +283,8 @@ void PARAM_init(void)
 	iparam[RATED_FREQ_INDEX].value.l = USER_MOTOR_RATED_FREQUENCY;
 #endif
 
-	iparam[INV_RUN_STOP_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[INV_RUN_STOP_INDEX].value.l = 0; // default stop
+	iparam[INV_RUN_STOP_CMD_INDEX].type = PARAMETER_TYPE_LONG;
+	iparam[INV_RUN_STOP_CMD_INDEX].value.l = 0; // default stop
 
 	// error parameter
 	PARAM_initErrInfo();
@@ -315,6 +324,18 @@ int PARAM_setFreq(union32_st value)
 	return result;
 }
 
+int PARAM_setMaxFreq(union32_st value)
+{
+	float_t freq = value.f;
+	int result;
+
+	result = FREQ_setMaxFreqValue(freq);
+
+	UARTprintf("set max frequency=%f, result=%s\n", freq, res_str[result]);
+
+	return result;
+}
+
 int PARAM_setAccel(union32_st value)
 {
 	float_t acc_rate = value.f;
@@ -337,6 +358,19 @@ int PARAM_setDecel(union32_st value)
 	return result;
 }
 
+#ifdef SUPPORT_ACCEL_TIME_BASE
+int PARAM_setAccelTimeBase(union32_st value)
+{
+	uint16_t base = (uint16_t)value.l;
+	int result;
+
+	result = DRV_setAccelTimeBase(base);
+	UARTprintf("set accel time base=%d, result=%s\n", base, res_str[result]);
+
+	return result;
+}
+#endif
+
 int PARAM_setDirection(union32_st value)
 {
 	uint16_t dir = (uint16_t)value.l;
@@ -357,6 +391,7 @@ int PARAM_setDirection(union32_st value)
 	return result;
 }
 
+#if 0
 int PARAM_setVfFoc(union32_st value)
 {
 	uint16_t ctrl_type = (uint16_t)value.l;
@@ -379,6 +414,7 @@ int PARAM_setVfFoc(union32_st value)
 
 	return result;
 }
+#endif
 
 int PARAM_setEnergySave(union32_st value)
 {

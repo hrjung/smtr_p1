@@ -284,7 +284,7 @@ interrupt void spiARxISR(void)
 						que_data.data.l = 0;
 						if(spi_rcv_cmd == SPICMD_CTRL_RUN
 						  || spi_rcv_cmd == SPICMD_CTRL_STOP)
-							que_data.index = INV_RUN_STOP_INDEX;
+							que_data.index = INV_RUN_STOP_CMD_INDEX;
 						else
 							que_data.index = DIRECTION_INDEX;
 						break;

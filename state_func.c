@@ -518,7 +518,6 @@ void STA_calcResolution(void)
 	int flag;
 	float_t diff = m_status.target_freq - m_status.cur_freq;
 
-
 	if(diff > 0.0)
 	{
 		flag = ACCEL;

@@ -23,6 +23,9 @@
 #define 	ACCEL	0
 #define		DECEL	1
 
+#define 	ACC_TIME_BASE_MAX_FREQ		0
+#define 	ACC_TIME_BASE_NEXT_FREQ		1
+
 /*******************************************************************************
  * EXTERNS
  */
@@ -35,12 +38,16 @@
 extern int DRV_setAccelTime(float_t value);
 extern int DRV_setDecelTime(float_t value);
 
+#ifdef SUPPORT_ACCEL_TIME_BASE
+extern int DRV_setAccelTimeBase(uint16_t base);
+#endif
+
 extern int DRV_isVfControl(void);
 extern int DRV_isFocControl(void);
 extern void DRV_enableVfControl(void);
 extern void DRV_enableFocControl(void);
 
-extern int DRV_setTorqueLimit(float_t limit);
+//extern int DRV_setTorqueLimit(float_t limit);
 extern int DRV_setEnergySave(int on_off);
 extern int DRV_setVoltageBoost(float_t value);
 extern int DRV_setPwmFrequency(int value);

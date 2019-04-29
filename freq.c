@@ -18,6 +18,7 @@
 #pragma CODE_SECTION(FREQ_setFreqValue,"ramfuncs");
 #pragma CODE_SECTION(FREQ_getVarifiedFreq,"ramfuncs");
 #pragma CODE_SECTION(FREQ_getRangedFreq,"ramfuncs");
+#pragma CODE_SECTION(FREQ_getMaxFreqValue,"ramfuncs");
 #endif
 /*******************************************************************************
  * MACROS
@@ -148,6 +149,26 @@ int FREQ_setFreqValue(float_t value)
 
 	return 0;
 }
+
+#ifdef SUPPORT_ACCEL_TIME_BASE
+int FREQ_setMaxFreqValue(float_t value)
+{
+	if(!FREQ_isValidFreq(value)) return 1;
+
+	if(iparam[MAX_FREQ_INDEX].value.f == value) return 0;
+
+	iparam[MAX_FREQ_INDEX].value.f = value;
+
+	STA_calcResolution();
+
+	return 0;
+}
+
+float_t FREQ_getMaxFreqValue(void)
+{
+	return iparam[MAX_FREQ_INDEX].value.f;
+}
+#endif
 
 int FREQ_clearJumpFreq(uint16_t index)
 {

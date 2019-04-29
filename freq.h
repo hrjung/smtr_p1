@@ -12,7 +12,7 @@
 /*******************************************************************************
  * CONSTANTS
  */
-#define 	MAX_FREQ_VALUE	(400.0)
+#define 	MAX_FREQ_VALUE	(200.0)
 #define		MIN_FREQ_VALUE	(0.9)
 
 #define 	ACCEL	0
@@ -29,6 +29,10 @@ extern int FREQ_isValid(float_t value);
 extern int Freq_isInWorkingFreqRange(float_t value);
 
 extern int FREQ_setFreqValue(float_t value);
+#ifdef SUPPORT_ACCEL_TIME_BASE
+extern int FREQ_setMaxFreqValue(float_t value);
+extern float_t FREQ_getMaxFreqValue(void);
+#endif
 
 extern void FREQ_updateJumpSpeed(void);
 extern int FREQ_setJumpFreqEnable(uint16_t index, uint16_t enable);

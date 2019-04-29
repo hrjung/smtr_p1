@@ -481,7 +481,12 @@ STATIC int dbg_processHelp(int argc, char *argv[])
 STATIC void dbg_showAccelTimeSetting(void)
 {
 	UARTprintf(" Accel/Decel time Settings\n");
+#ifdef SUPPORT_ACCEL_TIME_BASE
+	UARTprintf("\t base=%d, accel time %f, decel time %f\n",
+			(int)iparam[ACCEL_BASE_INDEX].value.l, iparam[ACCEL_TIME_INDEX].value.f, iparam[DECEL_TIME_INDEX].value.f);
+#else
 	UARTprintf("\t accel time %f decel time %f\n", iparam[ACCEL_TIME_INDEX].value.f, iparam[DECEL_TIME_INDEX].value.f);
+#endif
 }
 
 
@@ -570,14 +575,17 @@ STATIC int dbg_setFreq(int argc, char *argv[])
 {
 	//int result;
 	uint16_t value;
-	float_t f_value;
+	float_t f_value, max_freq = MAX_FREQ_VALUE;
 	union32_st data;
 
     if(argc != 2) goto freq_err;
 
 	value = (uint16_t)atoi(argv[1]);
 	f_value = (float_t)(value/FREQ_INPUT_RESOLUTION);
-	if(f_value > MIN_FREQ_VALUE && f_value < MAX_FREQ_VALUE)
+#ifdef SUPPORT_ACCEL_TIME_BASE
+	max_freq = FREQ_getMaxFreqValue();
+#endif
+	if(f_value > MIN_FREQ_VALUE && f_value < max_freq)
 	{
 		data.f = f_value;
 		dbg_setQueCommand(FREQ_VALUE_INDEX, data);
@@ -825,7 +833,7 @@ STATIC int dbg_runMotor(int argc, char *argv[])
 
 #if 1
 	que_data.cmd = SPICMD_CTRL_RUN;
-	que_data.index = INV_RUN_STOP_INDEX;
+	que_data.index = INV_RUN_STOP_CMD_INDEX;
 	que_data.data.l = 0;
 	if(!QUE_isFull())
 	{
@@ -859,7 +867,7 @@ STATIC int dbg_stopMotor(int argc, char *argv[])
 
 #if 1
 	que_data.cmd = SPICMD_CTRL_STOP;
-	que_data.index = INV_RUN_STOP_INDEX;
+	que_data.index = INV_RUN_STOP_CMD_INDEX;
 	que_data.data.l = 0;
 	if(!QUE_isFull())
 	{
@@ -1983,6 +1991,8 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     {
     	//initParam();
     	PARAM_init();
+    	UARTprintf(" Initialize parameters! \n");
+
     }
     else if(index == 5)
     {
