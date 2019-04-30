@@ -320,10 +320,6 @@ _iq Iq_fbackValue = _IQ(0.0);
 _iq angle_pu = _IQ(0.0);
 _iq Id_refValue = _IQ(0.0);
 
-#ifdef SUPPORT_JUMP_FREQ_FOC
-_iq temp_traj = _IQ(0.0);
-_iq traj_spd = _IQ(0.0);
-#endif
 
 #if (USER_MOTOR == SAMYANG_1_5K_MOTOR) // 1Hz -> 30rpm
 _iq foc_end_rpm = _IQ(0.015); // 0.5Hz
@@ -1959,7 +1955,7 @@ interrupt void mainISR(void)
 {
 #ifdef SUPPORT_VF_CONTROL
 	MATH_vec2 phasor, Vab_pu;
-	_iq vf_speed_pu;
+	//_iq vf_speed_pu;
 #endif
 
   // toggle status LED
@@ -2087,13 +2083,8 @@ interrupt void mainISR(void)
 
 			if(!BRK_isDCIBrakeEnabled() || (DCIB_getState() == DCI_NONE_STATE))
 			{
-#ifdef SUPPORT_JUMP_FREQ
-			vf_speed_pu = TRAJ_getIntValue(controller_obj->trajHandle_spd);
-
-			controller_obj->speed_ref_pu = MAIN_avoidJumpSpeed(vf_speed_pu);
-#else
 			controller_obj->speed_ref_pu = TRAJ_getIntValue(controller_obj->trajHandle_spd);
-#endif
+
 			temp_spd_ref = _IQtoF(controller_obj->speed_ref_pu)*sf4pu_krpm;
 
 			if(fabsf(temp_spd_ref) > 12.0) //krpm (400Hz)

@@ -124,6 +124,7 @@ float_t DRV_calculateAccelRate_krpm(float_t time, float_t diff)
 	UARTprintf("Accel rate = %f\n", rate_krpm);
 	if(rate_krpm == 0.0)
 		UARTprintf("Accel rate is too small\n");
+
 	return rate_krpm;
 }
 

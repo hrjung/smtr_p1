@@ -144,8 +144,15 @@ int FREQ_setFreqValue(float_t value)
 
 	iparam[FREQ_VALUE_INDEX].value.f = value;
 
+#ifdef SUPPORT_JUMP_FREQ
+	STA_setTargetFreq(value);
+	STA_calcResolution(); // calculate accel/decel time with target freq
+
+	STA_setNextFreq(value); // set valid target freq which consider jump freq range
+#else
 	STA_setNextFreq(value);
 	STA_calcResolution();
+#endif
 
 	return 0;
 }

@@ -28,6 +28,7 @@ typedef struct
 	float_t cur_freq;		// normal ranged value
 	float_t target_freq;	// normal ranged value
 
+	//int	updown;
 	int direction;
 	//int prev_acc_time;
 	//int prev_dec_time;
@@ -120,6 +121,13 @@ inline float_t STA_getTargetFreq(void)
 {
 	return m_status.target_freq;
 }
+
+#ifdef SUPPORT_JUMP_FREQ
+inline void STA_setTargetFreq(float_t freq)
+{
+	m_status.target_freq = freq;
+}
+#endif
 
 #ifdef SUPPORT_DIRECTION_STATUS
 extern uint16_t dir_set_freq, dir_changed;

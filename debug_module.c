@@ -1364,7 +1364,7 @@ ovl_err:
 
 STATIC int dbg_setRegen(int argc, char *argv[])
 {
-	uint16_t value, power;
+	uint16_t value;
 	union32_st data;
 
 	if(argc < 2 && argc > 3) goto regen_err;
