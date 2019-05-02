@@ -126,7 +126,7 @@ void PARAM_init(void)
 	}
 
 	iparam[MAX_FREQ_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[MAX_FREQ_INDEX].value.f = 200.0;
+	iparam[MAX_FREQ_INDEX].value.f = 60.0;
 
 	iparam[ACCEL_TIME_INDEX].type = PARAMETER_TYPE_FLOAT;
 	iparam[ACCEL_TIME_INDEX].value.f = 10.0;

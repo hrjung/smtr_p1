@@ -232,6 +232,10 @@ int for_rev_flag=0; //flag for forward <-> reverse drive
 
 uint16_t Vinst[3];
 
+uint16_t start_first_f=0, end_of_magnetize=0;
+uint32_t magnetize_count=0;
+float_t magnetize_rate=0.0;
+
 uint16_t block_count=0;
 uint16_t miss_count = 0;
 #ifdef SUPPORT_I_RMS_MEASURE
@@ -282,6 +286,11 @@ extern int sample_type;
 
 #ifdef SUPPORT_VF_CONTROL
 void updateGlobalVariables_motor4Vf(CTRL_Handle handle);
+#endif
+
+#ifdef SUPPORT_DEBUG_TERMINAL
+void dbg_enableSystem(void);
+void dbg_disableSystem(void);
 #endif
 
 #ifdef UNIT_TEST_ENABLED
@@ -2230,12 +2239,31 @@ interrupt void mainISR(void)
   //process PWM for DCI brake
   MAIN_processDCBrake();
 
-//  if(BRK_isFreeRunEnabled())
-//  {
-//	  gPwmData.Tabc.value[0] = _IQ(0.0);
-//	  gPwmData.Tabc.value[1] = _IQ(0.0);
-//	  gPwmData.Tabc.value[2] = _IQ(0.0);
-//  }
+#if 0
+  if(start_first_f)
+  {
+	  if(magnetize_count < 4000)
+	  {
+		  gPwmData.Tabc.value[0] = _IQ(magnetize_rate);
+		  gPwmData.Tabc.value[1] = _IQ(0.0);
+		  gPwmData.Tabc.value[2] = _IQ(0.0);
+		  magnetize_count++;
+	  }
+	  else if(magnetize_count < 4400)
+	  {
+		  dbg_disableSystem();
+		  magnetize_count++;
+	  }
+	  else
+	  {
+		  if(end_of_magnetize==0)
+		  {
+			  dbg_enableSystem();
+			  end_of_magnetize=1;
+		  }
+	  }
+  }
+#endif
 
   // write the PWM compare values
   HAL_writePwmData(halHandle,&gPwmData);
@@ -2678,6 +2706,10 @@ int MAIN_enableSystem(void)
 
 	block_count=0;
 	miss_count=0;
+
+	start_first_f = 1;
+	magnetize_count=0;
+	end_of_magnetize=0;
 
 	return result;
 }

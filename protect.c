@@ -563,6 +563,7 @@ int TEMP_isFanOff(float_t ipm_temp)
 
 }
 
+uint16_t ipm_count=0, mtr_count=0;
 int TEMP_monitorTemperature(void)
 {
 	float_t ipm_temp, mtr_temp;
@@ -579,15 +580,21 @@ int TEMP_monitorTemperature(void)
 
 	if(ipm_temp > IPM_TEMPERATURE_LIMIT)
 	{
-		ERR_setTripInfo();
-		trip_info.ipm_temp = ipm_temp;
-		ERR_setTripFlag(TRIP_REASON_IPM_OVER_TEMP);
-		if(ipm_status == 0)
+		ipm_count++;
+		if(ipm_count > 10)
 		{
-			UARTprintf("IPM over temperature %f\n", ipm_temp);
-			ipm_status = 1;
+			ERR_setTripInfo();
+			trip_info.ipm_temp = ipm_temp;
+			ERR_setTripFlag(TRIP_REASON_IPM_OVER_TEMP);
+			if(ipm_status == 0)
+			{
+				UARTprintf("IPM over temperature %f\n", ipm_temp);
+				ipm_status = 1;
+			}
 		}
 	}
+	else
+		ipm_count=0;
 
 	mtr_temp = UTIL_readMotorTemperature();
 	if(mtr_temp > MOTOR_TEMPERATURE_LIMIT)

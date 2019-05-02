@@ -74,6 +74,7 @@ typedef enum {
 	DBG_CMD_ECHO_CONFIG,
 	//DBG_CMD_SET_SPEED,
 	DBG_CMD_SET_FREQUENCY,
+	DBG_CMD_SET_MAX_FREQUENCY,
 	DBG_CMD_SET_JUMP_FREQ,
 	DBG_CMD_SET_ACCEL_TIME,
 	DBG_CMD_SET_ENERGY_SAVE,
@@ -172,6 +173,8 @@ extern inv_parameter_st err_info[ERR_CODE_MAX];
 
 extern uint16_t gFlag_LogEnabled;
 
+extern float_t magnetize_rate;
+
 extern float_t MAIN_getPwmFrequency(void);
 extern float_t MAIN_getIu(void);
 extern float_t MAIN_getIv(void);
@@ -242,6 +245,7 @@ extern void test_errorTrip(void); // test_trip.c
 STATIC int dbg_processHelp(int argc, char *argv[]);
 //STATIC int dbg_setSpeed(int argc, char *argv[]);
 STATIC int dbg_setFreq(int argc, char *argv[]);
+STATIC int dbg_setMaxFreq(int argc, char *argv[]);
 STATIC int dbg_setJumpFreq(int argc, char *argv[]);
 STATIC int dbg_setAccelTime(int argc, char *argv[]);
 STATIC int dbg_setEnergySave(int argc, char *argv[]);
@@ -309,6 +313,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 			"   freq main freq(5-400) : set freq for each step\n"  \
 			"   freq show : display freq settings"
 	},
+	{"maxf", dbg_setMaxFreq, " set Max frequency "},
 	{"jmpf", dbg_setJumpFreq, " jmpf index(0-2) low(1-400) high(1-400) : set jump freq range, low < high"},
 	{"time", dbg_setAccelTime, " Accel/Decel time setting\n" \
 			"   time acc time(0-300): set accel time \n"  \
@@ -387,6 +392,7 @@ tCmdLineEntry g_sCmdTable[DBG_CMD_ENUM_MAX] =
 	{"help", dbg_processHelp, " help : show command list"},
 	{"echo", EchoSetting, " echo off/on"},
 	{"freq", dbg_setFreq, " frequency setting"},
+	{"maxf", dbg_setMaxFreq, " set Max frequency "},
 	{"jmpf", dbg_setJumpFreq, " jump freq setting"},
 	{"time", dbg_setAccelTime, " Accel/Decel time"},
 	{"engy", dbg_setEnergySave, " energy save off/on"},
@@ -578,7 +584,13 @@ STATIC int dbg_setFreq(int argc, char *argv[])
 	float_t f_value, max_freq = MAX_FREQ_VALUE;
 	union32_st data;
 
-    if(argc != 2) goto freq_err;
+    if(argc != 1 && argc != 2) goto freq_err;
+
+    if(argc == 1)
+    {
+    	UARTprintf("Command frequency %f\n", iparam[FREQ_VALUE_INDEX].value.f);
+    	return 0;
+    }
 
 	value = (uint16_t)atoi(argv[1]);
 	f_value = (float_t)(value/FREQ_INPUT_RESOLUTION);
@@ -598,6 +610,40 @@ STATIC int dbg_setFreq(int argc, char *argv[])
     return 0;
 
 freq_err:
+	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SET_FREQUENCY].pcHelp);
+	return 1;
+}
+
+STATIC int dbg_setMaxFreq(int argc, char *argv[])
+{
+	//int result;
+	uint16_t value;
+	float_t f_value;
+	union32_st data;
+
+    if(argc != 1 && argc != 2) goto maxf_err;
+
+    if(argc == 1)
+    {
+    	UARTprintf("Max frequency %f\n", iparam[MAX_FREQ_INDEX].value.f);
+    	return 0;
+    }
+
+	value = (uint16_t)atoi(argv[1]);
+	f_value = (float_t)(value/FREQ_INPUT_RESOLUTION);
+	if(f_value > MIN_FREQ_VALUE && f_value < MAX_FREQ_VALUE)
+	{
+		data.f = f_value;
+		dbg_setQueCommand(MAX_FREQ_INDEX, data);
+	}
+	else
+	{
+		goto maxf_err;
+	}
+
+    return 0;
+
+    maxf_err:
 	UARTprintf("%s\n", g_sCmdTable[DBG_CMD_SET_FREQUENCY].pcHelp);
 	return 1;
 }
@@ -788,18 +834,22 @@ STATIC int dbg_setDriveControl(int argc, char *argv[])
 
     if(argc != 2 && argc != 3) goto drv_err;
 
-#if 0
+#if 1
     if(argc == 2)
     {
     	if(strcmp("vf", argv[1]) == 0)
     	{
-    		data.l = (uint32_t)VF_CONTROL;
-    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
+//    		data.l = (uint32_t)VF_CONTROL;
+//    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
+    		DRV_enableVfControl();
+    		UARTprintf("set VF control\n");
     	}
     	else if(strcmp("foc", argv[1]) == 0)
     	{
-    		data.l = (uint32_t)FOC_CONTROL;
-    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
+//    		data.l = (uint32_t)FOC_CONTROL;
+//    		dbg_setQueCommand(VF_FOC_SEL_INDEX, data);
+    		DRV_enableFocControl();
+    		UARTprintf("set FOC control\n");
     	}
     	else
     		goto drv_err;
@@ -2073,6 +2123,23 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
     	UTIL_setRegenPwmDuty(duty);
 
     	UARTprintf(" set REGEN pwm duty=%d\n", duty);
+    }
+    else if(index == 'q')
+    {
+    	int rate;
+    	rate = (uint16_t)atoi(argv[2]);
+
+    	switch(rate)
+    	{
+    	case 2: magnetize_rate = 0.01; break;
+    	case 3: magnetize_rate = 0.02; break;
+    	case 4: magnetize_rate = 0.03; break;
+    	case 5: magnetize_rate = 0.04; break;
+    	case 1:
+    	default: magnetize_rate = 0.01; break;
+    	}
+
+    	UARTprintf(" set magnetize rate=%f\n", magnetize_rate);
     }
 #ifdef SUPPORT_SPI_ACCELEROMETER
     else if(index == 'a')

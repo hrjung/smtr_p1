@@ -54,6 +54,7 @@ const float_t pwm_tbl[4] = { 4.0, 8.0, 12.0, 16.0 };
 //extern HAL_Handle halHandle;
 //extern USER_Params gUserParams;
 
+uint16_t vf_foc_control = FOC_CONTROL;
 
 /*******************************************************************************
  * EXTERNS
@@ -128,23 +129,15 @@ float_t DRV_calculateAccelRate_krpm(float_t time, float_t diff)
 	return rate_krpm;
 }
 
-//int DRV_isVfControl(void)
-//{
-//	return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
-//}
-//
-//int DRV_isFocControl(void)
-//{
-//	return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
-//}
-
 void DRV_enableVfControl(void)
 {
+	vf_foc_control = VF_CONTROL;
 	//iparam[VF_FOC_SEL_INDEX].value.l = VF_CONTROL;
 }
 
 void DRV_enableFocControl(void)
 {
+	vf_foc_control = FOC_CONTROL;
 	//iparam[VF_FOC_SEL_INDEX].value.l = FOC_CONTROL;
 }
 

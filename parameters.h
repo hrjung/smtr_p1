@@ -119,7 +119,7 @@ enum {
 	INV_PARAM_INDEX_MAX,		//40
 };
 
-
+extern uint16_t vf_foc_control;
 extern inv_parameter_st iparam[];
 ////////////////////////////////////////////////
 
@@ -194,13 +194,13 @@ inline int FREQ_isJumpFreqUsed(int index)
 inline int DRV_isVfControl(void)
 {
 	//return (iparam[VF_FOC_SEL_INDEX].value.l == VF_CONTROL);
-	return 0;
+	return (vf_foc_control == VF_CONTROL);
 }
 
 inline int DRV_isFocControl(void)
 {
 	//return (iparam[VF_FOC_SEL_INDEX].value.l == FOC_CONTROL);
-	return 1;
+	return (vf_foc_control == FOC_CONTROL);
 }
 
 inline int BRK_isDCIBrakeEnabled(void)
