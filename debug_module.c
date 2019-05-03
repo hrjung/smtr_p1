@@ -32,7 +32,7 @@
 #include "cmd_queue.h"
 #include "drv_spi.h"
 #include "err_trip.h"
-#include "drv_accelerometer.h"
+//#include "drv_accelerometer.h"
 
 #ifdef UNIT_TEST_ENABLED
 #include "test/unity.h"

@@ -95,6 +95,8 @@ extern uint16_t gOffsetMeasureFlag;
 static int evt_flag=0;
 int regen_duty=70; //default
 
+uint16_t ud_volt_count=0, ov_volt_count=0;
+
 protect_dc_st protect_dc;
 
 /*******************************************************************************
@@ -118,7 +120,7 @@ extern uint32_t secCnt;
 extern float_t MAIN_getIave(void);
 extern void MAIN_readCurrent(void);
 extern int MAIN_isOverCurrent(void);
-extern void MAIN_setRegenDuty(float_t resist, uint32_t power);
+//extern void MAIN_setRegenDuty(float_t resist, uint32_t power);
 
 /*
  *  ======== local function ========
@@ -388,6 +390,8 @@ int REGEN_setRegenBand(uint32_t value)
 
 	iparam[REGEN_BAND_INDEX].value.l = value;
 
+	protect_dc.dc_volt_end_regen_level = DC_VOLTAGE_START_REGEN_LEVEL_380V - (float_t)value;
+
 	return 0;
 }
 
@@ -459,18 +463,25 @@ int REGEN_process(float_t dc_volt)
 	{
 		if(dc_volt < protect_dc.dc_volt_init_relay_on - 20.0) //&& dc_volt > protect_dc.dc_volt_init_relay_off)
 		{
-			// DC under voltage trip
-			if(under_flag==0)
+			ud_volt_count++;
+			if(ud_volt_count > 50)
 			{
-				//UTIL_setFanOff();
-				UARTprintf("DC under voltage %f trip event happened at %d\n", dc_volt, (int)(secCnt/10));
-				under_flag=1;
+				// DC under voltage trip
+				if(under_flag==0)
+				{
+					//UTIL_setFanOff();
+					UARTprintf("DC under voltage %f trip event happened at %d\n", dc_volt, (int)(secCnt/10));
+					under_flag=1;
+				}
+				ERR_setTripInfo();
+				trip_info.Vdc_inst = dc_volt;
+				ERR_setTripFlag(TRIP_REASON_VDC_UNDER);
+				return 1; // disable PWM after return
 			}
-			ERR_setTripInfo();
-			trip_info.Vdc_inst = dc_volt;
-			ERR_setTripFlag(TRIP_REASON_VDC_UNDER);
-			return 1; // disable PWM after return
 		}
+		else
+			ud_volt_count=0;
+
 #if 0 // remove relay off
 		if(dc_volt < protect_dc.dc_volt_init_relay_off) // force to disable relay
 		{
@@ -487,17 +498,23 @@ int REGEN_process(float_t dc_volt)
 
 	if(dc_volt > protect_dc.dc_volt_over_trip_level)
 	{
-		// DC over voltage trip
-		if(over_flag==0)
+		ov_volt_count++;
+		if(ov_volt_count > 50)
 		{
-			UARTprintf("DC over voltage %fV trip event happened at %d\n", dc_volt, (int)(secCnt/10));
-			over_flag=1;
+			// DC over voltage trip
+			if(over_flag==0)
+			{
+				UARTprintf("DC over voltage %fV trip event happened at %d\n", dc_volt, (int)(secCnt/10));
+				over_flag=1;
+			}
+			ERR_setTripInfo();
+			trip_info.Vdc_inst = dc_volt;
+			ERR_setTripFlag(TRIP_REASON_VDC_OVER);
+			return 1; // disable PWM after return
 		}
-		ERR_setTripInfo();
-		trip_info.Vdc_inst = dc_volt;
-		ERR_setTripFlag(TRIP_REASON_VDC_OVER);
-		return 1; // disable PWM after return
 	}
+	else
+		ov_volt_count=0;
 
 	if(dc_volt > protect_dc.dc_volt_start_regen_level) //dev_const.regen_limit + param.protect.regen.band)
 	{
@@ -630,7 +647,7 @@ void PROT_init(int input)
 		protect_dc.dc_volt_over_trip_level = DC_VOLTAGE_OVER_TRIP_LEVEL_380V;
 
 		protect_dc.dc_volt_start_regen_level = DC_VOLTAGE_START_REGEN_LEVEL_380V;
-		protect_dc.dc_volt_end_regen_level = DC_VOLTAGE_END_REGEN_LEVEL_380V;
+		protect_dc.dc_volt_end_regen_level = DC_VOLTAGE_START_REGEN_LEVEL_380V - (float_t)iparam[REGEN_BAND_INDEX].value.l;
 	}
 	else
 	{

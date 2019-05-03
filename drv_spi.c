@@ -14,7 +14,7 @@
 #include "common_tools.h"
 #include "parameters.h"
 #include "cmd_queue.h"
-#include "drv_accelerometer.h"
+//#include "drv_accelerometer.h"
 //*****************************************************************************
 //
 //! \addtogroup modebus_api
