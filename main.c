@@ -253,7 +253,7 @@ _iq gPwmData_Value = _IQ(0.);
 uint16_t gFlagDCIBrake = false;
 #endif
 
-_iq pwm_set[3], pwm_diff[3];
+//_iq pwm_set[3], pwm_diff[3];
 
 #ifdef SAMPLE_ADC_VALUE
 #define I_SAMPLE_COUNT		100
@@ -2311,6 +2311,11 @@ interrupt void mainISR(void)
 	  MAIN_calculateIrms();
 	  STA_setCurrent(MAIN_getIave());
 
+#ifdef SAMPLE_ADC_VALUE
+	  if(sample_type == I_CURR_SAMPLE_TYPE)
+		dbg_getSample(internal_status.Iu_inst, internal_status.Iv_inst, internal_status.Iw_inst);
+#endif
+
 //	  if(miss_count > 20)
 //		  MAIN_isMissingIphase();
 //	  else
@@ -2331,20 +2336,17 @@ interrupt void mainISR(void)
 	internal_status.Vv_inst = _IQtoF(gAdcData.V.value[1])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 	internal_status.Vw_inst = _IQtoF(gAdcData.V.value[2])*USER_IQ_FULL_SCALE_VOLTAGE_V;
 
-#ifdef SAMPLE_ADC_VALUE
+	internal_status.Vdc_inst = _IQtoF(gAdcData.dcBus)*USER_IQ_FULL_SCALE_VOLTAGE_V;
+	internal_status.Vdc_lfp = _IQtoF(gVbus_lpf)*USER_IQ_FULL_SCALE_VOLTAGE_V;
+
+#ifdef SAMPLE_ADC_VALUE_
 	if(sample_type == V_UVW_SAMPLE_TYPE)
 		dbg_getSample(internal_status.Vu_inst, internal_status.Vv_inst, internal_status.Vw_inst);
 	  //dbg_getSample(gAdcData.v_adc[0], gAdcData.v_adc[1], gAdcData.v_adc[2]);
 
 	if(sample_type == I_CURR_SAMPLE_TYPE)
 		dbg_getSample(internal_status.Iu_inst, internal_status.Iv_inst, internal_status.Iw_inst);
-#endif
-#endif
 
-#if 1
-	internal_status.Vdc_inst = _IQtoF(gAdcData.dcBus)*USER_IQ_FULL_SCALE_VOLTAGE_V;
-	internal_status.Vdc_lfp = _IQtoF(gVbus_lpf)*USER_IQ_FULL_SCALE_VOLTAGE_V;
-#ifdef SAMPLE_ADC_VALUE
 	gLEDcnt++;
 	if(sample_type == V_DC_SAMPLE_TYPE && gLEDcnt > 1000)
 	{
@@ -2353,6 +2355,7 @@ interrupt void mainISR(void)
 	}
 #endif
 #endif
+
 
 #if 0
 	internal_status.Vab_pu[0] = _IQtoF(Vab_pu.value[0]);

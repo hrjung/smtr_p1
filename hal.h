@@ -1374,7 +1374,7 @@ extern float_t pwm_value, pwm_value_neg, pwm_value_sat;
 extern int sample_type;
 extern void dbg_getSample(float_t val1, float_t val2, float_t val3);
 #endif
-extern _iq pwm_set[3], pwm_diff[3];
+//extern _iq pwm_set[3], pwm_diff[3];
 //! \brief     Writes PWM data to the PWM comparators for motor control
 //! \param[in] handle    The hardware abstraction layer (HAL) handle
 //! \param[in] pPwmData  The pointer to the PWM data
@@ -1414,8 +1414,9 @@ static inline void HAL_writePwmData(HAL_Handle handle,HAL_PwmData_t *pPwmData)
       // write the PWM data
       PWM_write_CmpA(obj->pwmHandle[cnt],value_sat);
 
-      pwm_set[cnt] = pwmData_sat;
 #if 0
+      pwm_set[cnt] = pwmData_sat;
+
       fvalue_sat[cnt] = (float_t)value_sat;
    	  if(value_sat == 0)
    	  {
@@ -1427,11 +1428,11 @@ static inline void HAL_writePwmData(HAL_Handle handle,HAL_PwmData_t *pPwmData)
 #endif
     }
 
-    pwm_diff[0] = pwm_set[0] - pwm_set[1];
-    pwm_diff[1] = pwm_set[1] - pwm_set[2];
-    pwm_diff[2] = pwm_set[2] - pwm_set[0];
+//    pwm_diff[0] = pwm_set[0] - pwm_set[1];
+//    pwm_diff[1] = pwm_set[1] - pwm_set[2];
+//    pwm_diff[2] = pwm_set[2] - pwm_set[0];
 
-#ifdef SAMPLE_ADC_VALUE
+#ifdef SAMPLE_ADC_VALUE_
 //  pwm_val = _IQtoF(pPwmData->Tabc.value[2]);
 //  fvalue_sat = (float_t)value_sat;
   if(sample_type == PWM2_SAMPLE_TYPE)

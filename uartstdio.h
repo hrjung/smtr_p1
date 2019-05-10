@@ -40,9 +40,9 @@ extern "C"
 #define UART_RX_BUFFER_SIZE     128
 #endif
 #ifndef UART_TX_BUFFER_SIZE
-//#define UART_TX_BUFFER_SIZE     12800
+#define UART_TX_BUFFER_SIZE     12800
 //#define UART_TX_BUFFER_SIZE     8192
-#define UART_TX_BUFFER_SIZE     4096
+//#define UART_TX_BUFFER_SIZE     4096
 #endif
 
 //typedef unsigned char tBoolean;
@@ -65,7 +65,7 @@ extern int UARTRxBytesAvail(void);
 extern int UARTTxBytesFree(void);
 extern void UARTEchoSet(tBoolean bEnable);
 __interrupt void UARTStdioIntHandler(void);
-extern void PrintWave(int ch0_mode, void *ch0_data, int ch1_mode, void *ch1_data, int ch2_mode, void *ch2_data);
+//extern void PrintWave(int ch0_mode, void *ch0_data, int ch1_mode, void *ch1_data, int ch2_mode, void *ch2_data);
 #ifdef FLOAT_PRINT
 extern void reverse(char *str, int len);
 extern int intToStr(int x, char str[], int d);

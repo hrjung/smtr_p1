@@ -76,7 +76,8 @@
 // enable for unit test only
 #define UNIT_TEST_ENABLED
 #ifdef UNIT_TEST_ENABLED
-#undef SAMPLE_ADC_VALUE
+//#undef SAMPLE_ADC_VALUE
+#define SAMPLE_ADC_VALUE
 #define STATIC
 #else
 #define STATIC static

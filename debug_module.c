@@ -1725,7 +1725,7 @@ ver_err:
 #define PWM_PERIOD_COUNT		9
 #define I_RMS_SAMPLE_TYPE		10
 
-int sample_type=I_RMS_SAMPLE_TYPE;
+int sample_type=I_CURR_SAMPLE_TYPE;
 int v_count = V_SAMPLE_COUNT;
 int sampling_flag=0, stop_sampling_flag=1;
 float_t smpl_buff[3][V_SAMPLE_COUNT];
@@ -1764,7 +1764,8 @@ void dbg_getSample(float_t val1, float_t val2, float_t val3)
 			  sampling_flag=0;
 			  UARTprintf(" sampling done\n");
 		  }
-		  else    smpl_buff_idx=0;
+		  else
+			  smpl_buff_idx=0;
 	  }
 	}
 }
