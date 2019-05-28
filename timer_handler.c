@@ -16,6 +16,7 @@
 #include "drive.h"
 #include "state_func.h"
 #include "timer_handler.h"
+#include "err_trip.h"
 
 #ifdef FLASH
 #pragma CODE_SECTION(timer0ISR,"ramfuncs");
@@ -78,6 +79,10 @@ uint32_t temp_flag=0;
 extern int TEMP_monitorTemperature(void);
 
 uint16_t wd_count=0;
+
+#ifdef SUPPORT_MISS_PHASE_DETECT
+uint16_t miss_in_phase_cnt=0;
+#endif
 
 #ifdef SUPPORT_OFFSET_MEASURE_
 
@@ -387,6 +392,26 @@ interrupt void timer0ISR(void)
 	else
 		temp_flag=0;
 
+#ifdef SUPPORT_MISS_PHASE_DETECT
+	if(MAIN_isSystemEnabled())
+	{
+		float_t dc_value = MAIN_getVdcBus();
+		if(gTimerCount%100 == 0 && dc_value < 480.0) // every 100ms
+		{
+			miss_in_phase_cnt++;
+			if(miss_in_phase_cnt > 3)
+			{
+				// raise trip
+				ERR_setTripInfo();
+				trip_info.Vdc_inst = dc_value;
+				ERR_setTripFlag(TRIP_REASON_V_PHASE_MISS);
+			}
+		}
+		else
+			miss_in_phase_cnt=0;
+	}
+#endif
+
 	if(time_sig[DCI_BRAKE_SIG_ON_TSIG].enable)
 	{
 		if(TMR_isTimeOutCondition(DCI_BRAKE_SIG_ON_TSIG))
@@ -407,7 +432,6 @@ interrupt void timer0ISR(void)
 		}
 	}
 
-#if 1
 	if(time_sig[OVERLOAD_WARN_START_TSIG].enable)
 	{
 		if(TMR_isTimeOutCondition(OVERLOAD_WARN_START_TSIG))
@@ -423,7 +447,6 @@ interrupt void timer0ISR(void)
 			time_sig[OVERLOAD_WARN_END_TSIG].timeout_flag = 1;
 		}
 	}
-#endif
 
 	if(time_sig[OVERLOAD_TRIP_TSIG].enable)
 	{

@@ -201,6 +201,14 @@ extern uint16_t UTIL_readMotorTemperatureStatus(void);
 
 extern void ERR_printTripInfo(void);
 
+#ifdef SUPPORT_MISS_PHASE_DETECT
+#define I_MISS_SAMPLE_COUNT		50
+extern float_t i_buff[3][I_MISS_SAMPLE_COUNT];
+extern int u_low_cnt, u_high_cnt;
+extern int v_low_cnt, v_high_cnt;
+extern int w_low_cnt, w_high_cnt;
+#endif
+
 #ifdef SUPPORT_SPI_ACCELEROMETER
 extern uint16_t SPI_readSensor(uint16_t regNum, uint16_t *rxData);
 extern uint16_t SPI_writeSesnsor(uint16_t *txData);
@@ -597,7 +605,7 @@ STATIC int dbg_setFreq(int argc, char *argv[])
 #ifdef SUPPORT_ACCEL_TIME_BASE
 	max_freq = FREQ_getMaxFreqValue();
 #endif
-	if(f_value > MIN_FREQ_VALUE && f_value < max_freq)
+	if(f_value > MIN_FREQ_VALUE && f_value <= max_freq)
 	{
 		data.f = f_value;
 		dbg_setQueCommand(FREQ_VALUE_INDEX, data);
@@ -2142,6 +2150,21 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UARTprintf(" set magnetize rate=%f\n", magnetize_rate);
     }
+#ifdef SUPPORT_MISS_PHASE_DETECT
+	else if(index == 'a')
+	{
+		int i, delay;
+
+		// print measured I value for missing I phase
+		for(i=0; i<I_MISS_SAMPLE_COUNT; i++)
+		{
+			for(delay=0; delay<1000; delay++);
+			UARTprintf(" %f, %f, %f \n", i_buff[0][i], i_buff[1][i], i_buff[2][i]);
+		}
+		UARTprintf("low cnt: %d, %d, %d \n", u_low_cnt, v_low_cnt, w_low_cnt);
+		UARTprintf("hi  cnt: %d, %d, %d \n", u_high_cnt, v_high_cnt, w_high_cnt);
+	}
+#endif
 #ifdef SUPPORT_SPI_ACCELEROMETER
     else if(index == 'a')
     {

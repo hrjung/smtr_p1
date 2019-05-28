@@ -150,13 +150,13 @@ void PARAM_init(void)
 	iparam[PWM_FREQ_INDEX].value.l = PWM_4KHz;
 
 	iparam[JUMP_ENABLE0_INDEX].type = PARAMETER_TYPE_LONG;
-	iparam[JUMP_ENABLE0_INDEX].value.l = 1; //NOT_USED;
+	iparam[JUMP_ENABLE0_INDEX].value.l = NOT_USED;
 
 	iparam[JUMP_LOW0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_LOW0_INDEX].value.f = 20.0; // 1.0
+	iparam[JUMP_LOW0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_HIGH0_INDEX].type = PARAMETER_TYPE_FLOAT;
-	iparam[JUMP_HIGH0_INDEX].value.f = 25.0; // 1.0
+	iparam[JUMP_HIGH0_INDEX].value.f = 1.0;
 
 	iparam[JUMP_ENABLE1_INDEX].type = PARAMETER_TYPE_LONG;
 	iparam[JUMP_ENABLE1_INDEX].value.l = NOT_USED;

@@ -683,8 +683,8 @@ int processProtection(void)
 			ERR_setTripFlag(TRIP_REASON_OVERLOAD);
 			// set trip error code
 			// disable PWM output
-			MAIN_disableSystem();
-
+//			MAIN_disableSystem();
+//
 			evt_flag++;
 			if(evt_flag == 1)
 				UARTprintf("OVL trip event happened at %d\n", (int)(secCnt/10));
@@ -695,7 +695,7 @@ int processProtection(void)
 			ERR_setTripInfo();
 			trip_info.Irms = I_rms;
 			ERR_setTripFlag(TRIP_REASON_OVER_CURRENT);
-			MAIN_disableSystem();
+//			MAIN_disableSystem();
 			evt_flag++;
 			if(evt_flag == 1)
 				UARTprintf("OV Current trip event happened at %d\n", (int)(secCnt/10));

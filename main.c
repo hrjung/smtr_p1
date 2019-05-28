@@ -58,7 +58,9 @@
 #pragma CODE_SECTION(MAIN_calculateIrms,"ramfuncs");
 #pragma CODE_SECTION(MAIN_readCurrent,"ramfuncs");
 #pragma CODE_SECTION(xint1_isr,"ramfuncs");
-#pragma CODE_SECTION(MAIN_isMissingIphase,"ramfuncs");
+#pragma CODE_SECTION(MAIN_checkMissPhase,"ramfuncs");
+#pragma CODE_SECTION(MAIN_isPhaseMissCondition,"ramfuncs");
+#pragma CODE_SECTION(MAIN_getVdcBus,"ramfuncs");
 
 #pragma CODE_SECTION(MAIN_isSystemEnabled,"ramfuncs");
 #pragma CODE_SECTION(MAIN_avoidJumpSpeed,"ramfuncs");
@@ -245,6 +247,14 @@ float_t array_Vppu[I_RMS_SAMPLE_COUNT], array_Vppv[I_RMS_SAMPLE_COUNT], array_Vp
 float_t total_Iu, total_Iv, total_Iw, total_Vu, total_Vv, total_Vw, total_Vppu, total_Vppv, total_Vppw;
 int i_pos=0;
 int i_ready_flag=0;
+#endif
+
+#ifdef SUPPORT_MISS_PHASE_DETECT
+
+#define I_MISS_SAMPLE_COUNT		50
+float_t i_buff[3][I_MISS_SAMPLE_COUNT];
+int i_sample_idx=0;
+int i_miss_cnt=0;
 #endif
 
 #ifdef PWM_DUTY_TEST
@@ -623,6 +633,17 @@ void MAIN_initIarray(void)
 	total_Vppu = 0.0;
 	total_Vppv = 0.0;
 	total_Vppw = 0.0;
+
+#ifdef SUPPORT_MISS_PHASE_DETECT
+	for(i=0; i<I_MISS_SAMPLE_COUNT; i++)
+	{
+		i_buff[0][i] = 0.0;
+		i_buff[1][i] = 0.0;
+		i_buff[2][i] = 0.0;
+	}
+	i_sample_idx=0;
+	i_miss_cnt=0;
+#endif
 }
 
 inline void MAIN_calculateIrms(void)
@@ -794,56 +815,76 @@ int MAIN_isOverCurrent(void)
 	return 0;
 }
 
-#define CURRENT_MISS_COUNT_LIMIT	100
-#define MISSING_PHASE_I_RMS			(0.1*USER_MOTOR_NO_LOAD_CURRENT)
-int MAIN_isMissingIphase(void)
+#ifdef SUPPORT_MISS_PHASE_DETECT
+int u_low_cnt=0, u_high_cnt=0;
+int v_low_cnt=0, v_high_cnt=0;
+int w_low_cnt=0, w_high_cnt=0;
+int MAIN_isPhaseMissCondition(void)
 {
-	if(!MAIN_isSystemEnabled()) return 0;
+	int i;
+//	int u_low_cnt=0, u_high_cnt=0;
+//	int v_low_cnt=0, v_high_cnt=0;
+//	int w_low_cnt=0, w_high_cnt=0;
+	float_t i_value;
+	float_t low_limit = USER_MOTOR_NO_LOAD_CURRENT*0.5;
+	float_t high_limit = USER_MOTOR_RATED_CURRENT*1.414;
 
-	// Iv phase is missing
-	if(internal_status.Irms[1] < MISSING_PHASE_I_RMS)
-	{
-		internal_status.Iv_miss_cnt++;
-		if(internal_status.Iv_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
-		{
-			ERR_setTripInfo();
-			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
-			return 1;
-		}
-	}
-	else
-		internal_status.Iv_miss_cnt = 0;
+	i_miss_cnt++;
+	if(i_miss_cnt < 5		// ignore startup
+	  || (STA_getTargetFreq() == 0.0 && !STA_isDirChanged())) // ignore stop and change direction
+		return 0;
 
-	// Iw phase is missing
-	if(internal_status.Irms[2] < MISSING_PHASE_I_RMS)
+	u_low_cnt=0, u_high_cnt=0;
+	v_low_cnt=0, v_high_cnt=0;
+	w_low_cnt=0, w_high_cnt=0;
+	for(i=0; i<I_MISS_SAMPLE_COUNT; i++)
 	{
-		internal_status.Iw_miss_cnt++;
-		if(internal_status.Iw_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
-		{
-			ERR_setTripInfo();
-			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
-			return 1;
-		}
-	}
-	else
-		internal_status.Iw_miss_cnt = 0;
+		i_value = fabsf(i_buff[0][i]);
+		if(i_value < low_limit) u_low_cnt++;
+		else if(i_value > high_limit) u_high_cnt++;
 
-	// Iu phase is missing
-	if(fabsf(internal_status.Irms[2] - internal_status.Irms[1]) < MISSING_PHASE_I_RMS)
-	{
-		internal_status.Iu_miss_cnt++;
-		if(internal_status.Iu_miss_cnt > CURRENT_MISS_COUNT_LIMIT)
-		{
-			ERR_setTripInfo();
-			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
-			return 1;
-		}
+		i_value = fabsf(i_buff[1][i]);
+		if(i_value < low_limit) v_low_cnt++;
+		else if(i_value > high_limit) v_high_cnt++;
+
+		i_value = fabsf(i_buff[2][i]);
+		if(i_value < low_limit) w_low_cnt++;
+		else if(i_value > high_limit) w_high_cnt++;
 	}
-	else
-		internal_status.Iu_miss_cnt = 0;
+
+	if(u_low_cnt == I_MISS_SAMPLE_COUNT
+	    && v_low_cnt == I_MISS_SAMPLE_COUNT
+	    && w_low_cnt == I_MISS_SAMPLE_COUNT) return 1; //2 miss phases
+
+	if( (u_low_cnt == I_MISS_SAMPLE_COUNT && v_high_cnt != 0 && w_high_cnt != 0)
+		|| (v_low_cnt == I_MISS_SAMPLE_COUNT && u_high_cnt != 0 && w_high_cnt != 0)
+		|| (w_low_cnt == I_MISS_SAMPLE_COUNT && u_high_cnt != 0 && v_high_cnt != 0) )
+			return 1;
 
 	return 0;
 }
+
+int MAIN_checkMissPhase(float_t I_u, float_t I_v, float_t I_w)
+{
+	// store buffer
+	i_buff[0][i_sample_idx] = I_u;
+	i_buff[1][i_sample_idx] = I_v;
+	i_buff[2][i_sample_idx] = I_w;
+
+	i_sample_idx++;
+	if(i_sample_idx == I_MISS_SAMPLE_COUNT)
+	{
+		i_sample_idx=0;
+		if(MAIN_isPhaseMissCondition())
+		{
+			ERR_setTripInfo();
+			ERR_setTripFlag(TRIP_REASON_I_PHASE_MISS);
+		}
+	}
+
+	return 0;
+}
+#endif
 
 
 void MAIN_setCurrentFreq(void)
@@ -2314,6 +2355,11 @@ interrupt void mainISR(void)
 #ifdef SAMPLE_ADC_VALUE
 	  if(sample_type == I_CURR_SAMPLE_TYPE)
 		dbg_getSample(internal_status.Iu_inst, internal_status.Iv_inst, internal_status.Iw_inst);
+#endif
+
+#ifdef SUPPORT_MISS_PHASE_DETECT
+	  if(MAIN_isSystemEnabled())
+		  MAIN_checkMissPhase(internal_status.Iu_inst, internal_status.Iv_inst, internal_status.Iw_inst);
 #endif
 
 //	  if(miss_count > 20)

@@ -58,6 +58,9 @@
 //
 #define SUPPORT_WATCHDOG
 
+// checking missing power in and motor out phase
+#define SUPPORT_MISS_PHASE_DETECT
+
 //
 //	list of Debug features
 //
