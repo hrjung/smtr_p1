@@ -61,6 +61,8 @@
 // checking missing power in and motor out phase
 #define SUPPORT_MISS_PHASE_DETECT
 
+//#define SUPPORT_INIT_MAGNETIZE
+
 //
 //	list of Debug features
 //

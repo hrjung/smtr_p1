@@ -234,17 +234,19 @@ int for_rev_flag=0; //flag for forward <-> reverse drive
 
 uint16_t Vinst[3];
 
+#ifdef SUPPORT_INIT_MAGNETIZE
 uint16_t start_first_f=0, end_of_magnetize=0;
 uint32_t magnetize_count=0;
 float_t magnetize_rate=0.0;
+#endif
 
 uint16_t block_count=0;
 uint16_t miss_count = 0;
 #ifdef SUPPORT_I_RMS_MEASURE
 float_t array_Iu[I_RMS_SAMPLE_COUNT], array_Iv[I_RMS_SAMPLE_COUNT], array_Iw[I_RMS_SAMPLE_COUNT];
 float_t array_Vu[I_RMS_SAMPLE_COUNT], array_Vv[I_RMS_SAMPLE_COUNT], array_Vw[I_RMS_SAMPLE_COUNT];
-float_t array_Vppu[I_RMS_SAMPLE_COUNT], array_Vppv[I_RMS_SAMPLE_COUNT], array_Vppw[I_RMS_SAMPLE_COUNT];
-float_t total_Iu, total_Iv, total_Iw, total_Vu, total_Vv, total_Vw, total_Vppu, total_Vppv, total_Vppw;
+//float_t array_Vppu[I_RMS_SAMPLE_COUNT], array_Vppv[I_RMS_SAMPLE_COUNT], array_Vppw[I_RMS_SAMPLE_COUNT];
+float_t total_Iu, total_Iv, total_Iw, total_Vu, total_Vv, total_Vw; // total_Vppu, total_Vppv, total_Vppw;
 int i_pos=0;
 int i_ready_flag=0;
 #endif
@@ -615,9 +617,9 @@ void MAIN_initIarray(void)
 		array_Vv[i] = 0.0;
 		array_Vw[i] = 0.0;
 
-		array_Vppu[i] = 0.0;
-		array_Vppv[i] = 0.0;
-		array_Vppw[i] = 0.0;
+//		array_Vppu[i] = 0.0;
+//		array_Vppv[i] = 0.0;
+//		array_Vppw[i] = 0.0;
 	}
 	i_pos=0;
 	i_ready_flag=0;
@@ -630,9 +632,9 @@ void MAIN_initIarray(void)
 	total_Vv = 0.0;
 	total_Vw = 0.0;
 
-	total_Vppu = 0.0;
-	total_Vppv = 0.0;
-	total_Vppw = 0.0;
+//	total_Vppu = 0.0;
+//	total_Vppv = 0.0;
+//	total_Vppw = 0.0;
 
 #ifdef SUPPORT_MISS_PHASE_DETECT
 	for(i=0; i<I_MISS_SAMPLE_COUNT; i++)
@@ -2280,7 +2282,7 @@ interrupt void mainISR(void)
   //process PWM for DCI brake
   MAIN_processDCBrake();
 
-#if 0
+#ifdef SUPPORT_INIT_MAGNETIZE
   if(start_first_f)
   {
 	  if(magnetize_count < 4000)
@@ -2756,9 +2758,11 @@ int MAIN_enableSystem(void)
 	block_count=0;
 	miss_count=0;
 
+#ifdef SUPPORT_INIT_MAGNETIZE
 	start_first_f = 1;
 	magnetize_count=0;
 	end_of_magnetize=0;
+#endif
 
 	return result;
 }

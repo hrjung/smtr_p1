@@ -173,7 +173,9 @@ extern inv_parameter_st err_info[ERR_CODE_MAX];
 
 extern uint16_t gFlag_LogEnabled;
 
+#ifdef SUPPORT_INIT_MAGNETIZE
 extern float_t magnetize_rate;
+#endif
 
 extern float_t MAIN_getPwmFrequency(void);
 extern float_t MAIN_getIu(void);
@@ -2133,6 +2135,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UARTprintf(" set REGEN pwm duty=%d\n", duty);
     }
+#ifdef SUPPORT_INIT_MAGNETIZE
     else if(index == 'q')
     {
     	int rate;
@@ -2150,6 +2153,7 @@ STATIC int dbg_tmpTest(int argc, char *argv[])
 
     	UARTprintf(" set magnetize rate=%f\n", magnetize_rate);
     }
+#endif
 #ifdef SUPPORT_MISS_PHASE_DETECT
 	else if(index == 'a')
 	{
